@@ -5,6 +5,7 @@ import com.sun.org.apache.xpath.internal.operations.Bool;
 import net.milkbowl.vault.economy.Economy;
 import net.squidstudios.mfhoppers.api.events.ItemsHopperCatchEvent;
 import net.squidstudios.mfhoppers.hopper.filter.FilterInventory;
+import net.squidstudios.mfhoppers.hopper.types.GrindHopper;
 import net.squidstudios.mfhoppers.hopper.upgrades.UpgradeEnum;
 import net.squidstudios.mfhoppers.manager.DataManager;
 import net.squidstudios.mfhoppers.manager.HookManager;
@@ -287,7 +288,21 @@ public class MFHoppers extends PluginBuilder {
                         }
 
                         DataManager.getInstance().remove(event.getBlock().getLocation());
-                        Methods.drop(configHoppers.get(hopper.getName()).getItemOfData(hopper), hopper.getLocation());
+                        boolean alreadyDropped = false;
+                        Map<String, Object> dataOfHopper = configHoppers.get(hopper.getName()).getDataOfHopper(hopper);
+                        if(dataOfHopper.containsKey("DropToInventory") && (boolean) dataOfHopper.get("DropToInventory")){
+                            if(event.getPlayer().getInventory().firstEmpty() != -1) {
+                                if (hopper.getType() == HopperEnum.Grind) {
+                                    event.getPlayer().getInventory().addItem(configHoppers.get(hopper.getName()).buildItemByLevel(hopper.getLevel(), (EntityType) hopper.getData().get("ent"), (Boolean) hopper.getData().get("isAuto"), (Boolean) hopper.getData().get("isGlobal")));
+                                } else {
+                                    event.getPlayer().getInventory().addItem(configHoppers.get(hopper.getName()).buildItemByLevel(hopper.getLevel()));
+                                }
+                                alreadyDropped = true;
+                            }
+                        }
+                        if(!alreadyDropped) {
+                            Methods.drop(configHoppers.get(hopper.getName()).getItemOfData(hopper), hopper.getLocation());
+                        }
                         Methods.breakBlock(event.getBlock());
                         new BukkitRunnable(){
                             @Override

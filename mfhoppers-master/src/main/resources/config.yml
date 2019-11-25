@@ -24,6 +24,7 @@ Hoppers:
     stack_kill: 0
     time: 10
     inventoryTitle: "&bGrind Hopper &a(1)"
+    DropToInventory: true
 
     #This will move every 4 seconds 10 amount of item out of hopper to if linked chest!
     linkedMoveEvery: 4
