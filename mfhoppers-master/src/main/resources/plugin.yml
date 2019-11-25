@@ -1,0 +1,13 @@
+name: MFHoppers
+author: Brian aka OOP and Tobiti
+description: MFHoppers made by Brian and maintained by Tobiti
+version: ${project.version}
+main: net.squidstudios.mfhoppers.MFHoppers
+api-version: 1.13
+softdepend:
+- Vault
+- WildStacker
+- DropEdit2
+- ShopGUIPlus
+- PlaceholderAPI
+- BeastCore

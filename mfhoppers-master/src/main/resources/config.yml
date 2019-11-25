@@ -1,0 +1,161 @@
+#It auto saves on disable, so in case of an crash, would recommend to save it every few. The value is in seconds!
+saveEvery: 60
+
+Hoppers:
+
+#There's 4 types of hopper: BREAK, CROP, GRIND, MOB
+
+  "grindHopper":
+    type: Grind
+    limitPerChunk: -1 #-1 no limit
+    name: "&8[&aMobGrind&8] &7Hopper"
+    lore:
+      - "&7This hopper teleports specified monster type"
+      - "&7To it's location & freezes them"
+      - "&a&l* &7Current mob: %type%"
+    should_drop_from_explosions: true #This options makes that hopper drops from explosions.
+    mob: PIG
+    damageType: CUSTOM #Can be any minecraft damage type
+    mob-blacklist:
+      - "ENDER_DRAGON"
+    #If you want auto kill put, isAuto: true
+    #If you want so the hoppers works for every mob, isGlobal: true
+    damage: 0.2
+    stack_kill: 0
+    time: 10
+    inventoryTitle: "&bGrind Hopper &a(1)"
+
+    #This will move every 4 seconds 10 amount of item out of hopper to if linked chest!
+    linkedMoveEvery: 4
+    linkedMoveAmount: 10
+    linkedLimit: 1
+
+    sellEvery: 10
+    sellAmount: 10
+
+  "mobHopper":
+    type: Mob
+    limitPerChunk: -1
+    name: "&8[&aMob&8] &7Hopper"
+    inventoryTitle: "&bMob Hopper &a(1)"
+    lore:
+      - "&7This hopper picks up mob drops!"
+    should_drop_from_explosions: true
+    drops:
+      - "ROTTEN_FLESH"
+
+  "cropHopper":
+    type: Crop
+    limitPerChunk: -1
+    name: "&8[&aCrop&8] &7Hopper"
+    should_drop_from_explosions: true
+    pickupNamedItems: false
+    lore:
+      - "&7This hopper picks up crops!"
+    crops:
+      - "CACTUS"
+  "breakHopper":
+    should_drop_from_explosions: true
+    type: Break
+    limitPerChunk: -1
+    name: "&8[&aBreak&8]&7 Hopper"
+    lore:
+      - "Auto breaks blocks above it"
+    breakEvery: 10
+    collectDrops: true #Allowes the breakHopper to instant pickup the dropped items
+    drops:
+      - "DIAMOND_ORE:10" #Specify the amount that will drop, or use for example: 1-5 so it will choose random number between them!
+  "breakWithUpgrades":
+    should_drop_from_explosions: true
+    type: Break
+    limitPerChunk: -1
+    particle: CLOUD
+    name: "&8[&aBreak&8]&7 Hopper (&a1&7)"
+    lore:
+    - "Auto breaks blocks above it"
+    breakEvery: 10
+    drops:
+      - "DIAMOND_ORE:1-4"
+    upgrades:
+      "2":
+        breakEvery: 8
+        limitPerChunk: -1
+        priceType: XP
+        price: 1000
+        particle: SPLASH
+        name: "&8[&aBreak&8]&7 Hopper (&a2&7)"
+        lore:
+        - "Auto breaks blocks above it"
+        drops:
+        - "DIAMOND_ORE:2-5"
+
+GrindConvert:
+  convert-inventory:
+    title: "&aChange your grinder mob!"
+    item-placeholder:
+      name: "&b%type%"
+      lore:
+        - "&7Change your grinder type to %type%"
+        - "&b&l* &7Price: $%price%"
+  default-price: 1000
+
+  #You can add own prices by specifying Entity name & price
+  #Ex: COW;1500
+  #Note: Entity names come from https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html
+
+  prices:
+    - "COW:1500"
+
+  #Don't want an entity to show up in gui?
+  #Add it below
+  #Note: Entity names come from https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html
+
+  mob-blacklist:
+    - "GIANT"
+    - "WITHER"
+
+  #Should hoppers level reset after convert by default it will
+  shouldLevelResetAfterConvert: true
+
+  #Allow convert upgraded hoppers
+  allowConvertUpgradedHoppers: true
+
+UpgradeInventory:
+  title: "&3&lUPGRADE HOPPER"
+  infoItem:
+    name: "&b&lINFO"
+    material: PAPER
+    lore:
+      - "&b&l* &7Level: &b%lvl%"
+      - "&b&l* &7Type: &b%type%"
+      - "&b&l* &7Name: &b%name%"
+  filler_color: "CYAN"
+  upgradeItem:
+    material: DIAMOND_BLOCK
+    name: "&b&lUPGRADE"
+    lore:
+      - "&7Click to upgrade your hopper from level &b%lvl% &7to &b%nextlvl%"
+
+HopperConvert:
+  title: "&3&lConvert Hopper"
+  itemPricePlaceholder: "&b&l* &7Price: &b%price%$"
+  hoppers:
+    - "cropHopper:1000"
+
+#There's Chest, Shulker Box
+EnableLinkedContainerRenaming: true
+LinkedContainer: "&7Linked &b%name%"
+
+allowMultipleHoppersToLinkOneContainer: false
+headHunterSupport: false
+headHunterOfflineSupport: true
+
+cleanSaveOnShutdown: false
+fullUpdateOnShutdown: false
+
+sellOptions:
+
+  #There's two sellTypes by default: BuiltIn, ShopGUIPlus
+  system: BuiltIn
+
+

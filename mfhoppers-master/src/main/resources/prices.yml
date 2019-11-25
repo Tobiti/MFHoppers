@@ -1,0 +1,7 @@
+prices:
+
+  #The format is: <material>:<id>:<price>, but id is optional
+  #for 1.8 you can use ID'S. for example: LOG:2
+
+  - "LOG:2:40"
+  - "LOG:50"

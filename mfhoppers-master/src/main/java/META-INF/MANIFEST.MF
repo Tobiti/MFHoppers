@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Class-Path: junit-4.10.jar VaultAPI-1.7.jar sqlite-jdbc-3.25.3-2019031
+ 5.044804-9.jar gson-2.8.0.jar json-simple-1.1.1.jar WildStackerAPI-b1
+ 4.jar bukkit-1.13.1-R0.1-20181022.190036-99.jar hamcrest-core-1.1.jar
+  guava-21.0.jar snakeyaml-1.23.jar commons-lang-2.6.jar ShopGUIPlus-1
+ .19.1-SNAPSHOT [Spigot 1.7-1.12].jar
+Main-Class: 
+
