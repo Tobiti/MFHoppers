@@ -150,9 +150,6 @@ allowMultipleHoppersToLinkOneContainer: false
 headHunterSupport: false
 headHunterOfflineSupport: true
 
-cleanSaveOnShutdown: false
-fullUpdateOnShutdown: false
-
 sellOptions:
 
   #There's two sellTypes by default: BuiltIn, ShopGUIPlus

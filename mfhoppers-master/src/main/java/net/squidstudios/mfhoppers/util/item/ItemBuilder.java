@@ -192,7 +192,7 @@ public class ItemBuilder {
             for (String r : replace.keySet()) {
                 l = l.replaceAll(r, replace.get(r).toString());
             }
-            
+
             try {
                 if(Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
                     if (player != null) {

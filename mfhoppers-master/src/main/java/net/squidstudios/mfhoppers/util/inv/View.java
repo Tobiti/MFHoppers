@@ -29,6 +29,11 @@ public interface View {
             public InventoryType getType() {
                 return InventoryType.CHEST;
             }
+
+            @Override
+            public String getTitle() {
+                return inventory.getType().getDefaultTitle();
+            }
         };
     }
 

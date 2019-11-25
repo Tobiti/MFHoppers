@@ -18,6 +18,7 @@ import net.squidstudios.mfhoppers.util.item.ItemBuilder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
 public class UpgradeInventory {
 
@@ -42,6 +43,10 @@ public class UpgradeInventory {
         Map<String, Object> DATA = hopper.getData();
         Map<String, Object> CONFIG_DATA = MFHoppers.getInstance().configHoppers.get(DATA.get("name").toString()).getNextHopperUpgrade(hopper);
 
+        if(CONFIG_DATA == null){
+            MFHoppers.getInstance().getLogger().warning("Can't find config for hopper of type: " + DATA.get("name").toString() + "!");
+        }
+
         ItemStack filler = GlassColor.valueOf(data.get("filler_color").toString()).getItem();
         ItemStack infoItem = new ItemBuilder(MMaterial.matchMaterial(data.get("infoItem.material").toString())).
                 setLore(toLore(data.get("infoItem.lore")), true).
@@ -52,8 +57,10 @@ public class UpgradeInventory {
         MapBuilder replaceMap = new MapBuilder();
         replaceMap.add("%lvl%", DATA.get("lvl").toString());
         replaceMap.add("%nextlvl%", String.valueOf(Integer.valueOf(DATA.get("lvl").toString()) + 1));
-        replaceMap.add("%price%", (int) CONFIG_DATA.get("price"));
-        replaceMap.add("%pricetype%", CONFIG_DATA.containsKey("customPriceTypeName") ? CONFIG_DATA.get("customPriceTypeName").toString() : UpgradeEnum.valueOf(CONFIG_DATA.get("priceType").toString()).getUnderstandable());
+        if(CONFIG_DATA != null) {
+            replaceMap.add("%price%", (int) CONFIG_DATA.get("price"));
+            replaceMap.add("%pricetype%", CONFIG_DATA.containsKey("customPriceTypeName") ? CONFIG_DATA.get("customPriceTypeName").toString() : UpgradeEnum.valueOf(CONFIG_DATA.get("priceType").toString()).getUnderstandable());
+        }
 
         ItemStack upgradeItem = new ItemBuilder(MMaterial.matchMaterial(data.get("upgradeItem.material").toString())).
                 setLore(toLore(data.get("upgradeItem.lore")), true).

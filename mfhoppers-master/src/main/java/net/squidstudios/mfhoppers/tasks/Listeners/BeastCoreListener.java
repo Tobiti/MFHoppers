@@ -1,7 +1,12 @@
 package net.squidstudios.mfhoppers.tasks.Listeners;
 
 import info.beastsoftware.beastcore.BeastCore;
-import info.beastsoftware.beastcore.entity.StackedMob;
+import info.beastsoftware.beastcore.listener.MobMergerListener;
+import info.beastsoftware.beastcore.mobstacker.IStackedMob;
+import info.beastsoftware.beastcore.mobstacker.StackedMob;
+import net.squidstudios.mfhoppers.MFHoppers;
+import net.squidstudios.mfhoppers.util.Methods;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -31,7 +36,7 @@ public class BeastCoreListener implements Listener {
             final int finalStackKill = beastCoreStackedKill.get(event.getEntity());
             beastCoreStackedKill.remove(event.getEntity());
 
-            StackedMob stackedMob = BeastCore.getInstance().getApi().getMobsManager().getFromEntity(event.getEntity());
+            IStackedMob stackedMob = MobMergerListener.getStackedMobsManager().getStack(event.getEntity());
             if(stackedMob == null){
                 return;
             }
@@ -44,8 +49,11 @@ public class BeastCoreListener implements Listener {
                 event.setDroppedExp(event.getDroppedExp() * finalStackKill);
 
                 if (stackedMob.getSize() > finalStackKill) {
-                    stackedMob.setSize(stackedMob.getSize() - finalStackKill);
+                    IStackedMob newStack = new StackedMob(stackedMob.getSize() - finalStackKill, event.getEntity());
+                    MobMergerListener.getStackedMobsManager().spawnStack(newStack, event.getEntity().getLocation(), event.getEntity().getType().name() + " " + newStack.getSize());
                 }
+
+                MobMergerListener.getStackedMobsManager().removeStack(stackedMob);
                 stackedMob.getEntity().removeMetadata("MERGED", BeastCore.getInstance());
             }
         }

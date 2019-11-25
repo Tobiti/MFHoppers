@@ -409,13 +409,11 @@ public class Methods {
     }
 
     public static List<EntityType> toEntityType(List<String> en) {
+
         List<EntityType> ret = new ArrayList<>();
         for (String e : en) {
-            try {
-                ret.add(EntityType.valueOf(e));
-            } catch (Exception error){
-                MFHoppers.getInstance().getLogger().info("Mob conversion error: " + e);
-            }
+
+            ret.add(EntityType.valueOf(e));
 
         }
         return ret;
@@ -530,7 +528,9 @@ public class Methods {
         new BukkitRunnable() {
             @Override
             public void run() {
-                loc.getWorld().dropItem(loc, item);
+                if(item.getType() != Material.AIR && item.getAmount() > 0) {
+                    loc.getWorld().dropItem(loc, item);
+                }
             }
         }.runTask(pl);
     }
@@ -721,7 +721,7 @@ public class Methods {
 
             if (itemStack == null || itemStack.getType() == Material.AIR) continue;
 
-            if (MFHoppers.is13version) {
+            if (MFHoppers.mcVersion >= 13) {
 
                 if (itemStack.getType() == item.getType() && item.getData() == itemStack.getData()) {
 

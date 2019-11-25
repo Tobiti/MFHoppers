@@ -2,8 +2,10 @@ package net.squidstudios.mfhoppers.manager;
 
 import net.squidstudios.mfhoppers.MFHoppers;
 import net.squidstudios.mfhoppers.hopper.UnloadedHopper;
+import net.squidstudios.mfhoppers.tasks.TaskManager;
 import net.squidstudios.mfhoppers.util.item.nbt.NBTItem;
 import net.squidstudios.mfhoppers.util.plugin.PluginBuilder;
+import objectexplorer.MemoryMeasurer;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -50,7 +52,6 @@ public class DataManager {
 
     private LinkedBlockingQueue<IHopper> AddedHopperQueue = new LinkedBlockingQueue();
     private LinkedBlockingQueue<IHopper> RemovedHopperQueue = new LinkedBlockingQueue();
-    private LinkedBlockingQueue<IHopper> UpdatedHopperQueue = new LinkedBlockingQueue();
 
     boolean saving = false;
 
@@ -358,24 +359,24 @@ public class DataManager {
         }
 
     }
-    public void save(boolean sync, boolean backup, boolean clean, boolean completeUpdate)
+    public void save(boolean sync, boolean backup, boolean clean)
     {
         if(sync)
         {
-            SaveTask(backup, clean, completeUpdate);
+            SaveTask(backup, clean);
         } else {
 
             new BukkitRunnable(){
                 @Override
                 public void run() {
-                    SaveTask(backup, clean, completeUpdate);
+                    SaveTask(backup, clean);
                 }
             }.runTaskAsynchronously(plugin);
 
         }
     }
 
-    private void SaveTask(boolean backup, boolean cleanSave, boolean completeUpdate){
+    private void SaveTask(boolean backup, boolean cleanSave){
         //MFHoppers.getInstance().getLogger().info("Saving started.");
         if(!SaveLock.tryLock())
         {
@@ -505,61 +506,46 @@ public class DataManager {
                 PreparedStatement cropUpdateStat = connection.prepareStatement("UPDATE Crop SET name = ?,loc = ?,lvl = ?,data = ? WHERE name = ? AND loc = ?");
                 PreparedStatement mobUpdateStat = connection.prepareStatement("UPDATE Mob SET name = ?,loc = ?,lvl = ?,data = ? WHERE name = ? AND loc = ?");
 
-                List<IHopper> tempHoppers = new ArrayList<>();
-
-                if(completeUpdate){
-                    hoppers.values().forEach(map -> {
-                                map.values().forEach(hopper -> {
-                                    tempHoppers.add(hopper);
-                                });
-                    });
-                }
-                else {
-                    while(!AddedHopperQueue.isEmpty()) {
-                        IHopper hopper = UpdatedHopperQueue.poll();
-
-                        tempHoppers.add(hopper);
-                    }
-                }
-
-                tempHoppers.forEach(hopper -> {
-                            if (hopper != null) {
-                                if (hopper.getType() == HopperEnum.Break) {
-                                    try {
-                                        breakUpdateStat.setString(5, hopper.getData().get("name").toString());
-                                        breakUpdateStat.setString(6, hopper.getData().get("loc").toString());
-                                        hopper.save(breakUpdateStat);
-                                    } catch (SQLException e) {
-                                        e.printStackTrace();
-                                    }
-                                } else if (hopper.getType() == HopperEnum.Grind) {
-                                    try {
-                                        grindUpdateStat.setString(8, hopper.getData().get("name").toString());
-                                        grindUpdateStat.setString(9, hopper.getData().get("loc").toString());
-                                        hopper.save(grindUpdateStat);
-                                    } catch (SQLException e) {
-                                        e.printStackTrace();
-                                    }
-                                } else if (hopper.getType() == HopperEnum.Mob) {
-                                    try {
-                                        mobUpdateStat.setString(5, hopper.getData().get("name").toString());
-                                        mobUpdateStat.setString(6, hopper.getData().get("loc").toString());
-                                        hopper.save(mobUpdateStat);
-                                    } catch (SQLException e) {
-                                        e.printStackTrace();
-                                    }
-                                } else if (hopper.getType() == HopperEnum.Crop) {
-                                    try {
-                                        cropUpdateStat.setString(5, hopper.getData().get("name").toString());
-                                        cropUpdateStat.setString(6, hopper.getData().get("loc").toString());
-                                        hopper.save(cropUpdateStat);
-                                    } catch (SQLException e) {
-                                        e.printStackTrace();
-                                    }
+                hoppers.values().forEach(map -> {
+                    map.values().forEach(hopper -> {
+                        if(hopper != null){
+                            if (hopper.getType() == HopperEnum.Break) {
+                                try {
+                                    breakUpdateStat.setString(5, hopper.getData().get("name").toString());
+                                    breakUpdateStat.setString(6, hopper.getData().get("loc").toString());
+                                    hopper.save(breakUpdateStat);
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
                                 }
-
+                            } else if (hopper.getType() == HopperEnum.Grind) {
+                                try {
+                                    grindUpdateStat.setString(8, hopper.getData().get("name").toString());
+                                    grindUpdateStat.setString(9, hopper.getData().get("loc").toString());
+                                    hopper.save(grindUpdateStat);
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
+                            } else if (hopper.getType() == HopperEnum.Mob) {
+                                try {
+                                    mobUpdateStat.setString(5, hopper.getData().get("name").toString());
+                                    mobUpdateStat.setString(6, hopper.getData().get("loc").toString());
+                                    hopper.save(mobUpdateStat);
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
+                            } else if (hopper.getType() == HopperEnum.Crop) {
+                                try {
+                                    cropUpdateStat.setString(5, hopper.getData().get("name").toString());
+                                    cropUpdateStat.setString(6, hopper.getData().get("loc").toString());
+                                    hopper.save(cropUpdateStat);
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
                             }
-                        });
+
+                        }
+                    });
+                });
 
                 grindUpdateStat.executeBatch();
                 breakUpdateStat.executeBatch();
@@ -739,7 +725,7 @@ public class DataManager {
             @Override
             public void run() {
                 try {
-                    save(false, false, false, false);
+                    save(false, false, false);
                 } catch (Exception ex){
                     ex.printStackTrace();
                 }
@@ -791,13 +777,4 @@ public class DataManager {
 
     }
 
-    public void updateHopper(IHopper iHopper) {
-        if(!UpdatedHopperQueue.contains(iHopper)) {
-            try {
-                UpdatedHopperQueue.put(iHopper);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

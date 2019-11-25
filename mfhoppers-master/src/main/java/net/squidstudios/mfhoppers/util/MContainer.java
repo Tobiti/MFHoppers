@@ -9,13 +9,13 @@ import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 
-import static net.squidstudios.mfhoppers.MFHoppers.is13version;
-import static net.squidstudios.mfhoppers.MFHoppers.is9version;
+import static net.squidstudios.mfhoppers.MFHoppers.mcVersion;
 
 public enum MContainer {
 
     CHEST("Chest"),
     HOPPER("Hopper"),
+    BARREL("Barrel"),
     SHULKER_BOX("ShulkerBox"),
     Dropper("Dropper"),
     Dispenser("Dispenser"),
@@ -70,30 +70,20 @@ public enum MContainer {
             return Dropper;
         } else if(material.name().contains("HOPPER")) {
             return HOPPER;
-        } else if(is9version || is13version) {
+        } else if(mcVersion >= 13) {
             if (material.name().contains("SHULKER_BOX")) {
                 return SHULKER_BOX;
+            } else if (mcVersion >= 14) {
+                if (material.name().contains("BARREL")) {
+                    return BARREL;
+                }
             }
         }
         return null;
     }
 
-    public static String getContainerName(Location location){
-
-        try {
-
-            return getOfLocation(location).getInventory(location).getTitle();
-
-        } catch (Exception ex){
-            ex.printStackTrace();
-        }
-
-        return "";
-    }
-
     public static boolean isContainer(Location location){
         return getOfLocation(location) != null;
-
     }
 
     public static MContainer getFromHolder(InventoryHolder holder) {

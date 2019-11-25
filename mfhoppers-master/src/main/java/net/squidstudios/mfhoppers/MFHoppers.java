@@ -70,8 +70,7 @@ public class MFHoppers extends PluginBuilder {
     private Economy economy = null;
     public YamlConfiguration cnf;
 
-    public static boolean is9version = true;
-    public static boolean is13version = false;
+    public static int mcVersion = 9;
 
     private static String serverVersion;
 
@@ -192,13 +191,17 @@ public class MFHoppers extends PluginBuilder {
 
     void initListeners() {
 
+        if (Bukkit.getServer().getClass().getPackage().toString().contains("14")) {
+            mcVersion = 14;
+            out("&cYour server is running 1.13.X which currently doesn't support particles!");
+        }
         if (Bukkit.getServer().getClass().getPackage().toString().contains("13")) {
-            is13version = true;
+            mcVersion = 13;
             out("&cYour server is running 1.13.X which currently doesn't support particles!");
         }
 
         if (Bukkit.getServer().getClass().getPackage().toString().contains("8")) {
-            is9version = false;
+            mcVersion = 8;
         }
 
         if(Bukkit.getPluginManager().isPluginEnabled("BeastCore")) {
@@ -433,13 +436,12 @@ public class MFHoppers extends PluginBuilder {
 
                     String title = hopper.getConfigHopper().getTitle(hopper);
 
-                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), title, "minecraft:hopper"), 1);
+                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), title), 1);
 
                 }
 
             } else {
-                if(cnf.contains("EnableLinkedContainerRenaming") && cnf.getBoolean("EnableLinkedContainerRenaming"))
-                {
+                if(cnf.contains("EnableLinkedContainerRenaming") && cnf.getBoolean("EnableLinkedContainerRenaming")) {
                     MContainer container = MContainer.getFromHolder(event.getInventory().getHolder());
 
                     if (container == null) return;
@@ -455,9 +457,9 @@ public class MFHoppers extends PluginBuilder {
                     }
 
                     String title = cnf.getString("LinkedContainer");
-                    String mcName = MContainer.getContainerName(containerLocation);
+                    String mcName = event.getView().getTitle();
 
-                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), getTitle(mcName, title), MContainer.getMinecraftName(event.getInventory().getHolder())), 0);
+                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), getTitle(mcName, title)), 0);
                 }
             }
         });
@@ -602,6 +604,13 @@ public class MFHoppers extends PluginBuilder {
                                         MFHoppers.getInstance().getLogger().info("\t \t \t Filter:");
                                         for (IHopper.FilterElement element : hopper.getFilterMaterialList()) {
                                             MFHoppers.getInstance().getLogger().info(String.format("\t \t \t \t - %s", element.Material + (element.HasDamageValue ? ":" + String.valueOf(element.DamageValue) : "")));
+                                        }
+                                    }
+                                    if(en == HopperEnum.Break){
+                                        MFHoppers.getInstance().getLogger().info("\t \t \t Drops:");
+                                        List<ConfigHopper.BreakDropsElement> elements = (List<ConfigHopper.BreakDropsElement>) hopper.getConfigHopper().getDataOfHopper(hopper).get("drops");
+                                        for (ConfigHopper.BreakDropsElement drop : elements) {
+                                            MFHoppers.getInstance().getLogger().info(String.format("\t \t \t \t - %s", drop.Material + (drop.HasDamageValue ? ":" + String.valueOf(drop.DamageValue) : "")));
                                         }
                                     }
                                 }
@@ -754,7 +763,7 @@ public class MFHoppers extends PluginBuilder {
                 }
 
                 ItemStack hand = null;
-                if(is9version || is13version){
+                if(mcVersion > 8){
                     hand = player.getInventory().getItemInMainHand();
                 } else {
                     hand = player.getInventory().getItemInHand();
@@ -809,7 +818,7 @@ public class MFHoppers extends PluginBuilder {
                     }
                     for (EntityType type : Arrays.stream(EntityType.values()).filter(e -> e.isAlive() && !BLACKLIST1.contains(e) && !BLACKLIST2.contains(e) && e != currentType).collect(toList())) {
 
-                        if(is13version){
+                        if(mcVersion >= 13){
 
                             if (Textures13.matchEntity(type.name()) != null) {
 
@@ -1010,7 +1019,7 @@ public class MFHoppers extends PluginBuilder {
     public void onDisable() {
 
         DataManager.getInstance().end();
-        DataManager.getInstance().save(true, true, (cnf.contains("cleanSaveOnShutdown") && cnf.getBoolean("cleanSaveOnShutdown")), (cnf.contains("fullUpdateOnShutdown") && cnf.getBoolean("fullUpdateOnShutdown")));
+        DataManager.getInstance().save(true, true, false);
 
     }
 

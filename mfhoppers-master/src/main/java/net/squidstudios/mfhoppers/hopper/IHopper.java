@@ -1,7 +1,6 @@
 package net.squidstudios.mfhoppers.hopper;
 
 import net.squidstudios.mfhoppers.MFHoppers;
-import net.squidstudios.mfhoppers.manager.DataManager;
 import net.squidstudios.mfhoppers.util.Methods;
 import net.squidstudios.mfhoppers.util.XMaterial;
 import org.bukkit.Bukkit;
@@ -11,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Chest;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import net.squidstudios.mfhoppers.util.MContainer;
 import net.squidstudios.mfhoppers.util.plugin.Tasks;
@@ -92,10 +92,10 @@ public abstract class IHopper {
         return (int)data.get("lvl");
     }
     public Inventory getInventory(){
-
-        if(MContainer.getOfLocation(getLocation()) != null) return MContainer.getOfLocation(getLocation()).getInventory(getLocation());
+        if(getLocation().getBlock().getState() instanceof InventoryHolder) {
+            return ((InventoryHolder) getLocation().getBlock().getState()).getInventory();
+        }
         return null;
-
     }
     public Boolean isLinked(){
         return data.containsKey("linked");
@@ -243,7 +243,6 @@ public abstract class IHopper {
                 _stringMats.add(element.Material.toString() + ":" + element.DamageValue);
             }
         }
-        DataManager.getInstance().updateHopper(this);
         getData().put("filter", _stringMats);
     }
 

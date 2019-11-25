@@ -53,7 +53,7 @@ public class Drop {
 
         ItemStack item = new ItemStack(mat);
 
-        if(!MFHoppers.is13version){
+        if(MFHoppers.mcVersion < 13){
 
             if(item.getType() == MMaterial.matchMaterial("INK_SACK")){
 

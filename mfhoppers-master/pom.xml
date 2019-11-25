@@ -6,7 +6,7 @@
 
     <groupId>net.squidstudios</groupId>
     <artifactId>MFHoppers</artifactId>
-    <version>3.05</version>
+    <version>3.05-v1.14</version>
     <name>MFHoppers</name>
 
     <properties>
@@ -84,7 +84,7 @@
         <dependency>
            <groupId>org.spigotmc</groupId>
            <artifactId>spigot-api</artifactId>
-           <version>1.13.2-R0.1-SNAPSHOT</version>
+           <version>LATEST</version>
            <scope>provided</scope>
         </dependency>
         <!--Bukkit API-->
@@ -159,9 +159,9 @@
         <dependency>
             <groupId>beast.core</groupId>
             <artifactId>beastcore</artifactId>
-            <version>4.1.2.0</version>
+            <version>2.4.4.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../Libraries/BeastCore-4.1.2.0-STABLE_1.jar</systemPath>
+            <systemPath>${project.basedir}/../Libraries/BeastCore.jar</systemPath>
         </dependency>
 
         <dependency>
