@@ -73,7 +73,6 @@ public class TaskManager implements Listener {
                 runAutoKillTask();
                 runBreakTask();
                 runLinkTask();
-                //runSellTask();
 
                 if (count == 3) {
                     runItemsTask();
@@ -81,6 +80,13 @@ public class TaskManager implements Listener {
                 }
             }
         }.runTaskTimerAsynchronously(MFHoppers, 0, 25));
+
+        add(new BukkitRunnable(){
+            @Override
+            public void run() {
+                runSellTask();
+            }
+        }.runTaskTimer(MFHoppers, 0, 25));
     }
 
     public void add(BukkitTask task) {
