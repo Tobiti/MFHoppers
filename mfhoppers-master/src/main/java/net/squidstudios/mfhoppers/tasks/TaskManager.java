@@ -398,6 +398,7 @@ public class TaskManager implements Listener {
                     Methods.breakBlock(upper.getBlock());
                     upper.add(new Vector(0.5, 0, 0.5));
 
+                    // Drop Item when amount > 0
                     final List<ItemStack> dropItems = new LinkedList<>();
                     if (!dropElement.HasDamageValue) {
                         upper.getBlock().getDrops().forEach(it -> {

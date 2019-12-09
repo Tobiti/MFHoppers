@@ -29,6 +29,8 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
+
 import static java.util.stream.Collectors.toList;
 
 public class Methods {
@@ -520,6 +522,10 @@ public class Methods {
             @Override
             public void run() {
                 block.setType(Material.AIR);
+
+                if(Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")){
+                    SuperiorSkyblockAPI.getIslandAt(block.getLocation()).handleBlockBreak(block);
+                }
             }
         }.runTask(pl);
     }

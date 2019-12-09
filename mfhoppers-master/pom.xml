@@ -14,6 +14,11 @@
     </properties>
 
     <repositories>
+
+        <repository>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
 	
 		<repository>
 			<id>spigot-repo</id>
@@ -48,11 +53,6 @@
         </repository>
 
         <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-
-        <repository>
             <id>placeholderapi</id>
             <url>http://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
@@ -60,6 +60,12 @@
     </repositories>
 
     <dependencies>
+
+        <dependency>
+            <groupId>com.github.OmerBenGera</groupId>
+            <artifactId>SuperiorSkyblockAPI</artifactId>
+            <version>b9</version>
+        </dependency>
 
         <dependency>
             <groupId>me.clip</groupId>
@@ -177,7 +183,6 @@
             <version>1.18.6</version>
             <scope>provided</scope>
         </dependency>
-
 
     </dependencies>
 
