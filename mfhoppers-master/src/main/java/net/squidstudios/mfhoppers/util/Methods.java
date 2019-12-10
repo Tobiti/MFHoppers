@@ -540,28 +540,31 @@ public class Methods {
             }
         }.runTask(pl);
     }
-
     public static boolean materialEqualsTo(Location loc, Material toCompare) {
+        return materialEqualsTo(loc, toCompare, 1);
+    }
+
+    public static boolean materialEqualsTo(Location loc, Material toCompare, int distance) {
         CompletableFuture<Boolean> ret = new CompletableFuture<>();
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (loc.getBlock().getType() == toCompare) {
-
-                    ret.complete(true);
-
-                } else {
-                    ret.complete(false);
+                Location location = loc.clone();
+                for(int i = 0; i < distance; i++){
+                    if(location.getBlock().getType() != toCompare){
+                        ret.complete(false);
+                        return;
+                    }
+                    location.add(0, 1, 0);
                 }
-
+                ret.complete(true);
             }
         }.runTask(pl);
         try {
-            ret.get();
+            return ret.get();
         } catch (Exception ex) {
             return false;
         }
-        return false;
     }
 
     public static List<LivingEntity> nearest(Location hopperLoc, double radius) {
