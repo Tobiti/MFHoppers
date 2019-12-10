@@ -107,8 +107,7 @@ public class TaskManager implements Listener {
             final List<LivingEntity> LIVING_ENTITIES = new ArrayList<>(Methods.getSortedEntities(entityList, BLACKLIST));
             Location MIDDLE = hopper.getLocation().clone().add(0.5, 0.7, 0.5);
 
-            if (Methods.materialEqualsTo(MIDDLE, Material.AIR)) continue;
-            if(Methods.materialEqualsTo(MIDDLE.clone().add(0,0.3,0), Material.AIR)) continue;
+            if(Methods.materialEqualsTo(hopper.getLocation().clone().add(0, 1, 0), Material.AIR, 2)) continue;
 
             if (IS_GLOBAL) {
 
@@ -387,7 +386,6 @@ public class TaskManager implements Listener {
                     Methods.breakBlock(upper.getBlock());
                     upper.add(new Vector(0.5, 0, 0.5));
 
-                    // Drop Item when amount > 0
                     final List<ItemStack> dropItems = new LinkedList<>();
                     if (!dropElement.HasDamageValue) {
                         upper.getBlock().getDrops().forEach(it -> dropItems.add(dropElement.Drop.getItem(it.getType())));
@@ -400,7 +398,7 @@ public class TaskManager implements Listener {
                         });
                     }
 
-                    if (DATA.containsKey("collectDrops") && Boolean.valueOf(DATA.get("collectDrops").toString())) {
+                    if(DATA.containsKey("collectDrops") && Boolean.valueOf(DATA.get("collectDrops").toString())){
                         for (ItemStack item : dropItems) {
                             int amount = item.getAmount();
                             int added = Methods.addItem2(Arrays.asList(item), hopper);
@@ -408,8 +406,8 @@ public class TaskManager implements Listener {
                         }
                     }
 
-                    if (dropItems.stream().filter(it -> it.getAmount() > 0).collect(Collectors.toList()).size() > 0) {
-                        dropItems.stream().filter(it -> it.getAmount() > 0).collect(Collectors.toList()).forEach(item -> Methods.drop(item, upper.getBlock().getLocation()));
+                    if(dropItems.stream().filter(it -> it.getAmount() > 0).collect(Collectors.toList()).size() > 0){
+                        dropItems.stream().filter(it -> it.getAmount() > 0).collect(Collectors.toList()).forEach( item -> Methods.drop(item, upper.getBlock().getLocation()));
                     }
 
                     if (DATA.containsKey("particle")) {
