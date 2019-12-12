@@ -125,9 +125,9 @@
         <dependency>
             <groupId>wild.wildstacker</groupId>
             <artifactId>Wildstacker</artifactId>
-            <version>b15</version>
+            <version>b17</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../Libraries/WildStackerAPI-b15.jar</systemPath>
+            <systemPath>${project.basedir}/../Libraries/WildStackerAPI.jar</systemPath>
         </dependency>
 
         <dependency>
