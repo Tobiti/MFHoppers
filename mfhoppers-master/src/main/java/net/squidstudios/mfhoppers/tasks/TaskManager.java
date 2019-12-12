@@ -124,7 +124,7 @@ public class TaskManager implements Listener {
             final List<LivingEntity> LIVING_ENTITIES = new ArrayList<>(Methods.getSortedEntities(entityList, BLACKLIST));
             Location MIDDLE = hopper.getLocation().clone().add(0.5, 0.7, 0.5);
 
-            if(Methods.materialEqualsTo(hopper.getLocation().clone().add(0, 1, 0), Material.AIR, 2)) continue;
+            if(!Methods.materialEqualsTo(hopper.getLocation().clone().add(0, 1, 0), Material.AIR, 2)) continue;
 
             if (IS_GLOBAL) {
 
@@ -163,9 +163,7 @@ public class TaskManager implements Listener {
                         if (NEAREST != null) {
                             TYPE = NEAREST.getType();
                             if (entity.getType() == TYPE) {
-
                                 Methods.addSlownessAndTeleport(entity, MIDDLE);
-
                             }
                         }
                     }
