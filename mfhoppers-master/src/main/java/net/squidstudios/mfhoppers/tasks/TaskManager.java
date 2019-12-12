@@ -421,11 +421,17 @@ public class TaskManager implements Listener {
                     }
 
                     if (DATA.containsKey("collectDrops") && Boolean.valueOf(DATA.get("collectDrops").toString())) {
-                        for (ItemStack item : dropItems) {
-                            int amount = item.getAmount();
-                            int added = Methods.addItem2(Arrays.asList(item), hopper);
-                            item.setAmount(amount - added);
-                        }
+                        Bukkit.getScheduler().runTask(MFHoppers.getInstance(), new Runnable(){
+                        
+                            @Override
+                            public void run() {
+                                for (ItemStack item : dropItems) {
+                                    int amount = item.getAmount();
+                                    int added = Methods.addItem2(Arrays.asList(item), hopper);
+                                    item.setAmount(amount - added);
+                                }
+                            }
+                        });
                     }
 
                     if(dropItems.stream().filter(it -> it.getAmount() > 0).collect(Collectors.toList()).size() > 0){
