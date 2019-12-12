@@ -551,7 +551,7 @@ public class Methods {
             public void run() {
                 Location location = loc.clone();
                 for(int i = 0; i < distance; i++){
-                    MFHoppers.getInstance().getLogger().info(String.format("Material: %s Block: %s", toCompare.toString(), location.getBlock().getType().toString()));
+                    //MFHoppers.getInstance().getLogger().info(String.format("Material: %s Block: %s", toCompare.toString(), location.getBlock().getType().toString()));
                     if(location.getBlock().getType() != toCompare){
                         ret.complete(false);
                         return;
@@ -563,7 +563,7 @@ public class Methods {
         }.runTask(pl);
         try {
             boolean result = ret.get();
-            MFHoppers.getInstance().getLogger().info("Material EQUALS Result: " + result);
+            //MFHoppers.getInstance().getLogger().info("Material EQUALS Result: " + result);
             return result;
         } catch (Exception ex) {
             return false;
