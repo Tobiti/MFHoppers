@@ -126,7 +126,6 @@ public class Methods {
                     int added = addItem2(moveItem.getItems(), hopper);
 
                     moveItem.setAmount(amount - added);
-
                 }
             }
         } else {
