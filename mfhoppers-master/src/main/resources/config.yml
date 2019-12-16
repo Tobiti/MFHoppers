@@ -153,6 +153,7 @@ headHunterOfflineSupport: true
 
 cleanSaveOnShutdown: false
 fullUpdateOnShutdown: false
+DeactivateSaveMessage: false
 
 sellOptions:
 

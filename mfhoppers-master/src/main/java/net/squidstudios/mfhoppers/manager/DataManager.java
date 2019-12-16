@@ -579,7 +579,9 @@ public class DataManager {
             SaveLock.unlock();
         }
         long now = System.currentTimeMillis();
-        MFHoppers.getInstance().getLogger().info("Saving finished. Took " + (now - then) + "ms");
+        if(!MFHoppers.getInstance().getConfig().getBoolean("DeactivateSaveMessage", false)){
+            MFHoppers.getInstance().getLogger().info("Saving finished. Took " + (now - then) + "ms");
+        }
     }
 
     public boolean isHopper(Location loc){
