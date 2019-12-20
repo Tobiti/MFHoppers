@@ -229,7 +229,7 @@ public class MFHoppers extends PluginBuilder {
 
                 items = Methods.addItem(catchEvent.getItemList(), catchEvent.getHopperList());
 
-                if(items.get(0).getAmount() <= 0) {
+                if(items.stream().map(i -> i.getAmount()).max(Integer::compare).get() <= 0) {
                     event.setCancelled(true);
                 }
                 else {

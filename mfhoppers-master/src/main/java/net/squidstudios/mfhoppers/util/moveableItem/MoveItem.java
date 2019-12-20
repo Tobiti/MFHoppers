@@ -2,15 +2,12 @@ package net.squidstudios.mfhoppers.util.moveableItem;
 
 import com.bgsoftware.wildstacker.api.WildStackerAPI;
 
-import net.squidstudios.mfhoppers.MFHoppers;
 import net.squidstudios.mfhoppers.manager.HookManager;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class MoveItem {
 

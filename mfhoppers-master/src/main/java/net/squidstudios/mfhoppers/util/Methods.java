@@ -74,12 +74,8 @@ public class Methods {
             if (hopper == null) continue;
 
             if (hopper.getType() == henum) {
-
-
                 if (hopper.ContainsInFilterMaterialList(mat, data)) {
-
                     ret.put(lo, hoppers.get(lo));
-
                 }
             }
 
@@ -106,47 +102,54 @@ public class Methods {
 
     }
 
-    public static List<MoveItem> addItem(List<MoveItem> items, Collection<IHopper> blocks) {
+    public static List<MoveItem> addItem(List<MoveItem> items, Collection<IHopper> iHoppers) {
 
         if (Thread.currentThread().getName().equalsIgnoreCase("Server thread")) {
-            for (IHopper hopper : blocks) {
-
-                for (MoveItem moveItem : items.stream().filter(item -> hopper.ContainsInFilterMaterialList(item.getEntity().getItemStack().getType(), item.getEntity().getItemStack().getDurability())).collect(toList())) {
-
-                    if (moveItem.getAmount() <= 0) continue;
-
-                    ItemStack clone = moveItem.getItems().stream().findFirst().orElse(null);
-
-                    if (hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("pickupNamedItems") && !(boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("pickupNamedItems") && clone.hasItemMeta() && clone.getItemMeta().hasDisplayName())
+            for (MoveItem moveItem : items) {
+                for (IHopper hopper : iHoppers) {
+                    if (moveItem.getAmount() <= 0){ 
+                        break;
+                    }
+                    if (hopper.getLocation().getBlock().getType() == Material.AIR){ 
                         continue;
+                    }
 
-                    if (hopper.getLocation().getBlock().getType() == Material.AIR) continue;
-
+                    if(!hopper.ContainsInFilterMaterialList(moveItem.getEntity().getItemStack().getType(), moveItem.getEntity().getItemStack().getDurability())){
+                        continue;
+                    }
+    
+                    if (hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("pickupNamedItems") && !(boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("pickupNamedItems") 
+                        && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName())
+                        continue;
+    
                     int amount = moveItem.getAmount();
                     int added = addItem2(moveItem.getItems(), hopper);
-
-                    moveItem.setAmount(amount - added);
+    
+                    moveItem.setAmount(amount - added);                    
                 }
             }
         } else {
-            for (IHopper hopper : blocks) {
-
-                for (MoveItem moveItem : items.stream().filter(item -> hopper.ContainsInFilterMaterialList(item.getEntity().getItemStack().getType(), item.getEntity().getItemStack().getDurability())).collect(toList())) {
-
-                    if (moveItem.getAmount() <= 0) continue;
-
-                    ItemStack clone = moveItem.getItems().stream().findFirst().orElse(null);
-
-                    if (hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("pickupNamedItems") && !(boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("pickupNamedItems") && clone.hasItemMeta() && clone.getItemMeta().hasDisplayName())
+            for (MoveItem moveItem : items) {
+                for (IHopper hopper : iHoppers) {
+                    if (moveItem.getAmount() <= 0){ 
+                        break;
+                    }
+                    if (hopper.getLocation().getBlock().getType() == Material.AIR){ 
                         continue;
+                    }
 
-                    if (materialEqualsTo(hopper.getLocation(), Material.AIR)) continue;
-
+                    if(!hopper.ContainsInFilterMaterialList(moveItem.getEntity().getItemStack().getType(), moveItem.getEntity().getItemStack().getDurability())){
+                        continue;
+                    }
+    
+                    if (hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("pickupNamedItems") && !(boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("pickupNamedItems") 
+                        && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName())
+                        continue;
+    
                     int amount = moveItem.getAmount();
                     int added = addItem2(moveItem.getItems(), hopper);
-
-                    moveItem.setAmount(amount - added);
-
+    
+                    moveItem.setAmount(amount - added);                    
                 }
             }
         }
@@ -218,17 +221,12 @@ public class Methods {
                 }
 
                 item.setAmount(a);
-
             } else {
-
                 added += item.getAmount();
-
             }
 
         }
-
         return added;
-
     }
 
 
