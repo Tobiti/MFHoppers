@@ -66,6 +66,13 @@ public class MoveItem {
     }
 
     static void add(List<ItemStack> items, int amount, Item parent) {
+        add(items,amount,parent, 0);
+    }
+
+    static void add(List<ItemStack> items, int amount, Item parent, int count) {
+        if(count > 20)
+            return;
+
         int currentNumber = amount <= 64 ? amount : 64;
 
         ItemStack clone = parent.getItemStack().clone();
@@ -75,7 +82,7 @@ public class MoveItem {
 
         amount -= currentNumber;
         if (amount > 0)
-            add(items,amount,parent);
+            add(items,amount,parent, count + 1);
     }
 
     public void setAmount(int amount){
