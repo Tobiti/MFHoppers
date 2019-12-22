@@ -8,6 +8,8 @@ import net.squidstudios.mfhoppers.util.item.nbt.NBTEntity;
 import net.squidstudios.mfhoppers.util.item.nbt.NBTItem;
 import net.squidstudios.mfhoppers.util.moveableItem.MoveItem;
 import net.squidstudios.mfhoppers.util.plugin.PluginBuilder;
+
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
@@ -35,32 +37,29 @@ import static java.util.stream.Collectors.toList;
 
 public class Methods {
 
-    private static MFHoppers pl;
+    private static MFHoppers plugin;
 
     public Methods(MFHoppers pl) {
-        this.pl = pl;
+        plugin = pl;
     }
 
     public static HashMap<Location, IHopper> getSorted(HopperEnum henum, MChunk ch) {
-
         HashMap<Location, IHopper> ret = new HashMap<>();
         if (ch == null || !DataManager.getInstance().getHoppers().containsKey(ch) || DataManager.getInstance().getHoppers().get(ch) == null) {
             return ret;
         }
         final Map<Location, IHopper> hoppers = DataManager.getInstance().getHoppers().get(ch);
         for (Location lo : hoppers.keySet()) {
-
             if (HopperEnum.valueOf(hoppers.get(lo).getData().get("type").toString()) == henum) {
                 ret.put(lo, hoppers.get(lo));
             }
 
         }
         return ret;
-
     }
 
-    public static HashMap<Location, IHopper> getSorted(HopperEnum henum, Chunk ch, Material mat, short data) {
-
+    public static HashMap<Location, IHopper> getSorted(HopperEnum henum, Chunk ch, Material mat, short data) 
+    {
         HashMap<Location, IHopper> ret = new HashMap<>();
         if (DataManager.getInstance().getHoppers().isEmpty() && !DataManager.getInstance().containsHoppersChunk(ch)) {
             return ret;
@@ -81,7 +80,6 @@ public class Methods {
 
         }
         return ret;
-
     }
 
     public static boolean checkIfAllKeysExists(HopperEnum hopperEnum, Map<String, Object> data) {
@@ -92,7 +90,7 @@ public class Methods {
         for (String key : req) {
 
             if (!data.keySet().contains(key)) {
-                pl.out(" &c!-> Can't find required config option named: &4" + key, PluginBuilder.OutType.WITHOUT_PREFIX);
+                plugin.out(" &c!-> Can't find required config option named: &4" + key, PluginBuilder.OutType.WITHOUT_PREFIX);
                 ret = false;
             }
 
@@ -259,27 +257,58 @@ public class Methods {
         } else {
             return false;
         }
-
     }
 
-    public static List<IHopper> getHopperByType(HopperEnum e) {
-
-
+    private static List<IHopper> getActiveHopperByTypeSync(HopperEnum... e) {
+        List<HopperEnum> types = Arrays.asList(e);
         List<IHopper> _nonHoppers = new ArrayList<>();
         List<IHopper> hoppers = new ArrayList<>();
         DataManager.getInstance().getHoppers().values().forEach(locationIHopperMap -> _nonHoppers.addAll(locationIHopperMap.values()));
-
         for (IHopper hopper : _nonHoppers) {
-
-            if (hopper.getType() == e) {
-
-                hoppers.add(hopper);
-
+            if (types.contains(hopper.getType())) {
+                if(hopper.isActive()){
+                    hoppers.add(hopper);
+                }
             }
-
         }
         return hoppers;
+    }
 
+    public static List<IHopper> getActiveHopperByType(HopperEnum... e) {
+        if (Thread.currentThread().getName().equalsIgnoreCase("Server thread")) {
+            return getActiveHopperByTypeSync(e);
+        }
+        else {
+            CompletableFuture<List<IHopper>> ent = new CompletableFuture<>();
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    List<IHopper> hoppers = getActiveHopperByTypeSync(e);
+                    ent.complete(hoppers);
+                }
+            }.runTask(plugin);
+
+            try {
+                return ent.get();
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            return new ArrayList<>();
+        }
+    }
+
+    public static List<IHopper> getHopperByType(HopperEnum e) {
+        List<IHopper> _nonHoppers = new ArrayList<>();
+        List<IHopper> hoppers = new ArrayList<>();
+        DataManager.getInstance().getHoppers().values().forEach(locationIHopperMap -> _nonHoppers.addAll(locationIHopperMap.values()));
+        for (IHopper hopper : _nonHoppers) {
+            if (hopper.getType() == e) {
+                hoppers.add(hopper);
+            }
+        }
+        return hoppers;
     }
 
     public static Map<Chunk, List<IHopper>> getMapHopperByType(HopperEnum... e) {
@@ -294,6 +323,44 @@ public class Methods {
             if (hopper == null) {
                 continue;
             }
+            try {
+                if (types.contains(hopper.getType())) {
+                    if (hopper.getChunk() != null) {
+                        if (hoppers.containsKey(hopper.getChunk()) && hoppers.get(hopper.getChunk()) != null) {
+                            hoppers.get(hopper.getChunk()).add(hopper);
+                        } else {
+                            if (hoppers.get(hopper.getChunk()) == null) {
+                                hoppers.remove(hopper.getChunk());
+                            }
+                            List<IHopper> list = new ArrayList<>();
+                            list.add(hopper);
+                            hoppers.put(hopper.getChunk(), list);
+                        }
+                    }
+                }
+            } catch (NullPointerException n) {
+                DataManager.getInstance().remove(hopper);
+            }
+        }
+        return hoppers;
+    }
+
+    public static Map<Chunk, List<IHopper>> getMapHopperByTypeOfLoadedChunks(HopperEnum... e) {
+
+        List<IHopper> _nonHoppers = new ArrayList<>();
+        Map<Chunk, List<IHopper>> hoppers = new HashMap<>();
+        DataManager.getInstance().getHoppers().values().forEach(locationIHopperMap -> _nonHoppers.addAll(locationIHopperMap.values()));
+
+        List<HopperEnum> types = Arrays.asList(e);
+
+        for (IHopper hopper : _nonHoppers) {
+            if (hopper == null) {
+                continue;
+            }
+            if(!hopper.isChunkLoaded()){
+                continue;
+            }
+
             try {
                 if (types.contains(hopper.getType())) {
                     if (hopper.getChunk() != null) {
@@ -364,7 +431,7 @@ public class Methods {
                 }
                 ent.complete(entities);
             }
-        }.runTask(pl);
+        }.runTask(plugin);
 
 
         try {
@@ -403,7 +470,7 @@ public class Methods {
                 nbt.setByte("NoAI", (byte) 1);
                 ent.teleport(loc);
             }
-        }.runTask(pl);
+        }.runTask(plugin);
 
     }
 
@@ -512,7 +579,7 @@ public class Methods {
                 }
 
             }
-        }.runTask(pl);
+        }.runTask(plugin);
 
     }
 
@@ -526,7 +593,7 @@ public class Methods {
                     SuperiorSkyblockAPI.getIslandAt(block.getLocation()).handleBlockBreak(block);
                 }
             }
-        }.runTask(pl);
+        }.runTask(plugin);
     }
 
     public static void drop(ItemStack item, Location loc) {
@@ -535,33 +602,45 @@ public class Methods {
             public void run() {
                 loc.getWorld().dropItem(loc, item);
             }
-        }.runTask(pl);
+        }.runTask(plugin);
     }
     public static boolean materialEqualsTo(Location loc, Material toCompare) {
         return materialEqualsTo(loc, toCompare, 1);
     }
 
     public static boolean materialEqualsTo(Location loc, Material toCompare, int distance) {
-        CompletableFuture<Boolean> ret = new CompletableFuture<>();
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                Location location = loc.clone();
-                for(int i = 0; i < distance; i++){
-                    if(location.getBlock().getType() != toCompare){
-                        ret.complete(false);
-                        return;
-                    }
-                    location.add(0, 1, 0);
+        if(Thread.currentThread().getName().equalsIgnoreCase("Server thread")){
+            Location location = loc.clone();
+            for(int i = 0; i < distance; i++){
+                if(location.getBlock().getType() != toCompare){
+                    return false;
                 }
-                ret.complete(true);
+                location.add(0, 1, 0);
             }
-        }.runTask(pl);
-        try {
-            boolean result = ret.get();
-            return result;
-        } catch (Exception ex) {
-            return false;
+            return true;
+        }
+        else {
+            CompletableFuture<Boolean> ret = new CompletableFuture<>();
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    Location location = loc.clone();
+                    for(int i = 0; i < distance; i++){
+                        if(location.getBlock().getType() != toCompare){
+                            ret.complete(false);
+                            return;
+                        }
+                        location.add(0, 1, 0);
+                    }
+                    ret.complete(true);
+                }
+            }.runTask(plugin);
+            try {
+                boolean result = ret.get();
+                return result;
+            } catch (Exception ex) {
+                return false;
+            }
         }
     }
 
@@ -587,7 +666,7 @@ public class Methods {
                 NBTEntity nbt = new NBTEntity(ent);
                 nbt.setByte("NoAI", (byte) 0);
             }
-        }.runTask(pl);
+        }.runTask(plugin);
 
     }
 

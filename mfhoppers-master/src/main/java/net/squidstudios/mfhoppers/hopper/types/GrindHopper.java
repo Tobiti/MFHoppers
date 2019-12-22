@@ -1,6 +1,7 @@
 package net.squidstudios.mfhoppers.hopper.types;
 
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
 import net.squidstudios.mfhoppers.hopper.HopperEnum;
@@ -71,4 +72,8 @@ public class GrindHopper extends IHopper {
         return Methods.serialize(ret);
     }
 
+    @Override
+    public boolean isActive() {
+        return Methods.materialEqualsTo(this.getLocation().clone().add(0, 1, 0), Material.AIR, 2);
+    }
 }

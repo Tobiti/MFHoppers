@@ -3,7 +3,10 @@ package net.squidstudios.mfhoppers.hopper.types;
 import net.squidstudios.mfhoppers.hopper.HopperEnum;
 import net.squidstudios.mfhoppers.util.Methods;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
+
 import net.squidstudios.mfhoppers.hopper.IHopper;
 
 import java.sql.PreparedStatement;
@@ -64,4 +67,9 @@ public class BreakHopper extends IHopper {
         return Methods.serialize(ret);
     }
 
+    @Override
+    public boolean isActive() {
+        Location upper = getLocation().clone().add(new Vector(0, 1, 0));
+        return !Methods.materialEqualsTo(upper, Material.AIR);
+    }
 }
