@@ -62,22 +62,13 @@ public class TaskManager implements Listener {
     public TaskManager(MFHoppers MFHoppers) {
 
         this.pl = MFHoppers;
-        add(new BukkitRunnable() {
-            int count = 0;
-
+        add(new BukkitRunnable(){
             @Override
             public void run() {
-
-                count++;
                 runGrind();
                 runAutoKillTask();
                 runBreakTask();
                 runLinkTask();
-
-                if (count == 3) {
-                    runItemsTask();
-                    count = 0;
-                }
             }
         }.runTaskTimerAsynchronously(MFHoppers, 0, 25));
 
@@ -87,6 +78,13 @@ public class TaskManager implements Listener {
                 runSellTask();
             }
         }.runTaskTimer(MFHoppers, 0, 25));
+        
+        add(new BukkitRunnable(){
+            @Override
+            public void run() {
+                runItemsTask();
+            }
+        }.runTaskTimer(MFHoppers, 0, 75));
     }
 
     public void add(BukkitTask task) {
@@ -123,8 +121,6 @@ public class TaskManager implements Listener {
 
             final List<LivingEntity> LIVING_ENTITIES = new ArrayList<>(Methods.getSortedEntities(entityList, BLACKLIST));
             Location MIDDLE = hopper.getLocation().clone().add(0.5, 0.7, 0.5);
-
-            if(!Methods.materialEqualsTo(hopper.getLocation().clone().add(0, 1, 0), Material.AIR, 2)) continue;
 
             if (IS_GLOBAL) {
 
@@ -212,7 +208,7 @@ public class TaskManager implements Listener {
     private Map<IHopper, Integer> autoKillTask = new ConcurrentHashMap<>();
 
     public void runAutoKillTask() {
-        final List<IHopper> hoppers = Methods.getHopperByType(HopperEnum.Grind);
+        final List<IHopper> hoppers = Methods.getActiveHopperByType(HopperEnum.Grind);
 
         for (IHopper hopper : hoppers) {
 
@@ -280,7 +276,8 @@ public class TaskManager implements Listener {
 
                                     if (Bukkit.getPluginManager().isPluginEnabled("WildStacker")) {
                                         StackedEntity stackedEnt = WildStackerAPI.getStackedEntity(ent);
-                                        entDrops = stackedEnt.getDrops(0);
+                                        entDrops = stackedEnt.getDrops(0, finalStackKill);
+                                        isAllItems = true;
                                     }
                                     if (Bukkit.getPluginManager().isPluginEnabled("DropEdit2")) {
                                         EntityKeyInfo var2 = (EntityKeyInfo) Main.data.getKeyInfo(KeyGetter.getKey(ent.getType()));
@@ -314,7 +311,7 @@ public class TaskManager implements Listener {
                                                 } else {
 
                                                     if (Bukkit.getPluginManager().isPluginEnabled("WildStacker")) {
-                                                        dropList.add(new DropElement(ent.getWorld(), ent.getLocation(), new ItemStack(itemStack.getType(), finalStackKill * (itemStack.getAmount() / WildStackerAPI.getStackedEntity(ent).getStackAmount()))));
+                                                        dropList.add(new DropElement(ent.getWorld(), ent.getLocation(), new ItemStack(itemStack.getType(), finalStackKill * (itemStack.getAmount() / Math.min(WildStackerAPI.getStackedEntity(ent).getStackAmount(), 1)))));
                                                     }
                                                 }
                                             }
@@ -337,7 +334,7 @@ public class TaskManager implements Listener {
                                                 MFHoppers.getInstance().getLogger().warning("There is no damage type: " + CONFIG_HOPPER.getDataOfHopper(hopper).get("damageType").toString());
                                             }
 
-                                            WildStackerAPI.getStackedEntity(ent).tryUnstack(finalStackKill);
+                                            WildStackerAPI.getStackedEntity(ent).runUnstack(finalStackKill);
                                         } else {
                                             if (CONFIG_HOPPER.getDataOfHopper(hopper).containsKey("damageType")) {
                                                 Methods.damage(hopper, hopper.getLocation().getBlock(), 10000000, ent, CONFIG_HOPPER.getDataOfHopper(hopper).get("damageType").toString());
@@ -375,7 +372,7 @@ public class TaskManager implements Listener {
 
     public void runBreakTask() {
 
-        final List<IHopper> hoppers = Methods.getHopperByType(HopperEnum.Break);
+        final List<IHopper> hoppers = Methods.getActiveHopperByType(HopperEnum.Break);
 
         for (IHopper hopper : hoppers) {
             if (!hopper.isChunkLoaded()) {
@@ -394,62 +391,62 @@ public class TaskManager implements Listener {
             time--;
             if (time <= 0) {
                 Location upper = hopper.getLocation().clone().add(new Vector(0, 1, 0));
-                if (!Methods.materialEqualsTo(upper, Material.AIR)) {
-                    final ConfigHopper.BreakDropsElement dropElement = CONFIG_HOPPER.GetBreakDropELement(hopper, upper.getBlock().getType(), upper.getBlock().getData());
-                    if (dropElement == null) continue;
 
-                    Methods.breakBlock(upper.getBlock());
-                    upper.add(new Vector(0.5, 0, 0.5));
+                final ConfigHopper.BreakDropsElement dropElement = CONFIG_HOPPER.GetBreakDropELement(hopper, upper.getBlock().getType(), upper.getBlock().getData());
+                if (dropElement == null) continue;
 
-                    final List<ItemStack> dropItems = new LinkedList<>();
-                    if (!dropElement.HasDamageValue) {
-                        upper.getBlock().getDrops().forEach(it -> {
-                            if(it.getType() != Material.AIR) {
-                                dropItems.add(dropElement.Drop.getItem(it.getType()));
-                            }
-                        });
-                    } else {
-                        upper.getBlock().getDrops().forEach(it -> {
-                            if(it.getType() != Material.AIR) {
-                                ItemStack item = dropElement.Drop.getItem(it.getType());
-                                item.setDurability(dropElement.DamageValue);
-                                dropItems.add(item);
-                            }
-                        });
-                    }
+                Methods.breakBlock(upper.getBlock());
+                upper.add(new Vector(0.5, 0, 0.5));
+                
+                final List<ItemStack> dropItems = new LinkedList<>();
+                if (!dropElement.HasDamageValue) {
+                    upper.getBlock().getDrops().forEach(it -> {
+                        if(it.getType() != Material.AIR) {
+                            dropItems.add(dropElement.Drop.getItem(it.getType()));
+                        }
+                    });
+                } else {
+                    upper.getBlock().getDrops().forEach(it -> {
+                        if(it.getType() != Material.AIR) {
+                            ItemStack item = dropElement.Drop.getItem(it.getType());
+                            item.setDurability(dropElement.DamageValue);
+                            dropItems.add(item);
+                        }
+                    });
+                }
 
-                    if (DATA.containsKey("collectDrops") && Boolean.valueOf(DATA.get("collectDrops").toString())) {
-                        Bukkit.getScheduler().runTask(MFHoppers.getInstance(), new Runnable(){
-                        
-                            @Override
-                            public void run() {
-                                for (ItemStack item : dropItems) {
-                                    int amount = item.getAmount();
-                                    int added = Methods.addItem2(Arrays.asList(item), hopper);
-                                    item.setAmount(amount - added);
-                                }
-                            }
-                        });
-                    }
-
-                    if(dropItems.stream().filter(it -> it.getAmount() > 0).collect(Collectors.toList()).size() > 0){
-                        dropItems.stream().filter(it -> it.getAmount() > 0).collect(Collectors.toList()).forEach( item -> Methods.drop(item, upper.getBlock().getLocation()));
-                    }
-
-                    if (DATA.containsKey("particle")) {
-                        int version = Integer.parseInt(ReflectionUtils.PackageType.getServerVersion().split("_")[1]);
-                        if (version > 8) {
-                            for (Player player : Bukkit.getOnlinePlayers())
-                                player.spawnParticle(Particle.valueOf(DATA.get("particle").toString()), upper.getBlock().getLocation().add(0.5, 0, 0.5), 1);
-                        } else {
-                            ParticleEffect effect = ParticleEffect.fromName(DATA.get("particle").toString());
-
-                            if (effect != null) {
-                                List<Player> onl = new ArrayList<>(Bukkit.getOnlinePlayers());
-                                effect.display(0, 0, 0, 0, 1, upper.getBlock().getLocation().add(0.5, 0, 0.5), onl);
+                if (DATA.containsKey("collectDrops") && Boolean.valueOf(DATA.get("collectDrops").toString())) {
+                    Bukkit.getScheduler().runTask(MFHoppers.getInstance(), new Runnable(){
+                    
+                        @Override
+                        public void run() {
+                            for (ItemStack item : dropItems) {
+                                int amount = item.getAmount();
+                                int added = Methods.addItem2(Arrays.asList(item), hopper);
+                                item.setAmount(amount - added);
                             }
                         }
+                    });
+                }
+                
+                if(dropItems.stream().filter(it -> it.getAmount() > 0).collect(Collectors.toList()).size() > 0){
+                    dropItems.stream().filter(it -> it.getAmount() > 0).collect(Collectors.toList()).forEach( item -> Methods.drop(item, upper.getBlock().getLocation()));
+                }
 
+
+                if (DATA.containsKey("particle")) {
+                    int version = Integer.parseInt(ReflectionUtils.PackageType.getServerVersion().split("_")[1]);
+                    if (version > 8) {
+                        for (Player player : Bukkit.getOnlinePlayers())
+                            player.spawnParticle(Particle.valueOf(DATA.get("particle").toString()), upper.getBlock().getLocation().add(0.5, 0, 0.5), 1);
+                    } else {
+                        ParticleEffect effect = ParticleEffect.fromName(DATA.get("particle").toString());
+
+                        if (effect != null) {
+                            List<Player> onl = new ArrayList<>(Bukkit.getOnlinePlayers());
+                            
+                            effect.display(0, 0, 0, 0, 1, upper.getBlock().getLocation().add(0.5,0,0.5), onl);
+                        }
                     }
                 }
                 hopper.getData().put("time", DATA.get("breakEvery"));
@@ -561,7 +558,7 @@ public class TaskManager implements Listener {
 
     public void runItemsTask() {
 
-        Map<Chunk, List<IHopper>> hoppers = Methods.getMapHopperByType(HopperEnum.Crop, HopperEnum.Mob);
+        Map<Chunk, List<IHopper>> hoppers = Methods.getMapHopperByTypeOfLoadedChunks(HopperEnum.Crop, HopperEnum.Mob);
 
         for (Chunk chunk : hoppers.keySet()) {
             Tasks.getInstance().runTask(() -> {

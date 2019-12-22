@@ -1,14 +1,13 @@
 package net.squidstudios.mfhoppers.util.moveableItem;
 
 import com.bgsoftware.wildstacker.api.WildStackerAPI;
+
 import net.squidstudios.mfhoppers.manager.HookManager;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class MoveItem {
 
@@ -54,6 +53,7 @@ public class MoveItem {
             List<ItemStack> items = new ArrayList<>();
             int amount = WildStackerAPI.getStackedItem(item).getStackAmount();
 
+            //MFHoppers.getInstance().getLogger().info(String.format("Add Wildstacker Item %s Amount: %d", item.getItemStack().getType().toString(), amount));
             add(items, amount, item);
             return new MoveItem(item, items, amount);
 
