@@ -155,6 +155,9 @@ cleanSaveOnShutdown: false
 fullUpdateOnShutdown: false
 DeactivateSaveMessage: false
 
+CollectAlreadyDropedItems: true 
+CollectItemsEvery: 3 # in seconds
+
 sellOptions:
 
   #There's two sellTypes by default: BuiltIn, ShopGUIPlus

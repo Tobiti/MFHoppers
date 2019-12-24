@@ -357,7 +357,11 @@ public class Methods {
             if (hopper == null) {
                 continue;
             }
-            if(!hopper.isChunkLoaded()){
+            
+            int chunkX = hopper.getLocation().getBlockX() >> 4;
+            int chunkZ = hopper.getLocation().getBlockZ() >> 4;
+            
+            if(!hopper.getLocation().getWorld().isChunkLoaded(chunkX, chunkZ)){
                 continue;
             }
 

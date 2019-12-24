@@ -515,7 +515,7 @@ public class DataManager {
                     });
                 }
                 else {
-                    while(!AddedHopperQueue.isEmpty()) {
+                    while(!UpdatedHopperQueue.isEmpty()) {
                         IHopper hopper = UpdatedHopperQueue.poll();
 
                         tempHoppers.add(hopper);

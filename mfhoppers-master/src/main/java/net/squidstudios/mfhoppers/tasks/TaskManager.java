@@ -70,9 +70,11 @@ public class TaskManager implements Listener {
         
             @Override
             public void run() {
-                runItemsTask();
+                if(MFHoppers.getInstance().getConfig().getBoolean("CollectAlreadyDropedItems", true)){
+                    runItemsTask();
+                }
             }
-        }.runTaskTimer(MFHoppers, 0, 75));
+        }.runTaskTimer(MFHoppers, 0, 20 * MFHoppers.getInstance().getConfig().getLong("CollectItemsEvery", 3)));
     }
     public void add(BukkitTask task) {
 
@@ -523,7 +525,6 @@ public class TaskManager implements Listener {
     }
 
     public void runItemsTask() {
-
         Map<Chunk, List<IHopper>> hoppers = Methods.getMapHopperByTypeOfLoadedChunks(HopperEnum.Crop, HopperEnum.Mob);
 
         for (Chunk chunk : hoppers.keySet()) {
@@ -531,12 +532,13 @@ public class TaskManager implements Listener {
                 final ArrayList<Entity> entityList = new ArrayList<>();
                 try {
                     for (Entity entity : chunk.getEntities()) {
-                        entityList.add(entity);
+                        if(entity.getType() == EntityType.DROPPED_ITEM){
+                            entityList.add(entity);
+                        }
                     }
                 } catch(Exception ignored) {}
                 try {
-                    List<Item> itemsList = Methods.getItems(entityList).stream().map(e -> (Item)e).collect(Collectors.toList());
-                    Methods.addItem(itemsList.stream().map(item -> MoveItem.getFrom(item)).collect(Collectors.toList()), hoppers.get(chunk));
+                    Methods.addItem(entityList.stream().map(item -> MoveItem.getFrom( (Item) item)).collect(Collectors.toList()), hoppers.get(chunk));
 
                 } catch (Exception ex) {
                     ex.printStackTrace();
