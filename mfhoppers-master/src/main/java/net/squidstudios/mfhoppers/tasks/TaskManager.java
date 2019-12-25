@@ -14,6 +14,7 @@ import net.squidstudios.mfhoppers.MFHoppers;
 import net.squidstudios.mfhoppers.manager.DataManager;
 import net.squidstudios.mfhoppers.manager.SellManager;
 import net.squidstudios.mfhoppers.tasks.Listeners.BeastCoreListener;
+import net.squidstudios.mfhoppers.util.ent.EntitiesGatherer;
 import net.squidstudios.mfhoppers.util.item.nbt.NBTEntity;
 import net.squidstudios.mfhoppers.util.moveableItem.MoveItem;
 import net.squidstudios.mfhoppers.util.particles.ReflectionUtils;
