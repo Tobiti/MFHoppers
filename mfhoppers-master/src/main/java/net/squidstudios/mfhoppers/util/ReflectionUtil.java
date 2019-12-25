@@ -56,9 +56,16 @@ public final class ReflectionUtil {
 	private ReflectionUtil() {
 	}
 
+	private static String SERVER_VERSION;
+	public static int SERVER_VERSION_NUM;
+
 	// Load things automatically
 	static {
 		try {
+			final String packageName = Bukkit.getServer() == null ? "" : Bukkit.getServer().getClass().getPackage().getName();
+			SERVER_VERSION = packageName.substring(packageName.lastIndexOf('.') + 1);
+			SERVER_VERSION_NUM = Integer.parseInt(SERVER_VERSION.split("_")[1]);
+
 			getHandle = getOFCClass("entity.CraftPlayer").getMethod("getHandle");
 			fieldPlayerConnection = getNMSClass("EntityPlayer").getField("playerConnection");
 			sendPacket = getNMSClass("PlayerConnection").getMethod("sendPacket", getNMSClass("Packet"));
@@ -66,7 +73,7 @@ public final class ReflectionUtil {
 		} catch (final Throwable t) {
 			System.out.println("Unable to find setup reflection. Plugin will still function.");
 			System.out.println("Error: " + t.getClass().getSimpleName() + ": " + t.getMessage());
-			System.out.println("Ignore this if using Cauldron. Otherwise check if your server is compatibible.");
+			System.out.println("Ignore this if using Cauldron. Otherwise check if your server is compatible.");
 
 			fieldPlayerConnection = null;
 			sendPacket = null;
@@ -314,7 +321,6 @@ public final class ReflectionUtil {
 	 * @param <T>
 	 * @param clazz
 	 * @param field
-	 * @param type
 	 * @return
 	 */
 	public static <T> T getStaticFieldContent(Class<?> clazz, String field) {
@@ -328,7 +334,6 @@ public final class ReflectionUtil {
 	 * @param clazz
 	 * @param field
 	 * @param instance
-	 * @param type
 	 * @return
 	 */
 	public static <T> T getFieldContent(Class<?> clazz, String field, Object instance) {

@@ -82,7 +82,11 @@ public class MFHoppers extends PluginBuilder {
 
     @Override
     public void init() {
-
+        if (ReflectionUtil.SERVER_VERSION_NUM <= 13) {
+            out("This Jar is for server versions between 1.14.X-1.X.X", OutType.ERROR);
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
         instance = this;
 
         File oldName = new File(getDataFolder().getAbsolutePath().replace("MFHoppers", "AquaHoppers"));
