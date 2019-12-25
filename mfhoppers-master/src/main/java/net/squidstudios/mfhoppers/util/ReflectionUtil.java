@@ -26,7 +26,7 @@ public class ReflectionUtil {
 	private static Method sendPacket;
 
 	private static String SERVER_VERSION;
-	private static int SERVER_VERSION_NUM;
+	public static int SERVER_VERSION_NUM;
 
 	static {
 		try {

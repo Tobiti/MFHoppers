@@ -80,6 +80,11 @@ public class MFHoppers extends PluginBuilder {
 
     @Override
     public void init() {
+        if (ReflectionUtil.SERVER_VERSION_NUM >= 13 && is9version) {
+            out("This Jar is for server versions between 1.8.X-1.13.X", OutType.ERROR);
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
 
         instance = this;
 
