@@ -121,7 +121,6 @@ public class MFHoppers extends PluginBuilder {
         //updateConfig();
 
         new Tasks(this);
-        new Tasks(this);
         new Methods(this);
         new DataManager(this);
         taskManager = new TaskManager(this);
@@ -619,13 +618,6 @@ public class MFHoppers extends PluginBuilder {
                                         MFHoppers.getInstance().getLogger().info("\t \t \t Filter:");
                                         for (IHopper.FilterElement element : hopper.getFilterMaterialList()) {
                                             MFHoppers.getInstance().getLogger().info(String.format("\t \t \t \t - %s", element.Material + (element.HasDamageValue ? ":" + String.valueOf(element.DamageValue) : "")));
-                                        }
-                                    }
-                                    if(en == HopperEnum.Break){
-                                        MFHoppers.getInstance().getLogger().info("\t \t \t Drops:");
-                                        List<ConfigHopper.BreakDropsElement> elements = (List<ConfigHopper.BreakDropsElement>) hopper.getConfigHopper().getDataOfHopper(hopper).get("drops");
-                                        for (ConfigHopper.BreakDropsElement drop : elements) {
-                                            MFHoppers.getInstance().getLogger().info(String.format("\t \t \t \t - %s", drop.Material + (drop.HasDamageValue ? ":" + String.valueOf(drop.DamageValue) : "")));
                                         }
                                     }
                                 }

@@ -776,7 +776,6 @@ public class DataManager {
         } else{
             return hoppers.get(getCustomChunk(chunk));
         }
-
     }
 
 }
