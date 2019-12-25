@@ -790,7 +790,6 @@ public class DataManager {
         } else{
             return hoppers.get(getCustomChunk(chunk));
         }
-
     }
 
     public void updateHopper(IHopper iHopper) {

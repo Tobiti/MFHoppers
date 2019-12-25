@@ -145,13 +145,13 @@ public abstract class IHopper {
 
         boolean toReturn = getLocation().getWorld().isChunkLoaded(chunkX, chunkZ);
 
-        if(toReturn) {
-            if (Methods.containsPlayersAroundHopper(getLocation())) {
-                return true;
-            }
-        }
+//        if(toReturn) {
+//            if (Methods.containsPlayersAroundHopper(getLocation())) {
+//                return true;
+//            }
+//        }
 
-        return false;
+        return toReturn;
 
     }
 
