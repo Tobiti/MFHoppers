@@ -29,6 +29,7 @@ import net.squidstudios.mfhoppers.hopper.IHopper;
 import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
@@ -176,12 +177,15 @@ public class Methods {
     }
 
     public static int addItem2(List<ItemStack> items, IHopper hopper) {
-
         int added = 0;
+        Inventory inv = null;
+        try {
+            inv = hopper.getInventory().get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
 
         for (ItemStack item : items) {
-
-            Inventory inv = hopper.getInventory();
             if (inv == null) return added;
 
             if (hopper.isLinked()) {

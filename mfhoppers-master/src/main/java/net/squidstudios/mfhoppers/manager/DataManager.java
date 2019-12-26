@@ -573,8 +573,6 @@ public class DataManager {
     public boolean isHopper(Location loc){
 
         MChunk chunk = getCustomChunk(loc);
-
-
         if(chunk != null && hoppers.get(chunk).containsKey(loc)){
             return true;
         }

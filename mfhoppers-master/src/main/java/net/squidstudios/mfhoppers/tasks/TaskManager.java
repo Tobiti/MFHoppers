@@ -556,7 +556,6 @@ public class TaskManager implements Listener {
         DataManager.getInstance().getHoppers().values().forEach(locationIHopperMap -> hoppers.addAll(locationIHopperMap.values()));
 
         for(IHopper hopper : hoppers.stream().filter(hopper -> hopper != null && hopper.getConfigHopper() != null && hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("sellEvery") && hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("sellAmount")).collect(Collectors.toList())){
-
             if(!hopper.isChunkLoaded()) continue;
 
             Map<String, Object> configData = hopper.getConfigHopper().getDataOfHopper(hopper);
@@ -564,42 +563,39 @@ public class TaskManager implements Listener {
             int time = hopper.getData().containsKey("sellEvery") ? (int)hopper.getData().get("sellEvery") : (int)configData.get("sellEvery");
             time--;
             if(time == 0) {
+                hopper.getInventory().whenComplete((inventory, thrw) -> {
+                    List<ItemStack> items = Arrays.asList(inventory.getContents());
+                    if (items.isEmpty()) return;
 
-                if(hopper == null || hopper.getInventory() == null){
-                    continue;
-                }
+                    int sellAmount = (int) hopper.getConfigHopper().getDataOfHopper(hopper).get("sellAmount");
 
-                List<ItemStack> items = Arrays.asList(hopper.getInventory().getContents());
-                if (items.isEmpty()) continue;
+                    items = items.stream().filter(item -> item != null && item.getType() != Material.AIR).collect(Collectors.toList());
+                    items = items.stream().filter(it -> SellManager.getInstance().getPrice(it) > 0.0).collect(Collectors.toList());
 
-                int sellAmount = (int) hopper.getConfigHopper().getDataOfHopper(hopper).get("sellAmount");
+                    while(items.stream().findFirst().orElse(null) != null && sellAmount > 0) {
+                        ItemStack first = items.stream().findFirst().orElse(null);
+                        double price = SellManager.getInstance().getPrice(first);
 
-                items = items.stream().filter(item -> item != null && item.getType() != Material.AIR).collect(Collectors.toList());
-                items = items.stream().filter(it -> SellManager.getInstance().getPrice(it) > 0.0).collect(Collectors.toList());
+                        if (MFHoppers.getInstance().getEconomy() != null && hopper.getOwner() != null) {
+                            int amount = Math.min(sellAmount, first.getAmount());
+                            sellAmount -= amount;
 
-                while(items.stream().findFirst().orElse(null) != null && sellAmount > 0) {
-                    ItemStack first = items.stream().findFirst().orElse(null);
-                    double price = SellManager.getInstance().getPrice(first);
+                            price = price * amount;
 
-                    if (MFHoppers.getInstance().getEconomy() != null && hopper.getOwner() != null) {
-                        int amount = Math.min(sellAmount, first.getAmount());
-                        sellAmount -= amount;
+                            Methods.removeItem(first, amount, inventory);
 
-                        price = price * amount;
+                            Player player = Bukkit.getPlayer(hopper.getOwner());
+                            if (player == null) {
+                                MFHoppers.getInstance().getEconomy().depositPlayer(Bukkit.getOfflinePlayer(hopper.getOwner()), price);
+                            } else MFHoppers.getInstance().getEconomy().depositPlayer(player, price);
 
-                        Methods.removeItem(first, amount, hopper.getInventory());
-
-                        Player player = Bukkit.getPlayer(hopper.getOwner());
-                        if (player == null) {
-                            MFHoppers.getInstance().getEconomy().depositPlayer(Bukkit.getOfflinePlayer(hopper.getOwner()), price);
-                        } else MFHoppers.getInstance().getEconomy().depositPlayer(player, price);
-
+                        }
                     }
-                }
 
-                hopper.getData().remove("sellEvery");
-                hopper.getData().put("sellEvery", configData.get("sellEvery"));
+                    hopper.getData().remove("sellEvery");
+                    hopper.getData().put("sellEvery", configData.get("sellEvery"));
 
+                });
             } else {
 
                 hopper.getData().remove("sellEvery");

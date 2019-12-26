@@ -61,7 +61,6 @@ public class BreakHopper extends IHopper {
         Map<String, Object> ret = new HashMap<>();
 
         if(getData().containsKey("linked")) ret.put("linked", getData().get("linked"));
-
         if(getData().containsKey("owner")) ret.put("owner", getData().get("owner"));
 
         return Methods.serialize(ret);

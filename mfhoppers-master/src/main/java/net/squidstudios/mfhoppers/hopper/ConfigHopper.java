@@ -22,8 +22,7 @@ public class ConfigHopper {
 
     /*
     Data that contains in hashmap: name, lore, limitPe    if HopperEnum is Grind:rChunk, should_drop_from_explosions
-
-     */
+    */
     public static class BreakDropsElement{
         public Material Material;
         public boolean HasDamageValue = false;

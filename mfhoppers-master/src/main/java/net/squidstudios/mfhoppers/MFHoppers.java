@@ -745,7 +745,9 @@ public class MFHoppers extends PluginBuilder {
                 Player player = command.getSender().getPlayer();
                 Block b = player.getTargetBlock(null,12);
                 if(b != null && DataManager.getInstance().isHopper(b.getLocation())){
-                    if(DataManager.getInstance().getHopper(b.getLocation()).getOwner() == player.getName() || command.getSender().getPlayer().hasPermission("mfh.adminlinkhopper")) {
+                    String owner = DataManager.getInstance().getHopper(b.getLocation()).getOwner();
+
+                    if((owner != null && owner.contentEquals(player.getName())) || command.getSender().getPlayer().hasPermission("mfh.adminlinkhopper")) {
                         player.setMetadata("link", new FixedMetadataValue(this, Methods.toString(b.getLocation())));
                         Lang.HOPPER_LINK_NOW_SELECT_CONTAINER.send(player);
                     }

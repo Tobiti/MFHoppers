@@ -1,41 +1,38 @@
 package net.squidstudios.mfhoppers.hopper;
 
 import net.squidstudios.mfhoppers.MFHoppers;
+import net.squidstudios.mfhoppers.util.MContainer;
 import net.squidstudios.mfhoppers.util.Methods;
+import net.squidstudios.mfhoppers.util.OFuture;
 import net.squidstudios.mfhoppers.util.XMaterial;
-import org.bukkit.Bukkit;
+import net.squidstudios.mfhoppers.util.plugin.Tasks;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Chest;
+import org.bukkit.block.Hopper;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import net.squidstudios.mfhoppers.util.MContainer;
-import net.squidstudios.mfhoppers.util.plugin.Tasks;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import java.lang.reflect.Array;
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.logging.Filter;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 
 public abstract class IHopper {
 
-    public static class FilterElement
-    {
+    public static class FilterElement {
         public Material Material;
         public boolean HasDamageValue = false;
         public short DamageValue = -1;
 
-        public FilterElement(Material material, boolean hasDamageValue, short damageValue)
-        {
+        public FilterElement(Material material, boolean hasDamageValue, short damageValue) {
             this.DamageValue = damageValue;
             this.HasDamageValue = hasDamageValue;
             this.Material = material;
@@ -44,19 +41,22 @@ public abstract class IHopper {
 
     private HashMap<String, Object> data = new HashMap<>();
     private List<FilterElement> filterList = new ArrayList<>();
+    private Inventory inventory;
+    public void initInventory() {
+
+    }
 
     public abstract void save(PreparedStatement stat);
 
     public HashMap<String, Object> getData() {
         return data;
     }
-    public Location getLocation(){
 
-        if(getData().containsKey("cachedLocation")){
-
+    public Location getLocation() {
+        if (getData().containsKey("cachedLocation")) {
             return ((Location) data.get("cachedLocation"));
 
-        } else{
+        } else {
             Location location = Methods.toLocation(data.get("loc").toString());
             data.put("cachedLocation", location);
             return location;
@@ -64,11 +64,10 @@ public abstract class IHopper {
 
     }
 
-    public Chunk getChunk(){
-        if(Thread.currentThread().getName().equalsIgnoreCase("Server thread")){
+    public Chunk getChunk() {
+        if (Thread.currentThread().getName().equalsIgnoreCase("Server thread")) {
             return getLocation().getChunk();
-        }
-        else {
+        } else {
             CompletableFuture<Chunk> callback = new CompletableFuture<>();
 
             Tasks.getInstance().runTask(() -> {
@@ -77,53 +76,74 @@ public abstract class IHopper {
 
             try {
                 return callback.get();
-            } catch (Exception ex){
+            } catch (Exception ex) {
                 ex.printStackTrace();
             }
             return null;
 
         }
     }
+
     public abstract ItemStack getItem();
-    public String getName(){
+
+    public String getName() {
 
         return data.get("name").toString();
 
     }
+
     public abstract HopperEnum getType();
-    public int getLevel(){
-        return (int)data.get("lvl");
+
+    public int getLevel() {
+        return (int) data.get("lvl");
     }
-    public Inventory getInventory(){
-        if(getLocation().getBlock().getState() instanceof InventoryHolder) {
-            return ((InventoryHolder) getLocation().getBlock().getState()).getInventory();
+
+    public CompletableFuture<Inventory> getInventory() {
+        if (inventory != null) {
+            OFuture<Inventory> future = new OFuture<>();
+            future.complete(inventory);
+            return future;
+
+        } else {
+            CompletableFuture<Inventory> future = new CompletableFuture<>();
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if (getLocation().getBlock().getState() instanceof InventoryHolder) {
+                        inventory = ((InventoryHolder) getLocation().getBlock().getState()).getInventory();
+                        future.complete(inventory);
+                    }
+                }
+            }.runTask(MFHoppers.getInstance());
+            return future;
         }
-        return null;
     }
-    public Boolean isLinked(){
+
+    public Boolean isLinked() {
         return data.containsKey("linked");
     }
-    public List<Location> getLinked(){
 
-        if(!isLinked()) return new ArrayList<>();
+    public List<Location> getLinked() {
+
+        if (!isLinked()) return new ArrayList<>();
 
         return ((List<String>) getData().get("linked")).stream().map(location -> Methods.toLocation(location)).filter(it -> it != null).collect(toList());
 
     }
 
-    public List<String> getLinkedAsStrings(){
+    public List<String> getLinkedAsStrings() {
 
         return ((List<String>) getData().get("linked"));
 
     }
 
-    public ConfigHopper getConfigHopper(){
+    public ConfigHopper getConfigHopper() {
         return MFHoppers.getInstance().getConfigHoppers().get(getName());
     }
 
     public boolean isLinkedTo(Location location) {
 
-        if(MContainer.isDoubleChest(location)){
+        if (MContainer.isDoubleChest(location)) {
 
             Chest chest = ((Chest) location.getBlock().getState());
 
@@ -138,7 +158,7 @@ public abstract class IHopper {
 
     }
 
-    public boolean isChunkLoaded(){
+    public boolean isChunkLoaded() {
 
         int chunkX = getLocation().getBlockX() >> 4;
         int chunkZ = getLocation().getBlockZ() >> 4;
@@ -159,7 +179,7 @@ public abstract class IHopper {
 
         List<String> locations = getLinkedAsStrings();
 
-        if(locations.contains(Methods.toString(location))){
+        if (locations.contains(Methods.toString(location))) {
 
             locations.remove(Methods.toString(location));
 
@@ -169,8 +189,7 @@ public abstract class IHopper {
 
     }
 
-    public boolean ContainsInFilterMaterialList(Material mat, short damage)
-    {
+    public boolean ContainsInFilterMaterialList(Material mat, short damage) {
         List<FilterElement> filter = this.getFilterMaterialList();
 
         return filter.stream().anyMatch(filterElement -> {
@@ -178,21 +197,19 @@ public abstract class IHopper {
         });
     }
 
-    public void ResetFilterList(){
-        if(getType() == HopperEnum.Crop || getType() == HopperEnum.Mob) {
+    public void ResetFilterList() {
+        if (getType() == HopperEnum.Crop || getType() == HopperEnum.Mob) {
             filterList.clear();
             getFilterMaterialList(true);
         }
     }
 
-    public List<FilterElement> getFilterMaterialList()
-    {
+    public List<FilterElement> getFilterMaterialList() {
         return getFilterMaterialList(false);
     }
 
-    public List<FilterElement> getFilterMaterialList(boolean forceConfig)
-    {
-        if(filterList.size() == 0) {
+    public List<FilterElement> getFilterMaterialList(boolean forceConfig) {
+        if (filterList.size() == 0) {
             List<String> _stringMats = new ArrayList<>();
             if (!getData().containsKey("filter") || forceConfig) {
                 if (getType() == HopperEnum.Crop) {
@@ -202,30 +219,27 @@ public abstract class IHopper {
                 }
                 getData().put("filter", _stringMats);
             } else {
-                if(getData().containsKey("filter")) {
+                if (getData().containsKey("filter")) {
                     _stringMats = (List<String>) getData().get("filter");
                 }
             }
-            for( String s : _stringMats){
+            for (String s : _stringMats) {
                 String[] parts = s.split(":");
                 Material mat = Material.getMaterial(parts[0]);
-                if(mat == null){
-                    if(XMaterial.fromString(s) != null) {
+                if (mat == null) {
+                    if (XMaterial.fromString(s) != null) {
                         mat = XMaterial.fromString(s).parseMaterial();
-                    }
-                    else {
+                    } else {
                         MFHoppers.getInstance().getLogger().warning("Could not find Material to " + s);
                     }
                 }
-                if(mat != null) {
-                    if(parts.length > 1) {
+                if (mat != null) {
+                    if (parts.length > 1) {
                         filterList.add(new FilterElement(mat, true, Short.valueOf(parts[1])));
+                    } else {
+                        filterList.add(new FilterElement(mat, false, (short) -1));
                     }
-                    else {
-                        filterList.add(new FilterElement(mat, false, (short)-1));
-                    }
-                }
-                else {
+                } else {
                     MFHoppers.getInstance().getLogger().warning("Could not find Material to " + s);
                 }
             }
@@ -234,15 +248,13 @@ public abstract class IHopper {
         return filterList;
     }
 
-    public void SetFilterMaterialList(List<FilterElement> mats)
-    {
+    public void SetFilterMaterialList(List<FilterElement> mats) {
         filterList = mats;
         List<String> _stringMats = new ArrayList<>();
         for (FilterElement element : mats) {
-            if(!element.HasDamageValue) {
+            if (!element.HasDamageValue) {
                 _stringMats.add(element.Material.toString());
-            }
-            else {
+            } else {
                 _stringMats.add(element.Material.toString() + ":" + element.DamageValue);
             }
         }
@@ -251,7 +263,7 @@ public abstract class IHopper {
 
     public void link(Location loc) {
 
-        if(getData().containsKey("linked")){
+        if (getData().containsKey("linked")) {
 
             List<String> locations = ((List<String>) getData().get("linked"));
             locations.add(Methods.toString(loc));
@@ -271,12 +283,12 @@ public abstract class IHopper {
 
     public String getOwner() {
 
-        if(getData().containsKey("owner")) return getData().get("owner").toString();
+        if (getData().containsKey("owner")) return getData().get("owner").toString();
         return null;
 
     }
 
-    public boolean isActive(){
+    public boolean isActive() {
         return true;
     }
 
