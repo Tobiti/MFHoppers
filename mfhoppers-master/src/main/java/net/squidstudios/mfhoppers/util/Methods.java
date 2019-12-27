@@ -176,7 +176,6 @@ public class Methods {
     }
 
     public static int addItem2(List<ItemStack> items, IHopper hopper) {
-
         int added = 0;
 
         for (ItemStack item : items) {
@@ -300,15 +299,10 @@ public class Methods {
     }
 
     public static List<IHopper> getHopperByType(HopperEnum e) {
-        List<IHopper> _nonHoppers = new ArrayList<>();
-        List<IHopper> hoppers = new ArrayList<>();
-        DataManager.getInstance().getHoppers().values().forEach(locationIHopperMap -> _nonHoppers.addAll(locationIHopperMap.values()));
-        for (IHopper hopper : _nonHoppers) {
-            if (hopper.getType() == e) {
-                hoppers.add(hopper);
-            }
-        }
-        return hoppers;
+        List<IHopper> hopper = new ArrayList<>();
+        DataManager.getInstance().getHoppers().values().forEach(values -> hopper.addAll(values.values()));
+        hopper.removeIf(hopper2 -> hopper2.getType() != e);
+        return hopper;
     }
 
     public static Map<Chunk, List<IHopper>> getMapHopperByType(HopperEnum... e) {

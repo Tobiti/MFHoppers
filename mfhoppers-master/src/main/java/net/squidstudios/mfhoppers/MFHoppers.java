@@ -731,13 +731,13 @@ public class MFHoppers extends PluginBuilder {
             }
         });
         addCommand("linkHopper", "Link Hoppers to Containers!", "", null, command -> {
-
             if (command.getSender().isPlayer() && (command.getSender().getPlayer().hasPermission("mfh.linkhopper"))) {
 
                 Player player = command.getSender().getPlayer();
                 Block b = player.getTargetBlock(null, 12);
                 if (b != null && DataManager.getInstance().isHopper(b.getLocation())) {
                     String owner = DataManager.getInstance().getHopper(b.getLocation()).getOwner();
+
                     if ((owner != null && owner.contentEquals(player.getName())) || command.getSender().getPlayer().hasPermission("mfh.adminlinkhopper")) {
                         player.setMetadata("link", new FixedMetadataValue(this, Methods.toString(b.getLocation())));
                         Lang.HOPPER_LINK_NOW_SELECT_CONTAINER.send(player);
