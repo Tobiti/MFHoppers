@@ -353,6 +353,7 @@ public class TaskManager implements Listener {
             } else {
                 time = (int) hopper.getData().get("time");
             }
+
             time--;
             if (time <= 0) {
                 Location upper = hopper.getLocation().clone().add(new Vector(0, 1, 0));
@@ -366,19 +367,22 @@ public class TaskManager implements Listener {
                 final List<ItemStack> dropItems = new LinkedList<>();
                 if (!dropElement.HasDamageValue) {
                     upper.getBlock().getDrops().forEach(it -> dropItems.add(dropElement.Drop.getItem(it.getType())));
+
                 } else {
                     upper.getBlock().getDrops().forEach(it -> {
-
                         ItemStack item = dropElement.Drop.getItem(it.getType());
                         item.setDurability(dropElement.DamageValue);
                         dropItems.add(item);
                     });
                 }
 
+                System.out.println("Drop Items Size: " + dropItems.size());
                 if (DATA.containsKey("collectDrops") && Boolean.valueOf(DATA.get("collectDrops").toString())) {
                     for (ItemStack item : dropItems) {
                         int amount = item.getAmount();
                         int added = Methods.addItem2(Arrays.asList(item), hopper);
+
+                        System.out.println("Added " + added + " of " + item);
                         item.setAmount(amount - added);
                     }
                 }
@@ -397,7 +401,6 @@ public class TaskManager implements Listener {
 
                         if (effect != null) {
                             List<Player> onl = new ArrayList<>(Bukkit.getOnlinePlayers());
-
                             effect.display(0, 0, 0, 0, 1, upper.getBlock().getLocation().add(0.5, 0, 0.5), onl);
                         }
                     }
@@ -443,17 +446,13 @@ public class TaskManager implements Listener {
                         } catch (InterruptedException | ExecutionException e) {
                             e.printStackTrace();
                         }
-                        System.out.println(source);
                         if (source == null) continue;
 
                         List<ItemStack> items = Arrays.asList(source.getContents());
-                        System.out.println("Items inside container: " + items.size());
-
                         if (items.isEmpty()) continue;
 
                         items = items.stream().filter(item -> item != null && item.getType() != Material.AIR).collect(Collectors.toList());
 
-                        System.out.println("Items inside container 2: " + items.size());
                         if (items.size() <= 0) continue;
                         int moveAmount = (int) configData.get("linkedMoveAmount");
 

@@ -226,7 +226,6 @@ public class ConfigHopper {
             boolean isAuto = data.get("isAuto") != null ? Boolean.valueOf(data.get("isAuto").toString()) : false;
             boolean isGlobal = data.get("isGlobal") != null ? Boolean.valueOf(data.get("isGlobal").toString()) : false;
 
-
             return new ItemBuilder(Material.HOPPER)
                     .setName(c(data.get("name").toString().replace("%type%", StringUtils.capitalize(EntityType.valueOf(data.get("mob").toString()).name().replace("_", " ").toLowerCase()))))
                     .addNbt("type", type.name())
