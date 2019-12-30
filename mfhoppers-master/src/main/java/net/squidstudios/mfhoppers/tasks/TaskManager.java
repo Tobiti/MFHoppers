@@ -468,16 +468,12 @@ public class TaskManager implements Listener {
                             index++;
                         }
 
-                        System.out.println("Sending items");
                         final List<ItemStack> sendedItems = tempList;
                         for (ItemStack item : sendedItems) {
                             for (Inventory destination : inventories) {
-                                System.out.println("Dest: " + destination);
                                 if (Methods.canFit(item, item.getAmount(), destination)) {
-                                    System.out.println("Can fit");
                                     if (!Methods.containsInInventory(item, source)) continue;
 
-                                    System.out.println("Removing item");
                                     if (Methods.removeItem(item, item.getAmount(), source)) {
                                         destination.addItem(item);
                                     }
