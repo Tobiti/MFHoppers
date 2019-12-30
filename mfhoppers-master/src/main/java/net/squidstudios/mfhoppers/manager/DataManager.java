@@ -1,9 +1,10 @@
 package net.squidstudios.mfhoppers.manager;
 
+import com.google.common.collect.Sets;
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import net.squidstudios.mfhoppers.MFHoppers;
 import net.squidstudios.mfhoppers.hopper.UnloadedHopper;
 import net.squidstudios.mfhoppers.tasks.TaskManager;
-import net.squidstudios.mfhoppers.util.item.nbt.NBTItem;
 import net.squidstudios.mfhoppers.util.plugin.PluginBuilder;
 import objectexplorer.MemoryMeasurer;
 import org.bukkit.Bukkit;
@@ -30,13 +31,11 @@ import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class DataManager {
@@ -765,8 +764,8 @@ public class DataManager {
             return chunks.stream().findFirst().get();
         }
     }
-    public Map<Location, IHopper> getHoppers(Chunk chunk){
 
+    public Map<Location, IHopper> getHoppers(Chunk chunk){
         Map<Location, IHopper> ret = new HashMap<>();
 
         if(getCustomChunk(chunk) == null){
@@ -774,6 +773,22 @@ public class DataManager {
         } else{
             return hoppers.get(getCustomChunk(chunk));
         }
+    }
+
+    public Set<IHopper> getHoppersSet() {
+        Set<IHopper> hoppersSet = Sets.newHashSet();
+        getHoppers().values().forEach(locationIHopperMap -> hoppersSet.addAll(locationIHopperMap.values()));
+        return hoppersSet;
+    }
+
+    public Set<IHopper> getHoppersFiltered(Predicate<IHopper> filter) {
+        Set<IHopper> hoppers = getHoppersSet();
+        hoppers.removeIf(hopper -> !filter.test(hopper));
+        return hoppers;
+    }
+
+    public Set<IHopper> getActiveHoppers(){
+        return getHoppersFiltered(IHopper::isChunkLoaded);
     }
 
 }

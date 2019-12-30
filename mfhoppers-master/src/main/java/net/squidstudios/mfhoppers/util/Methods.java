@@ -1,38 +1,37 @@
 package net.squidstudios.mfhoppers.util;
 
-import me.clip.placeholderapi.PlaceholderAPI;
+import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
+import com.google.common.collect.Sets;
+import de.tr7zw.changeme.nbtapi.NBTEntity;
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import net.squidstudios.mfhoppers.MFHoppers;
+import net.squidstudios.mfhoppers.hopper.ConfigHopper;
 import net.squidstudios.mfhoppers.hopper.HopperEnum;
+import net.squidstudios.mfhoppers.hopper.IHopper;
 import net.squidstudios.mfhoppers.manager.DataManager;
-import net.squidstudios.mfhoppers.util.item.nbt.NBTEntity;
-import net.squidstudios.mfhoppers.util.item.nbt.NBTItem;
 import net.squidstudios.mfhoppers.util.moveableItem.MoveItem;
 import net.squidstudios.mfhoppers.util.plugin.PluginBuilder;
-
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
-import net.squidstudios.mfhoppers.hopper.ConfigHopper;
-import net.squidstudios.mfhoppers.hopper.IHopper;
 
 import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-
-import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
 
 import static java.util.stream.Collectors.toList;
 
@@ -59,8 +58,7 @@ public class Methods {
         return ret;
     }
 
-    public static HashMap<Location, IHopper> getSorted(HopperEnum henum, Chunk ch, Material mat, short data) 
-    {
+    public static HashMap<Location, IHopper> getSorted(HopperEnum henum, Chunk ch, Material mat, short data) {
         HashMap<Location, IHopper> ret = new HashMap<>();
         if (DataManager.getInstance().getHoppers().isEmpty() && !DataManager.getInstance().containsHoppersChunk(ch)) {
             return ret;
@@ -102,54 +100,24 @@ public class Methods {
     }
 
     public static List<MoveItem> addItem(List<MoveItem> items, Collection<IHopper> iHoppers) {
-
-        if (Thread.currentThread().getName().equalsIgnoreCase("Server thread")) {
-            for (MoveItem moveItem : items) {
-                for (IHopper hopper : iHoppers) {
-                    if (moveItem.getAmount() <= 0){ 
-                        break;
-                    }
-                    if (hopper.getLocation().getBlock().getType() == Material.AIR){ 
-                        continue;
-                    }
-
-                    if(!hopper.ContainsInFilterMaterialList(moveItem.getEntity().getItemStack().getType(), moveItem.getEntity().getItemStack().getDurability())){
-                        continue;
-                    }
-    
-                    if (hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("pickupNamedItems") && !(boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("pickupNamedItems") 
-                        && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName())
-                        continue;
-    
-                    int amount = moveItem.getAmount();
-                    int added = addItem2(moveItem.getItems(), hopper);
-    
-                    moveItem.setAmount(amount - added);                    
+        for (MoveItem moveItem : items) {
+            for (IHopper hopper : iHoppers) {
+                if (moveItem.getAmount() <= 0) {
+                    break;
                 }
-            }
-        } else {
-            for (MoveItem moveItem : items) {
-                for (IHopper hopper : iHoppers) {
-                    if (moveItem.getAmount() <= 0){ 
-                        break;
-                    }
-                    if (hopper.getLocation().getBlock().getType() == Material.AIR){ 
-                        continue;
-                    }
 
-                    if(!hopper.ContainsInFilterMaterialList(moveItem.getEntity().getItemStack().getType(), moveItem.getEntity().getItemStack().getDurability())){
-                        continue;
-                    }
-    
-                    if (hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("pickupNamedItems") && !(boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("pickupNamedItems") 
-                        && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName())
-                        continue;
-    
-                    int amount = moveItem.getAmount();
-                    int added = addItem2(moveItem.getItems(), hopper);
-    
-                    moveItem.setAmount(amount - added);                    
+                if (!hopper.ContainsInFilterMaterialList(moveItem.getEntity().getItemStack().getType(), moveItem.getEntity().getItemStack().getDurability())) {
+                    continue;
                 }
+
+                if (hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("pickupNamedItems") && !(boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("pickupNamedItems")
+                        && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName())
+                    continue;
+
+                int amount = moveItem.getAmount();
+                int added = addItem2(moveItem.getItems(), hopper);
+
+                moveItem.setAmount(amount - added);
             }
         }
 
@@ -165,11 +133,11 @@ public class Methods {
 
             try {
                 if (MContainer.isContainer(location)) {
-                    inventories.add(MContainer.getOfLocation(location).getInventory(location));
+                    inventories.add(MContainer.getOfLocation(location).getInventory(location).get().getInventory());
                 } else {
                     hopper.unlink(location);
                 }
-            } catch (IllegalStateException ex) {
+            } catch (IllegalStateException | InterruptedException | ExecutionException ex) {
                 hopper.unlink(location);
             }
         }
@@ -184,6 +152,7 @@ public class Methods {
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
+        if (inv == null) return added;
 
         for (ItemStack item : items) {
             if (inv == null) return added;
@@ -263,56 +232,19 @@ public class Methods {
         }
     }
 
-    private static List<IHopper> getActiveHopperByTypeSync(HopperEnum... e) {
-        List<HopperEnum> types = Arrays.asList(e);
-        List<IHopper> _nonHoppers = new ArrayList<>();
-        List<IHopper> hoppers = new ArrayList<>();
-        DataManager.getInstance().getHoppers().values().forEach(locationIHopperMap -> _nonHoppers.addAll(locationIHopperMap.values()));
-        for (IHopper hopper : _nonHoppers) {
-            if (types.contains(hopper.getType())) {
-                if(hopper.isActive()){
-                    hoppers.add(hopper);
-                }
-            }
-        }
-        return hoppers;
+    public static Set<IHopper> getActiveHopperByType(HopperEnum... e) {
+        List<HopperEnum> typesList = Arrays.asList(e);
+        Set<IHopper> activeHoppers = DataManager.getInstance().getActiveHoppers();
+        activeHoppers.removeIf(hopper -> !typesList.contains(hopper.getType()));
+
+        return activeHoppers;
     }
 
-    public static List<IHopper> getActiveHopperByType(HopperEnum... e) {
-        if (Thread.currentThread().getName().equalsIgnoreCase("Server thread")) {
-            return getActiveHopperByTypeSync(e);
-        }
-        else {
-            CompletableFuture<List<IHopper>> ent = new CompletableFuture<>();
+    public static Set<IHopper> getHopperByType(HopperEnum e) {
+        Set<IHopper> hoppersSet = DataManager.getInstance().getHoppersSet();
+        hoppersSet.removeIf(hopper -> hopper.getType() != e);
 
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    List<IHopper> hoppers = getActiveHopperByTypeSync(e);
-                    ent.complete(hoppers);
-                }
-            }.runTask(plugin);
-
-            try {
-                return ent.get();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-
-            return new ArrayList<>();
-        }
-    }
-
-    public static List<IHopper> getHopperByType(HopperEnum e) {
-        List<IHopper> _nonHoppers = new ArrayList<>();
-        List<IHopper> hoppers = new ArrayList<>();
-        DataManager.getInstance().getHoppers().values().forEach(locationIHopperMap -> _nonHoppers.addAll(locationIHopperMap.values()));
-        for (IHopper hopper : _nonHoppers) {
-            if (hopper.getType() == e) {
-                hoppers.add(hopper);
-            }
-        }
-        return hoppers;
+        return hoppersSet;
     }
 
     public static Map<Chunk, List<IHopper>> getMapHopperByType(HopperEnum... e) {
@@ -361,7 +293,7 @@ public class Methods {
             if (hopper == null) {
                 continue;
             }
-            if(!hopper.isChunkLoaded()){
+            if (!hopper.isChunkLoaded()) {
                 continue;
             }
 
@@ -409,42 +341,21 @@ public class Methods {
 
         }
         return hoppers;
-
-
     }
 
 
-    public static List<LivingEntity> getSortedEntities(ArrayList<Entity> entityList, List<EntityType> blacklist) {
-
-        CompletableFuture<List<LivingEntity>> ent = new CompletableFuture<>();
-
-        new BukkitRunnable() {
-
-            List<LivingEntity> entities = new ArrayList<>();
-
-            @Override
-            public void run() {
-                for (Entity entity : entityList) {
-                    if (entity == null) {
-                        continue;
-                    }
-
-                    if (entity.getType() != EntityType.PLAYER && entity.getType() != EntityType.ARMOR_STAND && entity.getType() != EntityType.DROPPED_ITEM && entity.getType().isAlive() && (blacklist == null || !blacklist.contains(entity.getType()))) {
-                        entities.add((LivingEntity) entity);
-                    }
-                }
-                ent.complete(entities);
+    public static Set<LivingEntity> getSortedEntities(Set<Entity> entityList, List<EntityType> blacklist) {
+        Set<LivingEntity> entities = Sets.newHashSet();
+        for (Entity entity : entityList) {
+            if (entity == null) {
+                continue;
             }
-        }.runTask(plugin);
 
-
-        try {
-            return ent.get();
-        } catch (Exception ex) {
-            ex.printStackTrace();
+            if (entity.getType() != EntityType.PLAYER && entity.getType() != EntityType.ARMOR_STAND && entity.getType() != EntityType.DROPPED_ITEM && entity.getType().isAlive() && (blacklist == null || !blacklist.contains(entity.getType()))) {
+                entities.add((LivingEntity) entity);
+            }
         }
-
-        return new ArrayList<>();
+        return entities;
     }
 
     public static List<Entity> getItems(ArrayList<Entity> entityList) {
@@ -460,19 +371,20 @@ public class Methods {
         return entities;
     }
 
-    public static void addSlownessAndTeleport(LivingEntity ent, Location loc) {
-
+    public static void addSlownessAndTeleport(Set<LivingEntity> ents, Location loc) {
         new BukkitRunnable() {
             @Override
             public void run() {
-                NBTEntity nbt = new NBTEntity(ent);
-                if (nbt.getByte("NoAI") == 1 && ent.getType() != EntityType.ENDERMAN) {
-                    return;
+                for (LivingEntity ent : ents) {
+                    NBTEntity nbt = new NBTEntity(ent);
+                    if (nbt.getByte("NoAI") == 1 && ent.getType() != EntityType.ENDERMAN) {
+                        return;
+                    }
+                    PotionEffect effect = new PotionEffect(PotionEffectType.SLOW, 999999999, 60);
+                    ent.addPotionEffect(effect, false);
+                    nbt.setByte("NoAI", (byte) 1);
+                    ent.teleport(loc);
                 }
-                PotionEffect effect = new PotionEffect(PotionEffectType.SLOW, 999999999, 60);
-                ent.addPotionEffect(effect, false);
-                nbt.setByte("NoAI", (byte) 1);
-                ent.teleport(loc);
             }
         }.runTask(plugin);
 
@@ -490,7 +402,7 @@ public class Methods {
 
     }
 
-    public static LivingEntity nearest(final List<LivingEntity> entities, Location mid) {
+    public static LivingEntity nearest(final Set<LivingEntity> entities, Location mid) {
 
         HashMap<LivingEntity, Integer> distances = new HashMap<>();
         HashMap<Integer, LivingEntity> distanceToEntity = new HashMap<>();
@@ -534,28 +446,24 @@ public class Methods {
 
                 if ((current - amount) < 0) {
 
-                    if(MFHoppers.getInstance().getConfig().contains("headHunterSupport") && MFHoppers.getInstance().getConfig().getBoolean("headHunterSupport")){
-                        if(Bukkit.getOnlinePlayers().size() > 0)
-                        {
+                    if (MFHoppers.getInstance().getConfig().contains("headHunterSupport") && MFHoppers.getInstance().getConfig().getBoolean("headHunterSupport")) {
+                        if (Bukkit.getOnlinePlayers().size() > 0) {
                             Player player = null;
-                            if(Bukkit.getOnlinePlayers().stream().anyMatch(p -> ((Player) p).getName().equals(hopper.getOwner()))){
+                            if (Bukkit.getOnlinePlayers().stream().anyMatch(p -> ((Player) p).getName().equals(hopper.getOwner()))) {
                                 player = Bukkit.getOnlinePlayers().stream().filter(p -> ((Player) p).getName().equals(hopper.getOwner())).findFirst().get();
-                            }
-                            else {
-                                if(MFHoppers.getInstance().getConfig().contains("headHunterOfflineSupport") && MFHoppers.getInstance().getConfig().getBoolean("headHunterOfflineSupport")) {
+                            } else {
+                                if (MFHoppers.getInstance().getConfig().contains("headHunterOfflineSupport") && MFHoppers.getInstance().getConfig().getBoolean("headHunterOfflineSupport")) {
                                     player = Bukkit.getOnlinePlayers().stream().findFirst().get();
                                 }
                             }
-                            if(player != null) {
+                            if (player != null) {
                                 ent.damage(amount, player);
                                 ent.setLastDamageCause(new EntityDamageByEntityEvent(player, ent, EntityDamageEvent.DamageCause.ENTITY_ATTACK, amount));
-                            }
-                            else {
+                            } else {
                                 ent.damage(amount);
                             }
                         }
-                    }
-                    else {
+                    } else {
                         ent.damage(amount);
                         if (damageType == null) {
                             if (Bukkit.getPluginManager().isPluginEnabled("BeastCore")) {
@@ -575,8 +483,7 @@ public class Methods {
                     MFHoppers.getInstance().getLogger().info(String.valueOf(ent.getEntityId()));
                     Bukkit.getServer().getPluginManager().callEvent(new EntityDeathEvent(ent, list));*/
                     return;
-                }
-                else {
+                } else {
                     ent.damage(amount);
                 }
 
@@ -591,7 +498,7 @@ public class Methods {
             public void run() {
                 block.setType(Material.AIR);
 
-                if(Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")){
+                if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")) {
                     SuperiorSkyblockAPI.getIslandAt(block.getLocation()).handleBlockBreak(block);
                 }
             }
@@ -602,35 +509,35 @@ public class Methods {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if(item.getType() != Material.AIR && item.getAmount() > 0) {
+                if (item.getType() != Material.AIR && item.getAmount() > 0) {
                     loc.getWorld().dropItem(loc, item);
                 }
             }
         }.runTask(plugin);
     }
+
     public static boolean materialEqualsTo(Location loc, Material toCompare) {
         return materialEqualsTo(loc, toCompare, 1);
     }
 
     public static boolean materialEqualsTo(Location loc, Material toCompare, int distance) {
-        if(Thread.currentThread().getName().equalsIgnoreCase("Server thread")){
+        if (Thread.currentThread().getName().equalsIgnoreCase("Server thread")) {
             Location location = loc.clone();
-            for(int i = 0; i < distance; i++){
-                if(location.getBlock().getType() != toCompare){
+            for (int i = 0; i < distance; i++) {
+                if (location.getBlock().getType() != toCompare) {
                     return false;
                 }
                 location.add(0, 1, 0);
             }
             return true;
-        }
-        else {
+        } else {
             CompletableFuture<Boolean> ret = new CompletableFuture<>();
             new BukkitRunnable() {
                 @Override
                 public void run() {
                     Location location = loc.clone();
-                    for(int i = 0; i < distance; i++){
-                        if(location.getBlock().getType() != toCompare){
+                    for (int i = 0; i < distance; i++) {
+                        if (location.getBlock().getType() != toCompare) {
                             ret.complete(false);
                             return;
                         }
@@ -801,28 +708,14 @@ public class Methods {
 
         }
         return toReturn.toString();
-
     }
 
-
     public static boolean containsInInventory(ItemStack item, Inventory inventory) {
-
         for (ItemStack itemStack : inventory.getContents()) {
-
             if (itemStack == null || itemStack.getType() == Material.AIR) continue;
 
-            if (MFHoppers.mcVersion >= 13) {
-
-                if (itemStack.getType() == item.getType() && item.getData() == itemStack.getData()) {
-
-                    return true;
-
-                }
-            } else {
-
-                if (Methods.isSimilar(item, itemStack)) return true;
-            }
-
+            if (Methods.isSimilar(item, itemStack))
+                return true;
         }
 
         return false;
@@ -917,7 +810,7 @@ public class Methods {
         }
 
         boolean sameTypeId = (first.getType() == second.getType());
-        boolean sameDurability = (first.getDurability() == second.getDurability());
+        boolean sameDurability = OVersion.isAfter(12) || (first.getDurability() == second.getDurability());
         boolean sameHasItemMeta = (first.hasItemMeta() == second.hasItemMeta());
         boolean sameEnchantments = (first.getEnchantments().equals(second.getEnchantments()));
         boolean sameItemMeta = true;

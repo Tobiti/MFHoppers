@@ -42,9 +42,6 @@ public abstract class IHopper {
     private HashMap<String, Object> data = new HashMap<>();
     private List<FilterElement> filterList = new ArrayList<>();
     private Inventory inventory;
-    public void initInventory() {
-
-    }
 
     public abstract void save(PreparedStatement stat);
 
@@ -101,7 +98,16 @@ public abstract class IHopper {
     public CompletableFuture<Inventory> getInventory() {
         if (inventory != null) {
             OFuture<Inventory> future = new OFuture<>();
-            future.complete(inventory);
+            future.complete(isChunkLoaded() ? inventory : null);
+            return future;
+
+        } else if (Thread.currentThread().getName().equalsIgnoreCase("Server Thread")) {
+            OFuture<Inventory> future = new OFuture<>();
+            if (getLocation().getBlock().getState() instanceof InventoryHolder) {
+                inventory = ((InventoryHolder) getLocation().getBlock().getState()).getInventory();
+                future.complete(inventory);
+            }
+            future.complete(null);
             return future;
 
         } else {
@@ -113,6 +119,7 @@ public abstract class IHopper {
                         inventory = ((InventoryHolder) getLocation().getBlock().getState()).getInventory();
                         future.complete(inventory);
                     }
+                    future.complete(null);
                 }
             }.runTask(MFHoppers.getInstance());
             return future;
@@ -124,17 +131,13 @@ public abstract class IHopper {
     }
 
     public List<Location> getLinked() {
-
         if (!isLinked()) return new ArrayList<>();
 
         return ((List<String>) getData().get("linked")).stream().map(location -> Methods.toLocation(location)).filter(it -> it != null).collect(toList());
-
     }
 
     public List<String> getLinkedAsStrings() {
-
         return ((List<String>) getData().get("linked"));
-
     }
 
     public ConfigHopper getConfigHopper() {
@@ -159,19 +162,14 @@ public abstract class IHopper {
     }
 
     public boolean isChunkLoaded() {
-
         int chunkX = getLocation().getBlockX() >> 4;
         int chunkZ = getLocation().getBlockZ() >> 4;
 
-        boolean toReturn = getLocation().getWorld().isChunkLoaded(chunkX, chunkZ);
+        Location location = getLocation();
+        if (location.getWorld() == null)
+            return false;
 
-//        if(toReturn) {
-//            if (Methods.containsPlayersAroundHopper(getLocation())) {
-//                return true;
-//            }
-//        }
-
-        return toReturn;
+        return location.getWorld().isChunkLoaded(chunkX, chunkZ);
 
     }
 
@@ -289,7 +287,7 @@ public abstract class IHopper {
     }
 
     public boolean isActive() {
-        return true;
+        return isChunkLoaded();
     }
 
 }
