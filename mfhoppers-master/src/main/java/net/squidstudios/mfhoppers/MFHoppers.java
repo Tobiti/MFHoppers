@@ -2,6 +2,7 @@ package net.squidstudios.mfhoppers;
 
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
 import com.sun.org.apache.xpath.internal.operations.Bool;
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import net.milkbowl.vault.economy.Economy;
 import net.squidstudios.mfhoppers.api.events.ItemsHopperCatchEvent;
 import net.squidstudios.mfhoppers.hopper.filter.FilterInventory;
@@ -14,7 +15,6 @@ import net.squidstudios.mfhoppers.tasks.Listeners.BeastCoreListener;
 import net.squidstudios.mfhoppers.tasks.TaskManager;
 import net.squidstudios.mfhoppers.util.*;
 import net.squidstudios.mfhoppers.util.cmd.Sender;
-import net.squidstudios.mfhoppers.util.item.nbt.NBTItem;
 import net.squidstudios.mfhoppers.util.moveableItem.MoveItem;
 import net.squidstudios.mfhoppers.util.plugin.PluginBuilder;
 import objectexplorer.MemoryMeasurer;
@@ -78,8 +78,8 @@ public class MFHoppers extends PluginBuilder {
 
     @Override
     public void init() {
-        if (ReflectionUtil.SERVER_VERSION_NUM < 14) {
-            out("This Jar is for server versions between 1.14.X-1.15.X", OutType.ERROR);
+        if (ReflectionUtil.SERVER_VERSION_NUM > 13) {
+            out("This Jar is for server versions between 1.8-1.13.X", OutType.ERROR);
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
@@ -437,7 +437,7 @@ public class MFHoppers extends PluginBuilder {
 
                     String title = hopper.getConfigHopper().getTitle(hopper);
 
-                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), title), 1);
+                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), title, MContainer.getMinecraftName(mcHopper)), 1);
 
                 }
 
@@ -460,7 +460,7 @@ public class MFHoppers extends PluginBuilder {
                     String title = cnf.getString("LinkedContainer");
                     String mcName = event.getView().getTitle();
 
-                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), getTitle(mcName, title)), 0);
+                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), getTitle(mcName, title), MContainer.getMinecraftName(event.getInventory().getHolder())), 0);
                 }
             }
         });

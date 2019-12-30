@@ -58,8 +58,6 @@ public class Drop {
 
             }
 
-        }
-
         if (hasMin()) {
             item.setAmount(ThreadLocalRandom.current().nextInt(getMin(), getMax() + 1));
         } else {

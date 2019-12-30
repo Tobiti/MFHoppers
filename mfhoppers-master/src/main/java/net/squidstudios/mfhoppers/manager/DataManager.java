@@ -31,13 +31,11 @@ import java.nio.file.StandardCopyOption;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class DataManager {
@@ -791,15 +789,5 @@ public class DataManager {
 
     public Set<IHopper> getActiveHoppers(){
         return getHoppersFiltered(IHopper::isChunkLoaded);
-    }
-
-    public void updateHopper(IHopper iHopper) {
-        if(!UpdatedHopperQueue.contains(iHopper)) {
-            try {
-                UpdatedHopperQueue.put(iHopper);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
     }
 }
