@@ -1,7 +1,7 @@
 package net.squidstudios.mfhoppers.util.item;
 
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import me.clip.placeholderapi.PlaceholderAPI;
-import net.squidstudios.mfhoppers.util.item.nbt.NBTItem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;

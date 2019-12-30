@@ -1,6 +1,5 @@
 package net.squidstudios.mfhoppers.util;
 
-import net.squidstudios.mfhoppers.MFHoppers;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -53,11 +52,9 @@ public class Drop {
 
         ItemStack item = new ItemStack(mat);
 
-        if(!MFHoppers.is13version){
-
-            if(item.getType() == MMaterial.matchMaterial("INK_SACK")){
-
-                item.setDurability((byte)4);
+        if (OVersion.isBefore(13)) {
+            if (item.getType() == MMaterial.matchMaterial("INK_SACK"))
+                item.setDurability((byte) 4);
 
             }
 

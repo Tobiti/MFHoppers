@@ -29,7 +29,6 @@
             <id>spigot</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/public</url>
         </repository>
-
 		
         <repository>
             <id>vault-repo</id>
@@ -57,9 +56,21 @@
             <url>http://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
 
+        <repository>
+            <id>item-nbt-api</id>
+            <url>https://repo.codemc.io/repository/maven-public/</url>
+        </repository>
+
     </repositories>
 
     <dependencies>
+
+        <dependency>
+            <groupId>de.tr7zw</groupId>
+            <artifactId>item-nbt-api</artifactId>
+            <version>LATEST</version>
+            <scope>compile</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.github.OmerBenGera</groupId>
@@ -177,13 +188,13 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/../Libraries/CustomDrops-Legacy.jar</systemPath>
         </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.6</version>
             <scope>provided</scope>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -210,13 +221,25 @@
 
                         <configuration>
                             <!--This animate tells maven where to put the jar, in this case the plugins folder.-->
-                            <outputFile>${project.basedir}/target/${project.artifactId}.jar</outputFile>
-                            <minimizeJar>true</minimizeJar>
+                            <outputFile>${project.basedir}/out/${project.artifactId}-${project.version}.jar</outputFile>
+
+                            <relocations>
+                                <relocation>
+                                    <pattern>de.tr7zw.changeme.nbtapi</pattern>
+                                    <shadedPattern>net.squidstudios.mfhoppers.util.nbt</shadedPattern>
+                                </relocation>
+                            </relocations>
+
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>com.*</exclude>
+                                </excludes>
+                            </artifactSet>
+
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
         <resources>
             <resource>

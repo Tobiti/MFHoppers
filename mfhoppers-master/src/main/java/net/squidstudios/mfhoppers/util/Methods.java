@@ -1,8 +1,13 @@
 package net.squidstudios.mfhoppers.util;
 
-import me.clip.placeholderapi.PlaceholderAPI;
+import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
+import com.google.common.collect.Sets;
+import de.tr7zw.changeme.nbtapi.NBTEntity;
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import net.squidstudios.mfhoppers.MFHoppers;
+import net.squidstudios.mfhoppers.hopper.ConfigHopper;
 import net.squidstudios.mfhoppers.hopper.HopperEnum;
+import net.squidstudios.mfhoppers.hopper.IHopper;
 import net.squidstudios.mfhoppers.manager.DataManager;
 import net.squidstudios.mfhoppers.util.item.nbt.NBTEntity;
 import net.squidstudios.mfhoppers.util.item.nbt.NBTItem;
@@ -13,7 +18,10 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -29,6 +37,7 @@ import net.squidstudios.mfhoppers.hopper.IHopper;
 import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
@@ -177,10 +186,15 @@ public class Methods {
 
     public static int addItem2(List<ItemStack> items, IHopper hopper) {
         int added = 0;
+        Inventory inv = null;
+        try {
+            inv = hopper.getInventory().get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
+        }
+        if (inv == null) return added;
 
         for (ItemStack item : items) {
-
-            Inventory inv = hopper.getInventory();
             if (inv == null) return added;
 
             if (hopper.isLinked()) {
@@ -258,51 +272,19 @@ public class Methods {
         }
     }
 
-    private static List<IHopper> getActiveHopperByTypeSync(HopperEnum... e) {
-        List<HopperEnum> types = Arrays.asList(e);
-        List<IHopper> _nonHoppers = new ArrayList<>();
-        List<IHopper> hoppers = new ArrayList<>();
-        DataManager.getInstance().getHoppers().values().forEach(locationIHopperMap -> _nonHoppers.addAll(locationIHopperMap.values()));
-        for (IHopper hopper : _nonHoppers) {
-            if (types.contains(hopper.getType())) {
-                if(hopper.isActive()){
-                    hoppers.add(hopper);
-                }
-            }
-        }
-        return hoppers;
+    public static Set<IHopper> getActiveHopperByType(HopperEnum... e) {
+        List<HopperEnum> typesList = Arrays.asList(e);
+        Set<IHopper> activeHoppers = DataManager.getInstance().getActiveHoppers();
+        activeHoppers.removeIf(hopper -> !typesList.contains(hopper.getType()));
+
+        return activeHoppers;
     }
 
-    public static List<IHopper> getActiveHopperByType(HopperEnum... e) {
-        if (Thread.currentThread().getName().equalsIgnoreCase("Server thread")) {
-            return getActiveHopperByTypeSync(e);
-        }
-        else {
-            CompletableFuture<List<IHopper>> ent = new CompletableFuture<>();
+    public static Set<IHopper> getHopperByType(HopperEnum e) {
+        Set<IHopper> hoppersSet = DataManager.getInstance().getHoppersSet();
+        hoppersSet.removeIf(hopper -> hopper.getType() != e);
 
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    List<IHopper> hoppers = getActiveHopperByTypeSync(e);
-                    ent.complete(hoppers);
-                }
-            }.runTask(plugin);
-
-            try {
-                return ent.get();
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
-
-            return new ArrayList<>();
-        }
-    }
-
-    public static List<IHopper> getHopperByType(HopperEnum e) {
-        List<IHopper> hopper = new ArrayList<>();
-        DataManager.getInstance().getHoppers().values().forEach(values -> hopper.addAll(values.values()));
-        hopper.removeIf(hopper2 -> hopper2.getType() != e);
-        return hopper;
+        return hoppersSet;
     }
 
     public static Map<Chunk, List<IHopper>> getMapHopperByType(HopperEnum... e) {
@@ -351,11 +333,7 @@ public class Methods {
             if (hopper == null) {
                 continue;
             }
-            
-            int chunkX = hopper.getLocation().getBlockX() >> 4;
-            int chunkZ = hopper.getLocation().getBlockZ() >> 4;
-            
-            if(!hopper.getLocation().getWorld().isChunkLoaded(chunkX, chunkZ)){
+            if (!hopper.isChunkLoaded()) {
                 continue;
             }
 
@@ -473,13 +451,11 @@ public class Methods {
     }
 
     public static List<EntityType> toEntityType(List<String> en) {
+
         List<EntityType> ret = new ArrayList<>();
         for (String e : en) {
-            try {
-                ret.add(EntityType.valueOf(e));
-            } catch (Exception error){
-                MFHoppers.getInstance().getLogger().info("Mob conversion error: " + e);
-            }
+
+            ret.add(EntityType.valueOf(e));
 
         }
         return ret;
@@ -598,7 +574,9 @@ public class Methods {
         new BukkitRunnable() {
             @Override
             public void run() {
-                loc.getWorld().dropItem(loc, item);
+                if(item.getType() != Material.AIR && item.getAmount() > 0) {
+                    loc.getWorld().dropItem(loc, item);
+                }
             }
         }.runTask(plugin);
     }
@@ -805,18 +783,8 @@ public class Methods {
 
             if (itemStack == null || itemStack.getType() == Material.AIR) continue;
 
-            if (MFHoppers.is13version) {
-
-                if (itemStack.getType() == item.getType() && item.getData() == itemStack.getData()) {
-
-                    return true;
-
-                }
-            } else {
-
-                if (Methods.isSimilar(item, itemStack)) return true;
-            }
-
+            if (Methods.isSimilar(item, itemStack))
+                return true;
         }
 
         return false;

@@ -29,12 +29,12 @@ public enum GlassColor {
     GlassColor(int id){
         this.glass_id = id;
     }
-    public ItemStack getItem(){
 
-        if(MFHoppers.is13version){
+    public ItemStack getItem() {
+        if (OVersion.isOrAfter(13)) {
 
             String name = name() + "_STAINED_GLASS_PANE";
-            return new ItemBuilder(Material.getMaterial(name,false)).
+            return new ItemBuilder(XMaterial.fromString(name).parseMaterial()).
                     addItemFlag(ItemFlag.HIDE_ATTRIBUTES).
                     addItemFlag(ItemFlag.HIDE_ENCHANTS).
                     addNbt("filler", "filler").

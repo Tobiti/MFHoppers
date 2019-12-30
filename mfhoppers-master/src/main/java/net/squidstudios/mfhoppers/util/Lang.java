@@ -17,7 +17,7 @@ public enum Lang {
     HOPPER_UPGRADED("&b&l(!)&7 You successfully upgraded your hopper from level &b%lastlvl% &7to &b%newlvl%"),
     HOPPER_ALREADY_IS_MAX_LEVEL("&c&l(!)&7 The hopper is already maxed out!"),
     HOPPER_LINK_MAKE_SURE_TO_LOOK_AT_HOPPER("&c&l(!)&7 Make sure you're looking at hopper to link it!"),
-    HOPPER_LINK_NOW_SELECT_CONTAINER("&b&l(!)&7 Hopper location set, now click on an container!"),
+    HOPPER_LINK_NOW_SELECT_CONTAINER("&b&l(!)&7 Hopper location set, now shift click on an container!"),
     HOPPER_LINK_NOT_OWNER("&c&l(!)&7 You aren't the owner of the hopper and can't connect it to a other object!"),
     HOPPER_LINK_SUCCESSFULLY_LINKED("&b&l(!)&7 Your hopper has been successfully linked!"),
     HOPPER_LINK_CLICKED_BLOCK_IS_NOT_CONTAINER("&c&l(!)&7 Your clicked block isn't an container!"),

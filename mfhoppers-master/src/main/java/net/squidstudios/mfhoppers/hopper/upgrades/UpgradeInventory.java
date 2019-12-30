@@ -1,10 +1,10 @@
 package net.squidstudios.mfhoppers.hopper.upgrades;
 
+import de.tr7zw.changeme.nbtapi.NBTItem;
 import me.clip.placeholderapi.PlaceholderAPI;
 import me.clip.placeholderapi.PlaceholderAPIPlugin;
 import net.squidstudios.mfhoppers.MFHoppers;
 import net.squidstudios.mfhoppers.util.*;
-import net.squidstudios.mfhoppers.util.item.nbt.NBTItem;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;

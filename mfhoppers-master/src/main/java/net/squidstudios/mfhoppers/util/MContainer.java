@@ -1,21 +1,25 @@
 package net.squidstudios.mfhoppers.util;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import de.tr7zw.changeme.nbtapi.utils.MinecraftVersion;
 import net.squidstudios.mfhoppers.MFHoppers;
-import net.squidstudios.mfhoppers.util.item.nbt.utils.MinecraftVersion;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.*;
 import org.bukkit.inventory.DoubleChestInventory;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import static net.squidstudios.mfhoppers.MFHoppers.is13version;
-import static net.squidstudios.mfhoppers.MFHoppers.is9version;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
 
 public enum MContainer {
 
     CHEST("Chest"),
     HOPPER("Hopper"),
+    BARREL("Barrel"),
     SHULKER_BOX("ShulkerBox"),
     Dropper("Dropper"),
     Dispenser("Dispenser"),
@@ -23,92 +27,83 @@ public enum MContainer {
 
     private String classLocation;
 
+    private static Cache<Location, InventoryHolder> inventoriesHolderCache = CacheBuilder.newBuilder()
+            .concurrencyLevel(4)
+            .expireAfterAccess(5, TimeUnit.SECONDS)
+            .build();
+
     MContainer(String location) {
         classLocation = location;
     }
 
-    public Location getLocation(InventoryHolder holder){
+    public Location getLocation(InventoryHolder holder) {
 
         try {
-            if(holder.getInventory() instanceof DoubleChestInventory)
-                return ((org.bukkit.block.Chest)holder).getLocation();
+            if (holder.getInventory() instanceof DoubleChestInventory)
+                return ((org.bukkit.block.Chest) holder).getLocation();
 
-            if(MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_9_R1.getVersionId()) {
+            if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_9_R1.getVersionId()) {
                 Container container = (Container) holder;
                 return container.getLocation();
-            }
-            else {
+            } else {
                 return ((BlockState) holder).getLocation();
             }
 
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
 
     }
 
-    public static MContainer getOfLocation(Location loc){
+    public static MContainer getOfLocation(Location loc) {
+        if (loc == null) return null;
 
-        if(loc == null) return null;
-        Material material = loc.getBlock().getType();
-
-        if(loc.getBlock().getState() instanceof Chest){
-
-            Inventory inv = ((Chest) loc.getBlock().getState()).getInventory();
-
-            if(inv instanceof DoubleChestInventory){
-                return DoubleChest;
-            }
+        InventoryHolder holder = null;
+        try {
+            holder = getInventory(loc).get();
+        } catch (InterruptedException | ExecutionException e) {
+            e.printStackTrace();
         }
+        if (holder == null) return null;
 
-        if(material.name().contains("CHEST")){
+        if (holder instanceof Chest)
             return CHEST;
-        } else if(material.name().contains("DISPENSER")){
+
+        else if (holder instanceof Dispenser)
             return Dispenser;
-        } else if(material.name().contains("DROPPER")){
+
+        else if (holder instanceof Dropper)
             return Dropper;
-        } else if(material.name().contains("HOPPER")) {
+
+        else if (holder instanceof Hopper)
             return HOPPER;
-        } else if(is9version || is13version) {
-            if (material.name().contains("SHULKER_BOX")) {
-                return SHULKER_BOX;
-            }
-        }
+
+        else if (holder instanceof ShulkerBox)
+            return SHULKER_BOX;
+
+        else if (OVersion.isOrAfter(14))
+            if (holder.getClass().getSimpleName().contains("Barrel"))
+                return BARREL;
         return null;
     }
 
-    public static String getContainerName(Location location){
-
-        try {
-
-            return getOfLocation(location).getInventory(location).getTitle();
-
-        } catch (Exception ex){
-            ex.printStackTrace();
-        }
-
-        return "";
-    }
-
-    public static boolean isContainer(Location location){
+    public static boolean isContainer(Location location) {
         return getOfLocation(location) != null;
-
     }
 
     public static MContainer getFromHolder(InventoryHolder holder) {
 
         try {
-            if(MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_9_R1.getVersionId()) {
+            if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_9_R1.getVersionId()) {
                 if (!(holder instanceof Container)) return null;
                 return getOfLocation(((Container) holder).getLocation());
-            }
-            else {
+            } else {
                 if (!(holder instanceof BlockState)) return null;
                 return getOfLocation(((BlockState) holder).getLocation());
             }
 
-        } catch (Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
         }
 
@@ -116,26 +111,26 @@ public enum MContainer {
 
     }
 
-    static boolean containsInBukkit(String classz){
-        try{
+    static boolean containsInBukkit(String classz) {
+        try {
             Class.forName(classz);
             return true;
-        } catch (Exception ex){
+        } catch (Exception ex) {
             return false;
         }
     }
 
-    public static String getMinecraftName(InventoryHolder holder){
+    public static String getMinecraftName(InventoryHolder holder) {
 
-        if(holder instanceof Chest || holder instanceof org.bukkit.block.DoubleChest){
+        if (holder instanceof Chest || holder instanceof org.bukkit.block.DoubleChest) {
             return "minecraft:chest";
-        } else if(holder instanceof Dropper){
+        } else if (holder instanceof Dropper) {
             return "minecraft:dropper";
-        } else if(holder instanceof org.bukkit.block.Dispenser){
+        } else if (holder instanceof org.bukkit.block.Dispenser) {
             return "minecraft:dispenser";
         }
-        if(containsInBukkit("org.bukkit.block." + SHULKER_BOX.classLocation)){
-            if(holder instanceof ShulkerBox){
+        if (containsInBukkit("org.bukkit.block." + SHULKER_BOX.classLocation)) {
+            if (holder instanceof ShulkerBox) {
                 return "minecraft:shulker_box";
             }
         }
@@ -143,48 +138,79 @@ public enum MContainer {
         return "";
     }
 
-    public Inventory getInventory(Location location){
-        if(MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_9_R1.getVersionId()) {
-            return ((Container) location.getBlock().getState()).getInventory();
+    public static CompletableFuture<InventoryHolder> getInventory(Location location) {
+        InventoryHolder inv = inventoriesHolderCache.getIfPresent(location);
+        CompletableFuture<InventoryHolder> future;
+
+        if (inv != null) {
+            future = new OFuture<>();
+            future.complete(inv);
+
+        } else if (Thread.currentThread().getName().equalsIgnoreCase("Server Thread")) {
+            future = new OFuture<>();
+            future.complete(_getInventoryHolder(location));
+
+        } else {
+            future = new CompletableFuture<>();
+            new BukkitRunnable(){
+                @Override
+                public void run() {
+                    future.complete(_getInventoryHolder(location));
+                }
+            }.runTask(MFHoppers.getInstance());
         }
-        else {
-            if(location.getBlock().getState() instanceof Chest){
-                return ((Chest)location.getBlock().getState()).getInventory();
-            }
-            if(location.getBlock().getState() instanceof Hopper){
-                return ((Hopper)location.getBlock().getState()).getInventory();
-            }
-            if(location.getBlock().getState() instanceof Dispenser){
-                return ((Dispenser)location.getBlock().getState()).getInventory();
-            }
-            if(location.getBlock().getState() instanceof Dropper){
-                return ((Dropper)location.getBlock().getState()).getInventory();
-            }
-            return null;
-        }
+
+        return future;
     }
 
-    static boolean containsMethod(Object object, String name){
+    private static InventoryHolder _getInventoryHolder(Location location) {
+        InventoryHolder toReturn = null;
+        if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_9_R1.getVersionId()) {
+            toReturn = ((Container) location.getBlock().getState()).getInventory().getHolder();
 
-        try{
+        } else {
+            if (location.getBlock().getState() instanceof Chest) {
+                toReturn = ((Chest) location.getBlock().getState()).getInventory().getHolder();
+            }
+            if (location.getBlock().getState() instanceof Hopper) {
+                toReturn = ((Hopper) location.getBlock().getState()).getInventory().getHolder();
+            }
+            if (location.getBlock().getState() instanceof Dispenser) {
+                toReturn = ((Dispenser) location.getBlock().getState()).getInventory().getHolder();
+            }
+            if (location.getBlock().getState() instanceof Dropper) {
+                toReturn = ((Dropper) location.getBlock().getState()).getInventory().getHolder();
+            }
+        }
+
+        if (toReturn != null) {
+            inventoriesHolderCache.put(location, toReturn);
+            System.out.println(toReturn);
+        }
+        return toReturn;
+    }
+
+    static boolean containsMethod(Object object, String name) {
+
+        try {
             object.getClass().getMethod(name);
             return true;
-        } catch (Exception ex){
+        } catch (Exception ex) {
             return false;
         }
 
     }
 
-    public static boolean isDoubleChest(Location loc){
-        if(loc.getBlock().getState() instanceof Chest){
-            if(((Chest) loc.getBlock().getState()).getInventory() instanceof DoubleChestInventory){
+    public static boolean isDoubleChest(Location loc) {
+        if (loc.getBlock().getState() instanceof Chest) {
+            if (((Chest) loc.getBlock().getState()).getInventory() instanceof DoubleChestInventory) {
                 return true;
             }
         }
         return false;
     }
 
-    public boolean canBeCasted(Object var1, Object var2){
+    public boolean canBeCasted(Object var1, Object var2) {
 
         try {
 
