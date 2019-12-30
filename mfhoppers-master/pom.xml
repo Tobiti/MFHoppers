@@ -6,7 +6,7 @@
 
     <groupId>net.squidstudios</groupId>
     <artifactId>MFHoppers</artifactId>
-    <version>3.12</version>
+    <version>3.13</version>
     <name>MFHoppers</name>
 
     <properties>
