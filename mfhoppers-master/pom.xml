@@ -6,7 +6,7 @@
 
     <groupId>net.squidstudios</groupId>
     <artifactId>MFHoppers</artifactId>
-    <version>3.08-v1.14</version>
+    <version>3.11-v1.14</version>
     <name>MFHoppers</name>
 
     <properties>
@@ -125,9 +125,9 @@
         <dependency>
             <groupId>wild.wildstacker</groupId>
             <artifactId>Wildstacker</artifactId>
-            <version>b15</version>
+            <version>b17</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../Libraries/WildStackerAPI-b15.jar</systemPath>
+            <systemPath>${project.basedir}/../Libraries/WildStackerAPI.jar</systemPath>
         </dependency>
 
         <dependency>

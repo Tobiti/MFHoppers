@@ -65,21 +65,24 @@ public abstract class IHopper {
     }
 
     public Chunk getChunk(){
-
-
-        CompletableFuture<Chunk> callback = new CompletableFuture<>();
-
-        Tasks.getInstance().runTask(() -> {
-            callback.complete(getLocation().getChunk());
-        });
-
-        try {
-            return callback.get();
-        } catch (Exception ex){
-            ex.printStackTrace();
+        if(Thread.currentThread().getName().equalsIgnoreCase("Server thread")){
+            return getLocation().getChunk();
         }
-        return null;
+        else {
+            CompletableFuture<Chunk> callback = new CompletableFuture<>();
 
+            Tasks.getInstance().runTask(() -> {
+                callback.complete(getLocation().getChunk());
+            });
+
+            try {
+                return callback.get();
+            } catch (Exception ex){
+                ex.printStackTrace();
+            }
+            return null;
+
+        }
     }
     public abstract ItemStack getItem();
     public String getName(){
@@ -271,6 +274,10 @@ public abstract class IHopper {
         if(getData().containsKey("owner")) return getData().get("owner").toString();
         return null;
 
+    }
+
+    public boolean isActive(){
+        return true;
     }
 
 }
