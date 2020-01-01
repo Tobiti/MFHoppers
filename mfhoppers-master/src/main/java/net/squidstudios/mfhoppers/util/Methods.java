@@ -405,22 +405,22 @@ public class Methods {
         return entities;
     }
 
-    public static void addSlownessAndTeleport(LivingEntity ent, Location loc) {
-
+    public static void addSlownessAndTeleport(Set<LivingEntity> ents, Location loc) {
         new BukkitRunnable() {
             @Override
             public void run() {
-                NBTEntity nbt = new NBTEntity(ent);
-                if (nbt.getByte("NoAI") == 1 && ent.getType() != EntityType.ENDERMAN) {
-                    return;
+                for (LivingEntity ent : ents) {
+                    NBTEntity nbt = new NBTEntity(ent);
+                    if (nbt.getByte("NoAI") == 1 && ent.getType() != EntityType.ENDERMAN) {
+                        return;
+                    }
+                    PotionEffect effect = new PotionEffect(PotionEffectType.SLOW, 999999999, 60);
+                    ent.addPotionEffect(effect, false);
+                    nbt.setByte("NoAI", (byte) 1);
+                    ent.teleport(loc);
                 }
-                PotionEffect effect = new PotionEffect(PotionEffectType.SLOW, 999999999, 60);
-                ent.addPotionEffect(effect, false);
-                nbt.setByte("NoAI", (byte) 1);
-                ent.teleport(loc);
             }
         }.runTask(plugin);
-
     }
 
     public static List<EntityType> toEntityType(List<String> en) {

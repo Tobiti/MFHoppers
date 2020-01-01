@@ -75,7 +75,6 @@ public class TaskManager implements Listener {
         }.runTaskTimer(MFHoppers, 0, 25));
 
         add(new BukkitRunnable() {
-
             @Override
             public void run() {
                 if (MFHoppers.getInstance().getConfig().getBoolean("CollectAlreadyDropedItems", true)) {
@@ -86,11 +85,8 @@ public class TaskManager implements Listener {
     }
 
     public void add(BukkitTask task) {
-
         tasks.add(task);
-
     }
-
 
     Map<Location, EntityType> types = new ConcurrentHashMap<>();
 
@@ -98,7 +94,6 @@ public class TaskManager implements Listener {
         final Collection<IHopper> hoppers = Methods.getActiveHopperByType(HopperEnum.Grind);
 
         for (IHopper hopper : hoppers) {
-
             if (!hopper.isChunkLoaded()) {
                 continue;
             }
@@ -131,45 +126,39 @@ public class TaskManager implements Listener {
                 }
 
                 for (LivingEntity entity : LIVING_ENTITIES) {
-
                     NBTEntity nbt = new NBTEntity(entity);
                     if (nbt.getByte("NoAI") == 1 && entity.getType() != EntityType.ENDERMAN) {
                         continue;
                     }
 
                     if (TYPE == null) {
-
                         if (NEAREST == null) {
                             continue;
                         }
                         TYPE = NEAREST.getType();
-                        Methods.addSlownessAndTeleport(entity, MIDDLE);
+                        toAddSlowness.add(entity);
 
                     } else {
                         if (NEAREST != null) {
                             TYPE = NEAREST.getType();
                             if (entity.getType() == TYPE) {
-                                Methods.addSlownessAndTeleport(entity, MIDDLE);
+                                toAddSlowness.add(entity);
                             }
                         }
                     }
-
                 }
                 if (TYPE != null) {
-
                     types.put(MIDDLE, TYPE);
-
                 }
 
             } else {
                 EntityType type = EntityType.valueOf(hopper.getData().get("ent").toString());
                 final Set<LivingEntity> entities = LIVING_ENTITIES.stream().filter(e -> e.getType() == type).collect(Collectors.toSet());
 
-                for (LivingEntity entity : entities)
-                    toAddSlowness.add(entity);
-
+                toAddSlowness.addAll(entities);
             }
 
+            Methods.addSlownessAndTeleport(toAddSlowness, MIDDLE);
         }
     }
 
@@ -188,7 +177,6 @@ public class TaskManager implements Listener {
         final Set<IHopper> hoppers = Methods.getActiveHopperByType(HopperEnum.Grind);
 
         for (IHopper hopper : hoppers) {
-
             if (!hopper.isChunkLoaded()) {
                 continue;
             }

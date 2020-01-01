@@ -289,7 +289,7 @@ public abstract class IHopper {
     }
 
     public boolean isActive() {
-        return isChunkLoaded();
+        return true;
     }
 
 }

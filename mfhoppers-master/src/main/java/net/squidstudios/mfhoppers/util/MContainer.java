@@ -128,7 +128,9 @@ public enum MContainer {
             return "minecraft:dropper";
         } else if (holder instanceof org.bukkit.block.Dispenser) {
             return "minecraft:dispenser";
-        }
+        } else if (holder instanceof Hopper)
+            return "minecraft:hopper";
+
         if (containsInBukkit("org.bukkit.block." + SHULKER_BOX.classLocation)) {
             if (holder instanceof ShulkerBox) {
                 return "minecraft:shulker_box";

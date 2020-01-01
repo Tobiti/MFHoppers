@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.List;
@@ -120,9 +121,13 @@ public class EntitiesGatherer {
                 List<Object>[] entitiesSlices = (List<Object>[]) CHUNK_GET_ENTITY_SLICES_METHOD.invoke(nmsChunk);
                 for (int i = 0; i < 16; i++) {
                     final List<Object> entities = Collections.synchronizedList(entitiesSlices[i]);
-                    for (Object entity : entities) {
-                        returnsEntities.add((Entity) ENTITY_GET_BUKKIT_ENTITY_METHOD.invoke(entity));
-                    }
+                    entities.stream().forEach(entity -> {
+                        try {
+                            returnsEntities.add((Entity) ENTITY_GET_BUKKIT_ENTITY_METHOD.invoke(entity));
+                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            e.printStackTrace();
+                        }
+                    });
                 }
             }
 
