@@ -4,6 +4,7 @@ import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
 import com.google.common.collect.Sets;
 import de.tr7zw.changeme.nbtapi.NBTEntity;
 import de.tr7zw.changeme.nbtapi.NBTItem;
+import lombok.NonNull;
 import net.squidstudios.mfhoppers.MFHoppers;
 import net.squidstudios.mfhoppers.hopper.ConfigHopper;
 import net.squidstudios.mfhoppers.hopper.HopperEnum;
@@ -807,30 +808,25 @@ public class Methods {
 
     }
 
-    public static boolean containsPlayersAroundHopper(Location location) {
+    public static boolean containsPlayersAroundHopper(@NonNull Location location) {
         int serverViewDistance = Bukkit.getServer().getViewDistance();
-
         int chunkX = location.getBlockX() >> 4;
         int chunkZ = location.getBlockZ() >> 4;
-
         World world = location.getWorld();
+
         Chunk mainChunk = world.getChunkAt(chunkX, chunkZ);
         if (mainChunk == null) return false;
 
-        List<Player> players = new ArrayList<>();
-        players.addAll(Bukkit.getOnlinePlayers());
-
+        List<Player> players = new ArrayList<>(world.getPlayers());
         Location center = mainChunk.getBlock(8, 64, 8).getLocation().clone();
 
         for (Player p : players) {
             if (p != null) {
-                if (p.getLocation().getWorld() == center.getWorld()) {
-                    Location pLocation = p.getLocation().clone();
-                    pLocation.setY(255);
-                    center.setY(255);
-                    if (Math.round(center.distance(pLocation) / 16f) <= serverViewDistance) {
-                        return true;
-                    }
+                Location pLocation = p.getLocation().clone();
+                pLocation.setY(255);
+                center.setY(255);
+                if (Math.round(center.distance(pLocation) / 16f) <= serverViewDistance) {
+                    return true;
                 }
             }
         }

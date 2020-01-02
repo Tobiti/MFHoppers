@@ -58,7 +58,6 @@ public abstract class IHopper {
             data.put("cachedLocation", location);
             return location;
         }
-
     }
 
     public Chunk getChunk() {
@@ -147,11 +146,9 @@ public abstract class IHopper {
     }
 
     public boolean isLinkedTo(Location location) {
-
         if (MContainer.isDoubleChest(location)) {
 
             Chest chest = ((Chest) location.getBlock().getState());
-
             DoubleChestInventory doubleChest = ((DoubleChestInventory) chest.getInventory());
 
             Location loc1 = MContainer.getFromHolder(doubleChest.getLeftSide().getHolder()).getLocation(doubleChest.getLeftSide().getHolder());
@@ -160,7 +157,6 @@ public abstract class IHopper {
             return getLinked().stream().anyMatch(loc -> loc != null && loc.getWorld() == loc1.getWorld() && (loc.distance(loc1) <= 0.5 || loc.distance(loc2) <= 0.5));
 
         } else return getLinked().contains(location);
-
     }
 
     public boolean isChunkLoaded() {
@@ -171,8 +167,11 @@ public abstract class IHopper {
         if (location.getWorld() == null)
             return false;
 
-        return location.getWorld().isChunkLoaded(chunkX, chunkZ);
+        boolean isLoaded =  location.getWorld().isChunkLoaded(chunkX, chunkZ);
+        if (!isLoaded)
+            return Methods.containsPlayersAroundHopper(location);
 
+        return true;
     }
 
     public void unlink(Location location) {
