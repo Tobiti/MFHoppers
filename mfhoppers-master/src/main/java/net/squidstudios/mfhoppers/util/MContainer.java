@@ -5,6 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import de.tr7zw.changeme.nbtapi.utils.MinecraftVersion;
 import net.squidstudios.mfhoppers.MFHoppers;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.*;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.InventoryHolder;
@@ -164,6 +165,8 @@ public enum MContainer {
 
     private static InventoryHolder _getInventoryHolder(Location location) {
         InventoryHolder toReturn = null;
+        if (location.getBlock().getType() == Material.AIR) return null;
+
         if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_9_R1.getVersionId()) {
             toReturn = ((Container) location.getBlock().getState()).getInventory().getHolder();
 

@@ -3,6 +3,7 @@ package net.squidstudios.mfhoppers;
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
 import com.google.common.collect.Sets;
 import de.tr7zw.changeme.nbtapi.NBTItem;
+import de.tr7zw.changeme.nbtapi.utils.MinecraftVersion;
 import net.milkbowl.vault.economy.Economy;
 import net.squidstudios.mfhoppers.api.events.ItemsHopperCatchEvent;
 import net.squidstudios.mfhoppers.hopper.ConfigHopper;
@@ -61,6 +62,7 @@ import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.logging.Level;
 
 import static java.util.stream.Collectors.toList;
 
@@ -77,6 +79,8 @@ public class MFHoppers extends PluginBuilder {
 
     @Override
     public void init() {
+        MinecraftVersion.logger.setLevel(Level.OFF);
+
         if (ReflectionUtil.SERVER_VERSION_NUM < 14) {
             out("This Jar is for server versions between 1.14.X-1.15.X", OutType.ERROR);
             Bukkit.getPluginManager().disablePlugin(this);

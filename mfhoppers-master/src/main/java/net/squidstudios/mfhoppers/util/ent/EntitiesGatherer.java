@@ -115,18 +115,20 @@ public class EntitiesGatherer {
                 Object nmsChunk = WORLD_GET_CHUNK_IF_LOADED_METHOD.invoke(worldServer, chunk.getKey(), chunk.getValue());
                 if (nmsChunk == null) continue;
 
-                List<Object>[] entitiesSlices = (List<Object>[]) CHUNK_GET_ENTITY_SLICES_METHOD.invoke(nmsChunk);
-                for (int i = 0; i < 16; i++) {
-                    final List<Object> entities = new ArrayList<>(Collections.synchronizedList(entitiesSlices[i]));
+                try {
+                    List<Object>[] entitiesSlices = (List<Object>[]) CHUNK_GET_ENTITY_SLICES_METHOD.invoke(nmsChunk);
+                    for (int i = 0; i < 16; i++) {
+                        final List<Object> entities = new ArrayList<>(Collections.synchronizedList(entitiesSlices[i]));
 
-                    entities.forEach(entity -> {
-                        try {
-                            returnsEntities.add((Entity) ENTITY_GET_BUKKIT_ENTITY_METHOD.invoke(entity));
-                        } catch (IllegalAccessException | InvocationTargetException e) {
-                            e.printStackTrace();
-                        }
-                    });
-                }
+                        entities.forEach(entity -> {
+                            try {
+                                returnsEntities.add((Entity) ENTITY_GET_BUKKIT_ENTITY_METHOD.invoke(entity));
+                            } catch (IllegalAccessException | InvocationTargetException e) {
+                                e.printStackTrace();
+                            }
+                        });
+                    }
+                } catch (Throwable ignored) {}
             }
 
             returnsEntities.removeIf(entity -> !entityFilter.test(entity));
