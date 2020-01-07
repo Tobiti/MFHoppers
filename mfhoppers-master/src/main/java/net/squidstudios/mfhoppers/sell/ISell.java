@@ -1,6 +1,7 @@
 package net.squidstudios.mfhoppers.sell;
 
 import net.squidstudios.mfhoppers.manager.SellManager;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 public abstract class ISell {
@@ -14,7 +15,7 @@ public abstract class ISell {
 
     }
 
-    public abstract double getPrice(ItemStack item);
+    public abstract double getPrice(ItemStack item, Player player);
 
     public String getName(){
         return name;

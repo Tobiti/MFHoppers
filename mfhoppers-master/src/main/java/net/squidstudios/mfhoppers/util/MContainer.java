@@ -26,10 +26,9 @@ public enum MContainer {
     DoubleChest("DoubleChest");
 
     private String classLocation;
-
     private static Cache<Location, InventoryHolder> inventoriesHolderCache = CacheBuilder.newBuilder()
             .concurrencyLevel(4)
-            .expireAfterAccess(5, TimeUnit.SECONDS)
+            .expireAfterAccess(10, TimeUnit.SECONDS)
             .build();
 
     MContainer(String location) {
@@ -171,36 +170,34 @@ public enum MContainer {
             toReturn = ((Container) location.getBlock().getState()).getInventory().getHolder();
 
         } else {
-            if (location.getBlock().getState() instanceof Chest) {
-                toReturn = ((Chest) location.getBlock().getState()).getInventory().getHolder();
-            }
-            if (location.getBlock().getState() instanceof Hopper) {
-                toReturn = ((Hopper) location.getBlock().getState()).getInventory().getHolder();
-            }
-            if (location.getBlock().getState() instanceof Dispenser) {
-                toReturn = ((Dispenser) location.getBlock().getState()).getInventory().getHolder();
-            }
-            if (location.getBlock().getState() instanceof Dropper) {
-                toReturn = ((Dropper) location.getBlock().getState()).getInventory().getHolder();
+            BlockState state = location.getBlock().getState();
+            if (state instanceof Chest) {
+                toReturn = ((Chest) state).getInventory().getHolder();
+
+            } else if (state instanceof Hopper) {
+                toReturn = ((Hopper) state).getInventory().getHolder();
+
+            } else if (state instanceof Dispenser) {
+                toReturn = ((Dispenser) state).getInventory().getHolder();
+
+            } else if (state instanceof Dropper) {
+                toReturn = ((Dropper) state).getInventory().getHolder();
             }
         }
 
         if (toReturn != null) {
             inventoriesHolderCache.put(location, toReturn);
-            System.out.println(toReturn);
         }
         return toReturn;
     }
 
     static boolean containsMethod(Object object, String name) {
-
         try {
             object.getClass().getMethod(name);
             return true;
         } catch (Exception ex) {
             return false;
         }
-
     }
 
     public static boolean isDoubleChest(Location loc) {

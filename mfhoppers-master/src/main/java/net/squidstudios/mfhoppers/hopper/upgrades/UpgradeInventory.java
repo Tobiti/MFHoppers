@@ -2,18 +2,18 @@ package net.squidstudios.mfhoppers.hopper.upgrades;
 
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import me.clip.placeholderapi.PlaceholderAPI;
-import me.clip.placeholderapi.PlaceholderAPIPlugin;
 import net.squidstudios.mfhoppers.MFHoppers;
+import net.squidstudios.mfhoppers.hopper.IHopper;
+import net.squidstudios.mfhoppers.manager.DataManager;
 import net.squidstudios.mfhoppers.util.*;
+import net.squidstudios.mfhoppers.util.inv.InventoryBuilder;
+import net.squidstudios.mfhoppers.util.item.ItemBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import net.squidstudios.mfhoppers.hopper.IHopper;
-import net.squidstudios.mfhoppers.util.inv.InventoryBuilder;
-import net.squidstudios.mfhoppers.util.item.ItemBuilder;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,20 +24,22 @@ public class UpgradeInventory {
     public static UpgradeInventory instance;
     private Map<String, Object> data = new HashMap<>();
 
-    public UpgradeInventory(Map<String, Object> data){
+    public UpgradeInventory(Map<String, Object> data) {
 
         this.data = data;
         instance = this;
 
     }
-    public UpgradeInventory(MFHoppers MFHoppers){
+
+    public UpgradeInventory(MFHoppers MFHoppers) {
         instance = this;
     }
 
     public static UpgradeInventory getInstance() {
         return instance;
     }
-    public Inventory build(IHopper hopper, Player player){
+
+    public Inventory build(IHopper hopper, Player player) {
 
         Map<String, Object> DATA = hopper.getData();
         Map<String, Object> CONFIG_DATA = MFHoppers.getInstance().configHoppers.get(DATA.get("name").toString()).getNextHopperUpgrade(hopper);
@@ -64,44 +66,43 @@ public class UpgradeInventory {
 
         return new InventoryBuilder(c(data.get("title")), 9).
                 fill(filler).
-                setItem(3,upgradeItem).
+                setItem(3, upgradeItem).
                 setItem(5, infoItem).
                 setClickListener(event -> {
-
-
-                    if(event.getCurrentItem() != null){
+                    if (event.getCurrentItem() != null) {
 
                         NBTItem nbt = new NBTItem(event.getCurrentItem());
-                        if(nbt.hasKey("upgrade")){
+                        if (nbt.hasKey("upgrade")) {
 
                             UpgradeEnum priceType = UpgradeEnum.valueOf(CONFIG_DATA.get("priceType").toString());
                             int price = (int) CONFIG_DATA.get("price");
                             Player p = (Player) event.getWhoClicked();
 
-                            switch(priceType){
+                            switch (priceType) {
                                 case COMMAND:
-                                    if(Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null){
+                                    if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") == null) {
                                         MFHoppers.getInstance().getLogger().warning("Can't use COMMAND as Price Type, because PlaceholderAPI is missing!");
                                         return;
                                     }
-                                    if(!PlaceholderAPI.containsPlaceholders(CONFIG_DATA.get("pricePlaceholderValue").toString())){
+                                    if (!PlaceholderAPI.containsPlaceholders(CONFIG_DATA.get("pricePlaceholderValue").toString())) {
                                         MFHoppers.getInstance().getLogger().warning(String.format("Can't find the placeholder %s!", CONFIG_DATA.get("pricePlaceholderValue").toString()));
                                         return;
                                     }
 
                                     String placeholder = CONFIG_DATA.get("pricePlaceholderValue").toString();
                                     String command = CONFIG_DATA.get("priceCommand").toString();
-
                                     double currentAmount = Double.valueOf(PlaceholderAPI.setPlaceholders(p, placeholder));
 
-
-                                    if(currentAmount >= price){
+                                    if (currentAmount >= price) {
                                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), PlaceholderAPI.setPlaceholders(p, command.replace("{player}", p.getName()).replace("{price}", String.valueOf(price))));
 
                                         hopper.getData().replace("lvl", ((int) hopper.getData().get("lvl")) + 1);
                                         Lang.HOPPER_UPGRADED.send(new MapBuilder().add("%lastlvl%", String.valueOf(((int) hopper.getData().get("lvl")) - 1)).add("%newlvl%", hopper.getData().get("lvl")).getMap(), p);
                                         event.getWhoClicked().closeInventory();
-                                    }else {
+
+                                        // Update Hopper
+                                        DataManager.getInstance().update(hopper);
+                                    } else {
                                         SendNotEhoughMessage(p, CONFIG_DATA, priceType.getUnderstandable(), String.valueOf(price - currentAmount), String.valueOf(currentAmount), String.valueOf(price));
                                     }
                                     break;
@@ -114,18 +115,18 @@ public class UpgradeInventory {
                                         ExperienceManager.setTotalExperience(p, currentXp - price);
                                         Lang.HOPPER_UPGRADED.send(new MapBuilder().add("%lastlvl%", String.valueOf(((int) hopper.getData().get("lvl")) - 1)).add("%newlvl%", hopper.getData().get("lvl")).getMap(), p);
                                         event.getWhoClicked().closeInventory();
+
+                                        // Update Hopper
+                                        DataManager.getInstance().getUpdatedHopperQueue().add(hopper);
                                     } else {
                                         SendNotEhoughMessage(p, CONFIG_DATA, priceType.getUnderstandable(), String.valueOf(price - currentXp), String.valueOf(currentXp), String.valueOf(price));
                                     }
                                     break;
                                 case ECO:
-
-                                    if(MFHoppers.getInstance().getEconomy() == null)
-                                    {
+                                    if (MFHoppers.getInstance().getEconomy() == null) {
                                         event.getWhoClicked().sendMessage(c("&c&l(!)&7 Economy is disabled, failed to convert."));
-                                    }
-                                    else
-                                    {
+
+                                    } else {
                                         double current = MFHoppers.getInstance().getEconomy().getBalance(p);
                                         if (current >= price) {
 
@@ -134,12 +135,12 @@ public class UpgradeInventory {
                                             Lang.HOPPER_UPGRADED.send(new MapBuilder().add("%lastlvl%", String.valueOf(((int) hopper.getData().get("lvl")) - 1)).add("%newlvl%", hopper.getData().get("lvl")).getMap(), p);
                                             event.getWhoClicked().closeInventory();
 
-
+                                            // Update Hopper
+                                            DataManager.getInstance().update(hopper);
                                         } else {
                                             SendNotEhoughMessage(p, CONFIG_DATA, priceType.getUnderstandable(), String.valueOf(price - current), String.valueOf(current), String.valueOf(price));
                                         }
                                     }
-
                                     break;
                             }
                         }
@@ -150,23 +151,24 @@ public class UpgradeInventory {
                 }).buildInventory();
 
     }
-    String c(Object text){
+
+    String c(Object text) {
         return ChatColor.translateAlternateColorCodes('&', text.toString());
     }
-    List<String> toLore(Object obj){
-        return (List<String>)obj;
+
+    List<String> toLore(Object obj) {
+        return (List<String>) obj;
     }
 
-    private void SendNotEhoughMessage(Player player, Map<String, Object> config, String type, String missing, String current, String needed){
-        if(config.containsKey("customNotEnoughMessage")){
+    private void SendNotEhoughMessage(Player player, Map<String, Object> config, String type, String missing, String current, String needed) {
+        if (config.containsKey("customNotEnoughMessage")) {
             String message = config.get("customNotEnoughMessage").toString();
             message = message.replace("{type}", type);
             message = message.replace("{missing}", missing);
             message = message.replace("{current}", current);
             message = message.replace("{needed}", needed);
             player.sendMessage(ChatColor.translateAlternateColorCodes('&', message));
-        }
-        else {
+        } else {
             Lang.HOPPER_NOT_ENOUGH_VALUE_TO_UPGRADE.send(new MapBuilder().add("%type%", type).add("%missing%", missing).add("%current%", current).add("%needed%", needed).getMap(), player);
         }
     }

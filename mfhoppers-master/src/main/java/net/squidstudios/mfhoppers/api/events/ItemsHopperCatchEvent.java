@@ -9,6 +9,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -26,7 +27,7 @@ public class ItemsHopperCatchEvent extends Event implements Cancellable {
         return handlers;
     }
 
-    public ItemsHopperCatchEvent(List<MoveItem> itemList, List<IHopper> hopperList) {
+    public ItemsHopperCatchEvent(List<MoveItem> itemList, Collection<IHopper> hopperList) {
         this.itemList = itemList;
         this.hopperList = hopperList;
     }
@@ -34,13 +35,13 @@ public class ItemsHopperCatchEvent extends Event implements Cancellable {
     private List<MoveItem> itemList;
     private List<MoveItem> itemStackList = new ArrayList<>();
 
-    private List<IHopper> hopperList;
+    private Collection<IHopper> hopperList;
 
     public List<MoveItem> getItemStackList() {
         return itemStackList;
     }
 
-    public List<IHopper> getHopperList() {
+    public Collection<IHopper> getHopperList() {
         return hopperList;
     }
 

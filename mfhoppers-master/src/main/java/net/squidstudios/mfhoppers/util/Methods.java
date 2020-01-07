@@ -1,6 +1,7 @@
 package net.squidstudios.mfhoppers.util;
 
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.tr7zw.changeme.nbtapi.NBTEntity;
 import de.tr7zw.changeme.nbtapi.NBTItem;
@@ -32,9 +33,6 @@ import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toList;
 
 public class Methods {
 
@@ -44,42 +42,18 @@ public class Methods {
         plugin = pl;
     }
 
-    public static HashMap<Location, IHopper> getSorted(HopperEnum henum, MChunk ch) {
-        HashMap<Location, IHopper> ret = new HashMap<>();
-        if (ch == null || !DataManager.getInstance().getHoppers().containsKey(ch) || DataManager.getInstance().getHoppers().get(ch) == null) {
-            return ret;
-        }
-        final Map<Location, IHopper> hoppers = DataManager.getInstance().getHoppers().get(ch);
-        for (Location lo : hoppers.keySet()) {
-            if (HopperEnum.valueOf(hoppers.get(lo).getData().get("type").toString()) == henum) {
-                ret.put(lo, hoppers.get(lo));
-            }
-
-        }
-        return ret;
+    public static Set<IHopper> getSorted(HopperEnum henum, Chunk chunk) {
+        Set<IHopper> hoppers = Sets.newHashSet();
+        DataManager.getInstance().worldHolder(chunk).ifPresent(holder -> hoppers.addAll(holder.hoppersAt(chunk, hopper -> hopper.getType() == henum)));
+        return hoppers;
     }
 
-    public static HashMap<Location, IHopper> getSorted(HopperEnum henum, Chunk ch, Material mat, short data) {
-        HashMap<Location, IHopper> ret = new HashMap<>();
-        if (DataManager.getInstance().getHoppers().isEmpty() && !DataManager.getInstance().containsHoppersChunk(ch)) {
-            return ret;
-        }
-        final Map<Location, IHopper> hoppers = DataManager.getInstance().getHoppers(ch);
+    public static Set<IHopper> getSorted(HopperEnum henum, Chunk ch, Material mat, short data) {
+        Set<IHopper> hoppers = Sets.newHashSet();
+        if (ch == null) return hoppers;
 
-        for (Location lo : hoppers.keySet()) {
-
-            IHopper hopper = hoppers.get(lo);
-
-            if (hopper == null) continue;
-
-            if (hopper.getType() == henum) {
-                if (hopper.ContainsInFilterMaterialList(mat, data)) {
-                    ret.put(lo, hoppers.get(lo));
-                }
-            }
-
-        }
-        return ret;
+        DataManager.getInstance().worldHolder(ch).ifPresent(holder -> hoppers.addAll(holder.hoppersAt(ch, hopper -> hopper.getType() == henum && hopper.ContainsInFilterMaterialList(mat, data))));
+        return hoppers;
     }
 
     public static boolean checkIfAllKeysExists(HopperEnum hopperEnum, Map<String, Object> data) {
@@ -100,55 +74,54 @@ public class Methods {
 
     }
 
-    public static List<MoveItem> addItem(List<MoveItem> items, Collection<IHopper> iHoppers) {
-
-        if (Thread.currentThread().getName().equalsIgnoreCase("Server thread")) {
-            for (MoveItem moveItem : items) {
-                for (IHopper hopper : iHoppers) {
-                    if (moveItem.getAmount() <= 0) {
-                        break;
-                    }
-                    if (hopper.getLocation().getBlock().getType() == Material.AIR) {
-                        continue;
-                    }
-
-                    if (!hopper.ContainsInFilterMaterialList(moveItem.getEntity().getItemStack().getType(), moveItem.getEntity().getItemStack().getDurability())) {
-                        continue;
-                    }
-
-                    if (hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("pickupNamedItems") && !(boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("pickupNamedItems")
-                            && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName())
-                        continue;
-
-                    int amount = moveItem.getAmount();
-                    int added = addItem2(moveItem.getItems(), hopper);
-
-                    moveItem.setAmount(amount - added);
-                }
+    public static Collection<MoveItem> addItem(Collection<MoveItem> items, IHopper hopper) {
+        for (MoveItem moveItem : items) {
+            if (moveItem.getAmount() <= 0) {
+                break;
             }
-        } else {
-            for (MoveItem moveItem : items) {
-                for (IHopper hopper : iHoppers) {
-                    if (moveItem.getAmount() <= 0) {
-                        break;
-                    }
-                    if (hopper.getLocation().getBlock().getType() == Material.AIR) {
-                        continue;
-                    }
+            if (hopper.getLocation().getBlock().getType() == Material.AIR) {
+                continue;
+            }
 
-                    if (!hopper.ContainsInFilterMaterialList(moveItem.getEntity().getItemStack().getType(), moveItem.getEntity().getItemStack().getDurability())) {
-                        continue;
-                    }
+            if (!hopper.ContainsInFilterMaterialList(moveItem.getEntity().getItemStack().getType(), moveItem.getEntity().getItemStack().getDurability())) {
+                continue;
+            }
 
-                    if (hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("pickupNamedItems") && !(boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("pickupNamedItems")
-                            && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName())
-                        continue;
+            if (hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("pickupNamedItems") && !(boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("pickupNamedItems")
+                    && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName())
+                continue;
 
-                    int amount = moveItem.getAmount();
-                    int added = addItem2(moveItem.getItems(), hopper);
+            int amount = moveItem.getAmount();
+            int added = addItem2(moveItem.getItems(), hopper);
 
-                    moveItem.setAmount(amount - added);
+            moveItem.setAmount(amount - added);
+        }
+
+        return items;
+    }
+
+    public static List<MoveItem> addItem(List<MoveItem> items, Collection<IHopper> iHoppers) {
+        for (MoveItem moveItem : items) {
+            for (IHopper hopper : iHoppers) {
+                if (moveItem.getAmount() <= 0) {
+                    break;
                 }
+                if (hopper.getLocation().getBlock().getType() == Material.AIR) {
+                    continue;
+                }
+
+                if (!hopper.ContainsInFilterMaterialList(moveItem.getEntity().getItemStack().getType(), moveItem.getEntity().getItemStack().getDurability())) {
+                    continue;
+                }
+
+                if (hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("pickupNamedItems") && !(boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("pickupNamedItems")
+                        && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName())
+                    continue;
+
+                int amount = moveItem.getAmount();
+                int added = addItem2(moveItem.getItems(), hopper);
+
+                moveItem.setAmount(amount - added);
             }
         }
 
@@ -252,8 +225,6 @@ public class Methods {
     }
 
     public static boolean isHopper(ItemStack item) {
-
-
         NBTItem nbt = new NBTItem(item);
 
         if (nbt.hasKey("lvl") && nbt.hasKey("type")) {
@@ -264,11 +235,9 @@ public class Methods {
     }
 
     public static Set<IHopper> getActiveHopperByType(HopperEnum... e) {
-        List<HopperEnum> typesList = Arrays.asList(e);
-        Set<IHopper> activeHoppers = DataManager.getInstance().getActiveHoppers();
-        activeHoppers.removeIf(hopper -> !typesList.contains(hopper.getType()));
-
-        return activeHoppers;
+        List<HopperEnum> enums = Arrays.asList(e);
+        Set<IHopper> hoppersSet = DataManager.getInstance().getHoppersSet(hopper -> enums.contains(hopper.getType()) && hopper.isChunkLoaded());
+        return hoppersSet;
     }
 
     public static Set<IHopper> getHopperByType(HopperEnum e) {
@@ -280,9 +249,9 @@ public class Methods {
 
     public static Map<Chunk, List<IHopper>> getMapHopperByType(HopperEnum... e) {
 
-        List<IHopper> _nonHoppers = new ArrayList<>();
+        Collection<IHopper> _nonHoppers;
         Map<Chunk, List<IHopper>> hoppers = new HashMap<>();
-        DataManager.getInstance().getHoppers().values().forEach(locationIHopperMap -> _nonHoppers.addAll(locationIHopperMap.values()));
+        _nonHoppers = DataManager.getInstance().getHoppersSet();
 
         List<HopperEnum> types = Arrays.asList(e);
 
@@ -314,9 +283,9 @@ public class Methods {
 
     public static Map<Chunk, List<IHopper>> getMapHopperByTypeOfLoadedChunks(HopperEnum... e) {
 
-        List<IHopper> _nonHoppers = new ArrayList<>();
+        Collection<IHopper> _nonHoppers = new ArrayList<>();
         Map<Chunk, List<IHopper>> hoppers = new HashMap<>();
-        DataManager.getInstance().getHoppers().values().forEach(locationIHopperMap -> _nonHoppers.addAll(locationIHopperMap.values()));
+        _nonHoppers = DataManager.getInstance().getHoppersSet();
 
         List<HopperEnum> types = Arrays.asList(e);
 
@@ -350,33 +319,6 @@ public class Methods {
         return hoppers;
     }
 
-    public static List<IHopper> getHopperByData(List<String> toCompare) {
-
-        List<IHopper> _nonHoppers = new ArrayList<>();
-        List<IHopper> hoppers = new ArrayList<>();
-        DataManager.getInstance().getHoppers().values().forEach(locationIHopperMap -> _nonHoppers.addAll(locationIHopperMap.values()));
-        for (IHopper hopper : _nonHoppers) {
-            int keysNotFound = 0;
-
-            for (String key : toCompare) {
-                if (!hopper.getData().containsKey(key)) {
-                    keysNotFound++;
-                }
-            }
-            if (keysNotFound == 0) {
-                hoppers.add(hopper);
-            }
-
-            hoppers.add(hopper);
-
-
-        }
-        return hoppers;
-
-
-    }
-
-
     public static Set<LivingEntity> getSortedEntities(Set<Entity> entityList, List<EntityType> blacklist) {
         Set<LivingEntity> entities = Sets.newHashSet();
 
@@ -390,19 +332,6 @@ public class Methods {
             }
         }
 
-        return entities;
-    }
-
-    public static List<Entity> getItems(ArrayList<Entity> entityList) {
-
-        List<Entity> entities = new ArrayList<>();
-        for (Entity entity : entityList) {
-
-            if (entity.getType() == EntityType.DROPPED_ITEM) {
-                entities.add(entity);
-            }
-
-        }
         return entities;
     }
 
@@ -433,7 +362,6 @@ public class Methods {
 
         }
         return ret;
-
     }
 
     public static LivingEntity nearest(final Set<LivingEntity> entities, Location mid) {
@@ -460,11 +388,7 @@ public class Methods {
             return null;
         }
 
-        if (integerToEntity.containsKey(nums.get(0))) {
-            return integerToEntity.get(nums.get(0));
-        } else {
-            return null;
-        }
+        return integerToEntity.getOrDefault(nums.get(0), null);
 
     }
 
@@ -530,7 +454,7 @@ public class Methods {
         new BukkitRunnable() {
             @Override
             public void run() {
-                block.setType(Material.AIR);
+                block.setType(Material.AIR, false);
 
                 if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")) {
                     SuperiorSkyblockAPI.getIslandAt(block.getLocation()).handleBlockBreak(block);
@@ -590,7 +514,6 @@ public class Methods {
     }
 
     public static List<LivingEntity> nearest(Location hopperLoc, double radius) {
-
         List<LivingEntity> retu = new ArrayList<>();
 
         for (Entity nearbyEntity : hopperLoc.getWorld().getNearbyEntities(hopperLoc, radius, radius, radius)) {
@@ -620,7 +543,7 @@ public class Methods {
         return loc.getWorld().getName() + ";" + loc.getX() + ";" + loc.getY() + ";" + loc.getZ();
     }
 
-    public static boolean hasReachedLimit(Map<String, Object> data, MChunk chunk, Player player) {
+    public static boolean hasReachedLimit(Map<String, Object> data, Chunk chunk, Player player) {
 
         ConfigHopper hopper = MFHoppers.getInstance().getConfigHoppers().get(data.get("name").toString());
         int lvl = Integer.valueOf(data.get("lvl").toString());
@@ -629,13 +552,12 @@ public class Methods {
 
         if (limit != -1) {
 
-            Collection<IHopper> hoppers = getSorted(HopperEnum.match(data.get("type").toString()), chunk).values();
-            hoppers.removeIf(h -> (int) h.getData().get("lvl") != lvl);
-            hoppers.removeIf(h -> !h.getName().equalsIgnoreCase(data.get("name").toString()));
+            int[] sizeAtChunk = new int[]{0};
+            DataManager.getInstance().worldHolder(chunk).ifPresent(holder -> sizeAtChunk[0] = holder.hoppersAt(chunk, h -> (int) h.getData().get("lvl") == lvl && h.getName().equalsIgnoreCase(data.get("name").toString())).size());
 
-            if (limit <= hoppers.size()) {
+            if (limit <= sizeAtChunk[0]) {
 
-                Lang.HOPPER_LIMIT_REACHED.send(new MapBuilder().add("%name%", data.get("name")).add("%type%", StringUtils.capitalize(StringUtils.lowerCase(data.get("type").toString()))).add("%limit%", limit).add("%lvl%", lvl).getMap(), player);
+                Lang.HOPPER_LIMIT_REACHED.send(new MapBuilder().add("%name%", data.get("name")).add("%type%", StringUtils.capitalize(StringUtils.lowerCase(data.get("type").toString()))).add("%limit%", limit).add("%lvl%", lvl).add("%level%", lvl).getMap(), player);
                 return true;
 
             }
@@ -668,18 +590,13 @@ public class Methods {
     }
 
     public static IHopper getLinkedHopper(Location location) {
-
         final List<IHopper> hoppers = new ArrayList<>();
 
-        DataManager.getInstance().getHoppers().values().forEach(map -> {
-            map.values().forEach(hopper -> {
-                if (hopper.isLinked()) hoppers.add(hopper);
-            });
-        });
+        for (IHopper hopper : DataManager.getInstance().getHoppersSet()) {
+            if (hopper.isLinked()) hoppers.add(hopper);
+        }
 
         Optional<IHopper> optional = hoppers.stream().filter(it -> it.isLinkedTo(location)).findFirst();
-
-
         return optional.orElse(null);
     }
 
@@ -760,78 +677,69 @@ public class Methods {
     }
 
     public static boolean removeItem(ItemStack item, int amt, Inventory inv) {
-
-        if (!inv.containsAtLeast(item, amt)) {
-            return false;
-        }
+        if (item == null || amt <= 0) return false;
 
         ItemStack currentItem;
-        for (int i = 0; i < 36; i++) {
-            if ((currentItem = inv.getItem(i)) != null && currentItem.isSimilar(item)) {
-                if (currentItem.getAmount() >= amt) {
+        ItemStack[] array = inv.getContents();
 
-                    if ((currentItem.getAmount() - amt) <= 0) inv.setItem(i, new ItemStack(Material.AIR));
-                    else currentItem.setAmount(currentItem.getAmount() - amt);
+        for (int i = 0; i < inv.getSize(); i++) {
+            if (amt <= 0) return true;
 
-                    return true;
+            currentItem = array[i];
+            if (currentItem == null || currentItem.getType() == Material.AIR || !isSimilar(currentItem, item)) continue;
 
-                } else {
-                    amt -= currentItem.getAmount();
+            if (currentItem.getAmount() >= amt) {
+                if ((currentItem.getAmount() - amt) <= 0)
                     inv.setItem(i, new ItemStack(Material.AIR));
-                }
+
+                else
+                    currentItem.setAmount(currentItem.getAmount() - amt);
+
+                return true;
+
+            } else {
+                amt -= currentItem.getAmount();
+                inv.setItem(i, new ItemStack(Material.AIR));
             }
         }
-        return false;
+        return amt <= 0;
     }
 
     public static boolean canFit(ItemStack itemStack, int amount, Inventory inv) {
+        boolean toReturn = false;
 
-        if (inv.firstEmpty() != -1) return true;
+        for (ItemStack item : inv.getContents()) {
+            if (item == null || item.getType() == Material.AIR) return true;
 
-        List<ItemStack> items = Arrays.stream(inv.getContents()).filter(item -> item != null && item.getType() == itemStack.getType() && item.getDurability() == itemStack.getDurability() && item.getAmount() != item.getMaxStackSize()).collect(toList());
-
-        items = items.stream().filter(it -> isSimilar(it, itemStack)).collect(Collectors.toList());
-
-
-        if (items.isEmpty()) return false;
-
-        boolean toReturn = true;
-
-        for (ItemStack item : items) {
-
-            if (item.getAmount() == item.getMaxStackSize()) toReturn = false;
-            else toReturn = true;
-
+            if (isSimilar(item, itemStack))
+                if ((item.getAmount() + itemStack.getAmount()) <= item.getType().getMaxStackSize())
+                    return true;
         }
 
         return toReturn;
-
     }
 
     public static boolean containsPlayersAroundHopper(@NonNull Location location) {
         int serverViewDistance = Bukkit.getServer().getViewDistance();
         int chunkX = location.getBlockX() >> 4;
         int chunkZ = location.getBlockZ() >> 4;
+        int chunkX2 = chunkX + serverViewDistance;
+        int chunkZ2 = chunkZ + serverViewDistance;
+
         World world = location.getWorld();
-
-        Chunk mainChunk = world.getChunkAt(chunkX, chunkZ);
-        if (mainChunk == null) return false;
-
         List<Player> players = new ArrayList<>(world.getPlayers());
-        Location center = mainChunk.getBlock(8, 64, 8).getLocation().clone();
 
         for (Player p : players) {
-            if (p != null) {
-                Location pLocation = p.getLocation().clone();
-                pLocation.setY(255);
-                center.setY(255);
-                if (Math.round(center.distance(pLocation) / 16f) <= serverViewDistance) {
+            int chunkX3 = p.getLocation().getBlockX() >> 4;
+            int chunkZ3 = p.getLocation().getBlockZ() >> 4;
+
+            if (Math.min(chunkX, chunkX2) <= chunkX3 && chunkX3 <= Math.max(chunkX, chunkX2)) {
+                if (Math.min(chunkZ, chunkZ2) <= chunkZ3 && chunkZ3 <= Math.max(chunkZ, chunkZ2)) {
                     return true;
                 }
             }
         }
         return false;
-
     }
 
     public static boolean isSimilar(ItemStack first, ItemStack second) {

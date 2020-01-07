@@ -70,13 +70,6 @@ public class TaskManager implements Listener {
         add(new BukkitRunnable() {
             @Override
             public void run() {
-                runSellTask();
-            }
-        }.runTaskTimer(MFHoppers, 0, 25));
-
-        add(new BukkitRunnable() {
-            @Override
-            public void run() {
                 if (MFHoppers.getInstance().getConfig().getBoolean("CollectAlreadyDropedItems", true)) {
                     runItemsTask();
                 }
@@ -320,7 +313,6 @@ public class TaskManager implements Listener {
         }
     }
 
-
     public void runBreakTask() {
         final Set<IHopper> hoppers = Methods.getActiveHopperByType(HopperEnum.Break);
 
@@ -398,10 +390,7 @@ public class TaskManager implements Listener {
     }
 
     public void runLinkTask() {
-        List<String> toCompare = new ArrayList<>();
-        toCompare.add("linked");
-
-        List<IHopper> hoppers = Methods.getHopperByData(toCompare);
+        Collection<IHopper> hoppers = DataManager.getInstance().getHoppersSet(hopper -> hopper.getData().containsKey("linked"));
 
         for (IHopper hopper : hoppers) {
             if (!hopper.isChunkLoaded()) continue;
@@ -410,14 +399,11 @@ public class TaskManager implements Listener {
             Map<String, Object> configData = configHopper.getDataOfHopper(hopper);
 
             if (configData.containsKey("linkedMoveEvery") && configData.containsKey("linkedMoveAmount")) {
-
                 int time = hopper.getData().containsKey("linkedTime") ? (int) hopper.getData().get("linkedTime") : (int) configData.get("linkedMoveEvery");
                 time--;
 
                 if (time == 0) {
-
                     if (hopper.isLinked()) {
-
                         hopper.getData().remove("linkedTime");
                         hopper.getData().put("linkedTime", hopper.getData().containsKey("linkedTime") ? (int) hopper.getData().get("linkedTime") : (int) configData.get("linkedMoveEvery"));
 
@@ -429,11 +415,9 @@ public class TaskManager implements Listener {
                         } catch (InterruptedException | ExecutionException e) {
                             e.printStackTrace();
                         }
-                        System.out.println(source);
                         if (source == null) continue;
 
                         List<ItemStack> items = Arrays.asList(source.getContents());
-
                         if (items.isEmpty()) continue;
 
                         items = items.stream().filter(item -> item != null && item.getType() != Material.AIR).collect(Collectors.toList());
@@ -441,30 +425,21 @@ public class TaskManager implements Listener {
                         if (items.size() <= 0) continue;
                         int moveAmount = (int) configData.get("linkedMoveAmount");
 
-                        List<ItemStack> tempList = new ArrayList<ItemStack>();
+                        List<ItemStack> tempList = new ArrayList<>();
                         int index = 0;
                         while (moveAmount > 0 && index < items.size()) {
                             ItemStack item = items.get(index);
-
                             tempList.add(new ItemStack(item.getType(), item.getAmount() < moveAmount ? item.getAmount() : moveAmount));
 
                             moveAmount -= item.getAmount();
-
                             index++;
                         }
 
                         final List<ItemStack> sendedItems = tempList;
                         for (ItemStack item : sendedItems) {
                             for (Inventory destination : inventories) {
-
-                                if (Methods.canFit(item, item.getAmount(), destination)) {
-
-                                    if (item == null || !Methods.containsInInventory(item, source)) continue;
-
-                                    if (Methods.removeItem(item, item.getAmount(), source)) {
-                                        destination.addItem(item);
-                                    }
-
+                                if (Methods.removeItem(item, item.getAmount(), source)) {
+                                    destination.addItem(item);
                                 }
                             }
                         }
@@ -484,22 +459,32 @@ public class TaskManager implements Listener {
 
         for (Chunk chunk : hoppers.keySet()) {
             final Set<Entity> entityList = EntitiesGatherer.from(chunk).accepts(Item.class).gather();
-            try {
-                Methods.addItem(entityList.stream().map(item -> MoveItem.getFrom((Item) item)).collect(Collectors.toList()), hoppers.get(chunk));
-            } catch (Exception ex) {
-                ex.printStackTrace();
+            final List<IHopper> chunkHoppers = hoppers.get(chunk);
+
+            for (IHopper hopper : chunkHoppers) {
+                Methods.addItem(
+                        entityList
+                                .stream()
+                                .filter(item -> {
+                                    ItemStack itemStack = ((Item)item).getItemStack();
+                                    return hopper.ContainsInFilterMaterialList(itemStack.getType(), itemStack.getDurability());
+                                })
+                                .map(item -> MoveItem.getFrom((Item)item))
+                                .collect(Collectors.toSet()),
+                        hopper
+                );
             }
         }
     }
 
     public void runSellTask() {
+        Set<IHopper> hoppers = DataManager.getInstance().getHoppersSet(hopper ->hopper != null && hopper.getConfigHopper() != null && hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("sellEvery") && hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("sellAmount"));
 
-        List<IHopper> hoppers = new ArrayList<>();
-        DataManager.getInstance().getHoppers().values().forEach(locationIHopperMap -> hoppers.addAll(locationIHopperMap.values()));
-
-        for (IHopper hopper : hoppers.stream().filter(hopper -> hopper != null && hopper.getConfigHopper() != null && hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("sellEvery") && hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("sellAmount")).collect(Collectors.toList())) {
+        for (IHopper hopper : hoppers) {
             if (!hopper.isChunkLoaded()) continue;
+            if (MFHoppers.getInstance().getEconomy() == null || hopper.getOwner() == null) continue;
 
+            Player player = Bukkit.getPlayer(hopper.getOwner());
             Map<String, Object> configData = hopper.getConfigHopper().getDataOfHopper(hopper);
 
             int time = hopper.getData().containsKey("sellEvery") ? (int) hopper.getData().get("sellEvery") : (int) configData.get("sellEvery");
@@ -510,36 +495,32 @@ public class TaskManager implements Listener {
                     if (items.isEmpty()) return;
 
                     int sellAmount = (int) hopper.getConfigHopper().getDataOfHopper(hopper).get("sellAmount");
+                    items = items.stream().filter(item -> item != null && item.getType() != Material.AIR && SellManager.getInstance().getPrice(item, player) > 0.0).collect(Collectors.toList());
 
-                    items = items.stream().filter(item -> item != null && item.getType() != Material.AIR).collect(Collectors.toList());
-                    items = items.stream().filter(it -> SellManager.getInstance().getPrice(it) > 0.0).collect(Collectors.toList());
+                    int finalPrice = 0;
+                    for (ItemStack item : items) {
+                        if (sellAmount <= 0) break;
 
-                    while (items.stream().findFirst().orElse(null) != null && sellAmount > 0) {
-                        ItemStack first = items.stream().findFirst().orElse(null);
-                        double price = SellManager.getInstance().getPrice(first);
+                        double price = SellManager.getInstance().getPrice(item, player);
+                        int amount = Math.min(sellAmount, item.getAmount());
 
-                        if (MFHoppers.getInstance().getEconomy() != null && hopper.getOwner() != null) {
-                            int amount = Math.min(sellAmount, first.getAmount());
+                        boolean removed = Methods.removeItem(item, amount, inventory);
+                        if (removed) {
+                            finalPrice += price * amount;
                             sellAmount -= amount;
-
-                            price = price * amount;
-
-                            Methods.removeItem(first, amount, inventory);
-
-                            Player player = Bukkit.getPlayer(hopper.getOwner());
-                            if (player == null) {
-                                MFHoppers.getInstance().getEconomy().depositPlayer(Bukkit.getOfflinePlayer(hopper.getOwner()), price);
-                            } else MFHoppers.getInstance().getEconomy().depositPlayer(player, price);
-
                         }
                     }
 
+                    if (player == null) {
+                        MFHoppers.getInstance().getEconomy().depositPlayer(Bukkit.getOfflinePlayer(hopper.getOwner()), finalPrice);
+
+                    } else
+                        MFHoppers.getInstance().getEconomy().depositPlayer(player, finalPrice);
+
                     hopper.getData().remove("sellEvery");
                     hopper.getData().put("sellEvery", configData.get("sellEvery"));
-
                 });
             } else {
-
                 hopper.getData().remove("sellEvery");
                 hopper.getData().put("sellEvery", time);
 

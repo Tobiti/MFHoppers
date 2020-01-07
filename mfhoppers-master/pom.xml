@@ -6,7 +6,7 @@
 
     <groupId>net.squidstudios</groupId>
     <artifactId>MFHoppers</artifactId>
-    <version>3.13</version>
+    <version>3.14</version>
     <name>MFHoppers</name>
 
     <properties>
@@ -154,7 +154,7 @@
             <artifactId>shopguiplus</artifactId>
             <version>1.19.4-SNAPSHOT</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../Libraries/ShopGUIPlus-1.19.4 [Spigot 1.7-1.12].jar</systemPath>
+            <systemPath>${project.basedir}/../Libraries/ShopGUIPlus.jar</systemPath>
         </dependency>
 
         <dependency>
