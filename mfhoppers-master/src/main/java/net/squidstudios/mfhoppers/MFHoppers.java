@@ -3,6 +3,7 @@ package net.squidstudios.mfhoppers;
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
 import com.google.common.collect.Sets;
 import de.tr7zw.changeme.nbtapi.NBTItem;
+import de.tr7zw.changeme.nbtapi.utils.MinecraftVersion;
 import net.milkbowl.vault.economy.Economy;
 import net.squidstudios.mfhoppers.api.events.ItemsHopperCatchEvent;
 import net.squidstudios.mfhoppers.hopper.ConfigHopper;
@@ -80,6 +81,8 @@ public class MFHoppers extends PluginBuilder {
 
     @Override
     public void init() {
+        MinecraftVersion.logger.setLevel(Level.OFF);
+
         if (ReflectionUtil.SERVER_VERSION_NUM > 13) {
             out("This Jar is for server versions between 1.8-1.13.X", OutType.ERROR);
             Bukkit.getPluginManager().disablePlugin(this);
@@ -147,8 +150,6 @@ public class MFHoppers extends PluginBuilder {
             economy = null;
 
         }
-
-        Logger.getLogger("NBTAPI").setLevel(Level.OFF);
     }
 
     public static MFHoppers getInstance() {
