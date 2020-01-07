@@ -1,26 +1,28 @@
 package net.squidstudios.mfhoppers.hopper;
 
+import com.google.common.collect.Sets;
 import net.squidstudios.mfhoppers.MFHoppers;
 import net.squidstudios.mfhoppers.util.MContainer;
 import net.squidstudios.mfhoppers.util.Methods;
 import net.squidstudios.mfhoppers.util.OFuture;
 import net.squidstudios.mfhoppers.util.XMaterial;
 import net.squidstudios.mfhoppers.util.plugin.Tasks;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.block.Chest;
 import org.bukkit.block.Hopper;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.permissions.ServerOperator;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import static java.util.stream.Collectors.toList;
@@ -40,8 +42,10 @@ public abstract class IHopper {
     }
 
     private HashMap<String, Object> data = new HashMap<>();
-    private List<FilterElement> filterList = new ArrayList<>();
-    private Inventory inventory;
+    private Set<FilterElement> filterList = Sets.newConcurrentHashSet();
+
+    private InventoryHolder cached_inventory;
+    private Chunk cached_chunk;
 
     public abstract void save(PreparedStatement stat);
 
@@ -61,13 +65,18 @@ public abstract class IHopper {
     }
 
     public Chunk getChunk() {
+        if (cached_chunk != null)
+            return cached_chunk;
+
         if (Thread.currentThread().getName().equalsIgnoreCase("Server thread")) {
-            return getLocation().getChunk();
+            cached_chunk = getLocation().getChunk();
+            return cached_chunk;
+
         } else {
             CompletableFuture<Chunk> callback = new CompletableFuture<>();
-
             Tasks.getInstance().runTask(() -> {
-                callback.complete(getLocation().getChunk());
+                cached_chunk = getLocation().getChunk();
+                callback.complete(cached_chunk);
             });
 
             try {
@@ -83,9 +92,7 @@ public abstract class IHopper {
     public abstract ItemStack getItem();
 
     public String getName() {
-
         return data.get("name").toString();
-
     }
 
     public abstract HopperEnum getType();
@@ -95,16 +102,16 @@ public abstract class IHopper {
     }
 
     public CompletableFuture<Inventory> getInventory() {
-        if (inventory != null) {
+        if (cached_inventory != null) {
             OFuture<Inventory> future = new OFuture<>();
-            future.complete(isChunkLoaded() ? inventory : null);
+            future.complete(isChunkLoaded() ? cached_inventory.getInventory() : null);
             return future;
 
         } else if (Thread.currentThread().getName().equalsIgnoreCase("Server Thread")) {
             OFuture<Inventory> future = new OFuture<>();
             if (getLocation().getBlock().getState() instanceof InventoryHolder) {
-                inventory = ((InventoryHolder) getLocation().getBlock().getState()).getInventory();
-                future.complete(inventory);
+                cached_inventory = ((InventoryHolder) getLocation().getBlock().getState());
+                future.complete(cached_inventory.getInventory());
             }
             future.complete(null);
             return future;
@@ -115,8 +122,8 @@ public abstract class IHopper {
                 @Override
                 public void run() {
                     if (getLocation().getBlock().getState() instanceof InventoryHolder) {
-                        inventory = ((InventoryHolder) getLocation().getBlock().getState()).getInventory();
-                        future.complete(inventory);
+                        cached_inventory = ((InventoryHolder) getLocation().getBlock().getState());
+                        future.complete(cached_inventory.getInventory());
                     }
                     future.complete(null);
                 }
@@ -165,29 +172,20 @@ public abstract class IHopper {
         if (location.getWorld() == null)
             return false;
 
-        boolean isLoaded =  location.getWorld().isChunkLoaded(chunkX, chunkZ);
-        if (!isLoaded)
-            return Methods.containsPlayersAroundHopper(location);
-
-        return true;
+        return location.getWorld().isChunkLoaded(chunkX, chunkZ) || Methods.containsPlayersAroundHopper(location);
     }
 
     public void unlink(Location location) {
-
         List<String> locations = getLinkedAsStrings();
 
-        if (locations.contains(Methods.toString(location))) {
-
-            locations.remove(Methods.toString(location));
-
-        }
+        locations.remove(Methods.toString(location));
         getData().remove("linked");
         getData().put("linked", locations);
 
     }
 
     public boolean ContainsInFilterMaterialList(Material mat, short damage) {
-        List<FilterElement> filter = this.getFilterMaterialList();
+        Set<FilterElement> filter = this.getFilterMaterialList();
 
         return filter.stream().anyMatch(filterElement -> {
             return (!filterElement.HasDamageValue && filterElement.Material == mat) || (filterElement.Material == mat && filterElement.DamageValue == damage);
@@ -201,11 +199,11 @@ public abstract class IHopper {
         }
     }
 
-    public List<FilterElement> getFilterMaterialList() {
+    public Set<FilterElement> getFilterMaterialList() {
         return getFilterMaterialList(false);
     }
 
-    public List<FilterElement> getFilterMaterialList(boolean forceConfig) {
+    public Set<FilterElement> getFilterMaterialList(boolean forceConfig) {
         if (filterList.size() == 0) {
             List<String> _stringMats = new ArrayList<>();
             if (!getData().containsKey("filter") || forceConfig) {
@@ -245,7 +243,7 @@ public abstract class IHopper {
         return filterList;
     }
 
-    public void SetFilterMaterialList(List<FilterElement> mats) {
+    public void SetFilterMaterialList(Set<FilterElement> mats) {
         filterList = mats;
         List<String> _stringMats = new ArrayList<>();
         for (FilterElement element : mats) {
@@ -259,7 +257,6 @@ public abstract class IHopper {
     }
 
     public void link(Location loc) {
-
         if (getData().containsKey("linked")) {
 
             List<String> locations = ((List<String>) getData().get("linked"));
@@ -275,7 +272,6 @@ public abstract class IHopper {
             getData().put("linked", locations);
 
         }
-
     }
 
     public String getOwner() {
@@ -287,6 +283,11 @@ public abstract class IHopper {
 
     public boolean isActive() {
         return true;
+    }
+
+    public void recacheInventory() {
+        this.cached_inventory = null;
+        getInventory();
     }
 
 }

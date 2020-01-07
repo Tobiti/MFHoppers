@@ -63,11 +63,10 @@ public class SellManager {
         }.runTaskLater(MFHoppers.getInstance(), 20);
     }
 
-    public double getPrice(ItemStack item){
-
+    public double getPrice(ItemStack item, Player player){
         if(!loaded) return 0.0;
 
-        return currentSystem.getPrice(item);
+        return currentSystem.getPrice(item, player);
     }
 
     public void loadDefault(){

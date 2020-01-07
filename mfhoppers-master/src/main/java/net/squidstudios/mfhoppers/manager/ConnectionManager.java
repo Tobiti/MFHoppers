@@ -23,7 +23,6 @@ public class ConnectionManager {
 
     }
 
-
     public Connection getConnection() {
         Connection c = null;
 

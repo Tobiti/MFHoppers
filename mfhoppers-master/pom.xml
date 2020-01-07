@@ -6,7 +6,7 @@
 
     <groupId>net.squidstudios</groupId>
     <artifactId>MFHoppers</artifactId>
-    <version>3.13-v1.14</version>
+    <version>3.14</version>
     <name>MFHoppers</name>
 
     <properties>
@@ -101,7 +101,7 @@
         <dependency>
            <groupId>org.spigotmc</groupId>
            <artifactId>spigot-api</artifactId>
-           <version>LATEST</version>
+           <version>1.13.2-R0.1-SNAPSHOT</version>
            <scope>provided</scope>
         </dependency>
         <!--Bukkit API-->
@@ -154,7 +154,7 @@
             <artifactId>shopguiplus</artifactId>
             <version>1.19.4-SNAPSHOT</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../Libraries/ShopGUIPlus-1.19.4 [Spigot 1.7-1.12].jar</systemPath>
+            <systemPath>${project.basedir}/../Libraries/ShopGUIPlus.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -176,9 +176,9 @@
         <dependency>
             <groupId>beast.core</groupId>
             <artifactId>beastcore</artifactId>
-            <version>2.4.4.0</version>
+            <version>4.1.2.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../Libraries/BeastCore.jar</systemPath>
+            <systemPath>${project.basedir}/../Libraries/BeastCore-4.1.2.0-STABLE_1.jar</systemPath>
         </dependency>
 
         <dependency>

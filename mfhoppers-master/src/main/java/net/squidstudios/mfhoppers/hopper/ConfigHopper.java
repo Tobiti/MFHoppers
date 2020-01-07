@@ -226,6 +226,7 @@ public class ConfigHopper {
             boolean isAuto = data.get("isAuto") != null ? Boolean.valueOf(data.get("isAuto").toString()) : false;
             boolean isGlobal = data.get("isGlobal") != null ? Boolean.valueOf(data.get("isGlobal").toString()) : false;
 
+
             return new ItemBuilder(Material.HOPPER)
                     .setName(c(data.get("name").toString().replace("%type%", StringUtils.capitalize(EntityType.valueOf(data.get("mob").toString()).name().replace("_", " ").toLowerCase()))))
                     .addNbt("type", type.name())
@@ -402,11 +403,13 @@ public class ConfigHopper {
                     .buildItem();
         }
     }
-    public String getTitle(IHopper hopper){
 
-        int lvl = (int)hopper.getData().get("lvl");
+    public String getTitle(IHopper hopper) {
 
-        if(getUpgrades().get(lvl).getToUpgrade().containsKey("inventoryTitle")) return getUpgrades().get(lvl).getToUpgrade().get("inventoryTitle").toString();
+        int lvl = (int) hopper.getData().get("lvl");
+
+        if (getUpgrades().get(lvl).getToUpgrade().containsKey("inventoryTitle"))
+            return getUpgrades().get(lvl).getToUpgrade().get("inventoryTitle").toString();
         else return getItemOfData(hopper).getItemMeta().getDisplayName();
 
     }
