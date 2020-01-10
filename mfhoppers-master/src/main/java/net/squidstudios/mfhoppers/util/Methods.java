@@ -106,9 +106,6 @@ public class Methods {
                 if (moveItem.getAmount() <= 0) {
                     break;
                 }
-                if (hopper.getLocation().getBlock().getType() == Material.AIR) {
-                    continue;
-                }
 
                 if (!hopper.ContainsInFilterMaterialList(moveItem.getEntity().getItemStack().getType(), moveItem.getEntity().getItemStack().getDurability())) {
                     continue;
@@ -764,6 +761,14 @@ public class Methods {
             similar = true;
         }
         return similar;
+    }
+
+    public static void forceSync(Runnable runnable) {
+        if (Bukkit.isPrimaryThread())
+            runnable.run();
+
+        else
+            Bukkit.getScheduler().runTask(plugin, runnable);
     }
 
 }

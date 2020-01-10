@@ -17,6 +17,7 @@ import net.squidstudios.mfhoppers.manager.SellManager;
 import net.squidstudios.mfhoppers.tasks.Listeners.BeastCoreListener;
 import net.squidstudios.mfhoppers.util.MContainer;
 import net.squidstudios.mfhoppers.util.Methods;
+import net.squidstudios.mfhoppers.util.OPair;
 import net.squidstudios.mfhoppers.util.ent.EntitiesGatherer;
 import net.squidstudios.mfhoppers.util.moveableItem.MoveItem;
 import net.squidstudios.mfhoppers.util.particles.ParticleEffect;
@@ -466,10 +467,10 @@ public class TaskManager implements Listener {
                         entityList
                                 .stream()
                                 .filter(item -> {
-                                    ItemStack itemStack = ((Item)item).getItemStack();
+                                    ItemStack itemStack = ((Item) item).getItemStack();
                                     return hopper.ContainsInFilterMaterialList(itemStack.getType(), itemStack.getDurability());
                                 })
-                                .map(item -> MoveItem.getFrom((Item)item))
+                                .map(item -> MoveItem.getFrom((Item) item))
                                 .collect(Collectors.toSet()),
                         hopper
                 );
@@ -478,7 +479,7 @@ public class TaskManager implements Listener {
     }
 
     public void runSellTask() {
-        Set<IHopper> hoppers = DataManager.getInstance().getHoppersSet(hopper ->hopper != null && hopper.getConfigHopper() != null && hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("sellEvery") && hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("sellAmount"));
+        Set<IHopper> hoppers = DataManager.getInstance().getHoppersSet(hopper -> hopper != null && hopper.getConfigHopper() != null && hopper.getConfigHopper().getDataOfHopper(hopper).get("sellEvery") != null && hopper.getConfigHopper().getDataOfHopper(hopper).get("sellAmount") != null);
 
         for (IHopper hopper : hoppers) {
             if (!hopper.isChunkLoaded()) continue;
@@ -492,22 +493,27 @@ public class TaskManager implements Listener {
 
             if (time == 0) {
                 hopper.getInventory().whenComplete((inventory, thrw) -> {
-                    List<ItemStack> items = Arrays.asList(inventory.getContents());
+                    List<OPair<ItemStack, Double>> items = Arrays
+                            .stream(inventory.getContents())
+                            .filter(item -> item != null && item.getType() != Material.AIR)
+                            .map(item -> new OPair<>(item, SellManager.getInstance().getPrice(copy(item, 1), player)))
+                            .filter(itemPair -> itemPair.getSecond() > 0.0)
+                            .collect(Collectors.toList());
                     if (items.isEmpty()) return;
 
                     int sellAmount = (int) hopper.getConfigHopper().getDataOfHopper(hopper).get("sellAmount");
-                    items = items.stream().filter(item -> item != null && item.getType() != Material.AIR && SellManager.getInstance().getPrice(item, player) > 0.0).collect(Collectors.toList());
-
                     int finalPrice = 0;
-                    for (ItemStack item : items) {
+
+                    for (OPair<ItemStack, Double> item : items) {
                         if (sellAmount <= 0) break;
 
-                        double price = SellManager.getInstance().getPrice(item, player);
-                        int amount = Math.min(sellAmount, item.getAmount());
+                        int amount = Math.min(sellAmount, item.getFirst().getAmount());
+                        boolean removed = Methods.removeItem(item.getFirst(), amount, inventory);
+                        //System.out.println(item.getFirst() + " ; " + item.getSecond());
 
-                        boolean removed = Methods.removeItem(item, amount, inventory);
                         if (removed) {
-                            finalPrice += price * amount;
+                            //System.out.println("Sold " + item.getFirst() + " x" + amount + " for " + (item.getSecond() * amount));
+                            finalPrice += item.getSecond() * amount;
                             sellAmount -= amount;
                         }
                     }
@@ -531,4 +537,9 @@ public class TaskManager implements Listener {
 
     }
 
+    public ItemStack copy(ItemStack item, int setAmount) {
+        ItemStack clone = item.clone();
+        clone.setAmount(setAmount);
+        return clone;
+    }
 }

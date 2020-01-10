@@ -109,7 +109,6 @@ public class EntitiesGatherer {
         Set<Entity> returnsEntities = Sets.newHashSet();
 
         try {
-
             Object worldServer = WORLD_GET_HANDLE.invoke(world);
             for (OPair<Integer, Integer> chunk : chunks) {
                 Object nmsChunk = WORLD_GET_CHUNK_IF_LOADED_METHOD.invoke(worldServer, chunk.getKey(), chunk.getValue());
@@ -128,7 +127,7 @@ public class EntitiesGatherer {
                             }
                         });
                     }
-                } catch (Throwable ignored) {}
+                } catch (NoSuchElementException | ConcurrentModificationException ignored) {}
             }
 
             returnsEntities.removeIf(entity -> !entityFilter.test(entity));

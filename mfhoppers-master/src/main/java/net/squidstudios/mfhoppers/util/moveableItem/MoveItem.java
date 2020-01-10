@@ -1,8 +1,8 @@
 package net.squidstudios.mfhoppers.util.moveableItem;
 
 import com.bgsoftware.wildstacker.api.WildStackerAPI;
-
 import net.squidstudios.mfhoppers.manager.HookManager;
+import net.squidstudios.mfhoppers.util.Methods;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.ItemStack;
 
@@ -37,62 +37,60 @@ public class MoveItem {
         return isStacked;
     }
 
-    public MoveItem(Item parent, List<ItemStack> itemStackList, int amount){
-
-        if(amount > 64) setStacked(true);
+    public MoveItem(Item parent, List<ItemStack> itemStackList, int amount) {
+        if (amount > 64) setStacked(true);
         setEntity(parent);
+
         items = itemStackList;
         this.amount = amount;
-
     }
 
-    public static MoveItem getFrom(Item item){
-
-        if(HookManager.getInstance().isWildStackerHooked()){
+    public static MoveItem getFrom(Item item) {
+        if (HookManager.getInstance().isWildStackerHooked()) {
 
             List<ItemStack> items = new ArrayList<>();
             int amount = WildStackerAPI.getStackedItem(item).getStackAmount();
 
             //MFHoppers.getInstance().getLogger().info(String.format("Add Wildstacker Item %s Amount: %d", item.getItemStack().getType().toString(), amount));
-            add(items, amount, item.getItemStack());
+            add(items, amount, item);
             return new MoveItem(item, items, amount);
 
         } else {
-                List<ItemStack> items = new ArrayList<>();
-                items.add(item.getItemStack());
-                return new MoveItem(item, items, item.getItemStack().getAmount());
+            List<ItemStack> items = new ArrayList<>();
+            items.add(item.getItemStack());
+            return new MoveItem(item, items, item.getItemStack().getAmount());
         }
-
     }
 
-    static void add(List<ItemStack> items, int amount, ItemStack parent) {
+    static void add(List<ItemStack> items, int amount, Item parent) {
         add(items, amount, parent, 0);
     }
 
-    static void add(List<ItemStack> items, int amount, ItemStack parent, int count) {
+    static void add(List<ItemStack> items, int amount, Item parent, int count) {
         if (count > 20)
             return;
 
         int currentNumber = amount <= 64 ? amount : 64;
 
-        ItemStack clone = parent.clone();
+        ItemStack clone = parent.getItemStack().clone();
         clone.setAmount(currentNumber);
 
         items.add(clone);
 
         amount -= currentNumber;
         if (amount > 0)
-            add(items,amount,parent, count + 1);
+            add(items, amount, parent, count + 1);
     }
 
-    public void setAmount(int amount){
+    public void setAmount(int amount) {
         this.amount = amount;
 
-        if(amount <= 0){
-            getEntity().remove();
+        if (amount <= 0) {
+            Methods.forceSync(() -> getEntity().remove());
         }
 
-        if(HookManager.getInstance().isWildStackerHooked() && WildStackerAPI.getStackedItem(getEntity()) != null) WildStackerAPI.getStackedItem(getEntity()).setStackAmount(amount, true);
+        if (HookManager.getInstance().isWildStackerHooked() && WildStackerAPI.getStackedItem(getEntity()) != null)
+            WildStackerAPI.getStackedItem(getEntity()).setStackAmount(amount, true);
     }
 
     public int getAmount() {
