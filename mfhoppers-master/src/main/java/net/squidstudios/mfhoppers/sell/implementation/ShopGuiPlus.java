@@ -46,6 +46,9 @@ public class ShopGuiPlus extends ISell {
     @Override
     public double getPrice(ItemStack item, Player player) {
         if(!hooked) return 0;
+        item = item.clone();
+        item.setAmount(1);
+
         if (player != null) {
             try {
                 double price = ShopGuiPlusApi.getItemStackPriceSell(player, item);

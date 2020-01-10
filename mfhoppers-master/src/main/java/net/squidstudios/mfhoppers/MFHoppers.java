@@ -221,14 +221,14 @@ public class MFHoppers extends PluginBuilder {
                 Bukkit.getPluginManager().callEvent(catchEvent);
                 if (catchEvent.isCancelled()) return;
 
-                items = Methods.addItem(catchEvent.getItemList(), catchEvent.getHopperList());
+                Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+                    List<MoveItem> items2 = Methods.addItem(catchEvent.getItemList(), catchEvent.getHopperList());
+                    if (items2.stream().map(MoveItem::getAmount).max(Integer::compare).get() <= 0) {
+                        Methods.forceSync(() -> event.getEntity().remove());
 
-                if (items.stream().map(MoveItem::getAmount).max(Integer::compare).get() <= 0) {
-                    event.setCancelled(true);
-
-                } else {
-                    item.getItemStack().setAmount(items.get(0).getAmount());
-                }
+                    } else
+                        Methods.forceSync(() -> item.getItemStack().setAmount(items.get(0).getAmount()));
+                });
             }
         });
 
