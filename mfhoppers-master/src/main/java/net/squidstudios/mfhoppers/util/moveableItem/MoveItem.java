@@ -52,7 +52,7 @@ public class MoveItem {
             int amount = WildStackerAPI.getStackedItem(item).getStackAmount();
 
             //MFHoppers.getInstance().getLogger().info(String.format("Add Wildstacker Item %s Amount: %d", item.getItemStack().getType().toString(), amount));
-            add(items, amount, item);
+            add(items, amount, item.getItemStack());
             return new MoveItem(item, items, amount);
 
         } else {
@@ -62,17 +62,17 @@ public class MoveItem {
         }
     }
 
-    static void add(List<ItemStack> items, int amount, Item parent) {
+    static void add(List<ItemStack> items, int amount, ItemStack parent) {
         add(items, amount, parent, 0);
     }
 
-    static void add(List<ItemStack> items, int amount, Item parent, int count) {
+    static void add(List<ItemStack> items, int amount, ItemStack parent, int count) {
         if (count > 20)
             return;
 
         int currentNumber = amount <= 64 ? amount : 64;
 
-        ItemStack clone = parent.getItemStack().clone();
+        ItemStack clone = parent.clone();
         clone.setAmount(currentNumber);
 
         items.add(clone);

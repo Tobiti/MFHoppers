@@ -490,6 +490,7 @@ public class TaskManager implements Listener {
 
             int time = hopper.getData().containsKey("sellEvery") ? (int) hopper.getData().get("sellEvery") : (int) configData.get("sellEvery");
             time--;
+
             if (time == 0) {
                 hopper.getInventory().whenComplete((inventory, thrw) -> {
                     List<OPair<ItemStack, Double>> items = Arrays
