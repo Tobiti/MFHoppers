@@ -204,9 +204,12 @@ public class TaskManager implements Listener {
                     autoKillTask.put(hopper, (int) pl.configHoppers.get(hopper.getName()).getDataOfHopper(hopper).get("time"));
                     ConfigHopper CONFIG_HOPPER = pl.configHoppers.get(hopper.getData().get("name").toString());
                     List<EntityType> BLACKLIST = Methods.toEntityType((List<String>) CONFIG_HOPPER.getDataOfHopper(hopper).get("mob-blacklist"));
+                    
+                    EntityType type = EntityType.valueOf(hopper.getData().get("ent").toString());
+                    boolean isGlobal = (boolean) hopper.getData().get("isGlobal");
 
                     final Set<Entity> savedEntityList = EntitiesGatherer.from(hopper.getLocation().getChunk()).accepts(LivingEntity.class).gather();
-                    List<LivingEntity> entities = Methods.getSortedEntities(savedEntityList, BLACKLIST).stream().filter(e -> e.getLocation().distance(hopper.getLocation()) < 1).collect(Collectors.toList());
+                    List<LivingEntity> entities = Methods.getSortedEntities(savedEntityList, BLACKLIST).stream().filter(e -> e.getLocation().distance(hopper.getLocation()) < (type.equals(EntityType.GHAST) || isGlobal ? 2 : 1)).filter(e -> e.getType().equals(type) || isGlobal).collect(Collectors.toList());
 
                     for (LivingEntity ent : entities) {
                         if (Bukkit.getPluginManager().isPluginEnabled("WildStacker") || Bukkit.getPluginManager().isPluginEnabled("BeastCore")) {
