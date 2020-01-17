@@ -193,13 +193,11 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependencies>
-            <dependency>
-                <groupId>com.github.OmerBenGera</groupId>
-                <artifactId>WildChestsAPI</artifactId>
-                <version>latest</version>
-            </dependency>
-        </dependencies>
+        <dependency>
+            <groupId>com.github.OmerBenGera</groupId>
+            <artifactId>WildChestsAPI</artifactId>
+            <version>latest</version>
+        </dependency>
     </dependencies>
 
     <build>
