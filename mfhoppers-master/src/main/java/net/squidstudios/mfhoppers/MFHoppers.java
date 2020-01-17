@@ -1042,7 +1042,6 @@ public class MFHoppers extends PluginBuilder {
 
     private void PlaceHopper(BlockPlaceEvent event, ItemStack item) {
         NBTItem nbt = new NBTItem(item);
-        getLogger().info("[Item Material] " + item.getType().toString());
         Map<String, Object> data = new HashMap<>();
         data.put("type", nbt.getString("type"));
         data.put("name", nbt.getString("name0"));
