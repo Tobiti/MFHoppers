@@ -42,6 +42,7 @@ Hoppers:
     lore:
       - "&7This hopper picks up mob drops!"
     should_drop_from_explosions: true
+    autoLinkToChest: true
     drops:
       - "ROTTEN_FLESH"
 
@@ -157,6 +158,8 @@ DeactivateSaveMessage: false
 
 CollectAlreadyDropedItems: true 
 CollectItemsEvery: 3 # in seconds
+
+AutoLinkEvery: 3 # in seconds
 
 sellOptions:
 

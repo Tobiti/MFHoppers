@@ -18,6 +18,8 @@ import net.squidstudios.mfhoppers.tasks.Listeners.BeastCoreListener;
 import net.squidstudios.mfhoppers.util.MContainer;
 import net.squidstudios.mfhoppers.util.Methods;
 import net.squidstudios.mfhoppers.util.OPair;
+import net.squidstudios.mfhoppers.util.OVersion;
+import net.squidstudios.mfhoppers.util.XMaterial;
 import net.squidstudios.mfhoppers.util.ent.EntitiesGatherer;
 import net.squidstudios.mfhoppers.util.moveableItem.MoveItem;
 import net.squidstudios.mfhoppers.util.particles.ParticleEffect;
@@ -76,6 +78,16 @@ public class TaskManager implements Listener {
                 }
             }
         }.runTaskTimerAsynchronously(MFHoppers, 0, 20 * MFHoppers.getInstance().getConfig().getLong("CollectItemsEvery", 3)));
+
+        // Auto Link Task
+        add(new BukkitRunnable() {
+            @Override
+            public void run() {
+                runAutoLinkTask();
+            }
+        }.runTaskTimer(MFHoppers, 0, 20 * MFHoppers.getInstance().getConfig().getLong("AutoLinkEvery", 3)));
+
+
     }
 
     public void add(BukkitTask task) {
@@ -541,5 +553,44 @@ public class TaskManager implements Listener {
         ItemStack clone = item.clone();
         clone.setAmount(setAmount);
         return clone;
+    }
+
+    public void runAutoLinkTask(){
+        Set<IHopper> hoppers = DataManager.getInstance().getHoppersSet(hopper -> hopper != null && hopper.getConfigHopper() != null && hopper.getConfigHopper().getDataOfHopper(hopper).get("autoLinkToChest") != null && Boolean.valueOf((String)hopper.getConfigHopper().getDataOfHopper(hopper).get("autoLinkToChest")));
+
+        final HashMap<IHopper, ChunkSnapshot> map = new HashMap<>();
+        for (IHopper hopper : hoppers) {
+            if (!hopper.isChunkLoaded()) continue;
+
+            map.put(hopper, hopper.getChunk().getChunkSnapshot());
+        }
+
+        new BukkitRunnable(){
+        
+            @Override
+            public void run() {
+                for (IHopper hopper : map.keySet()) {
+                    int x = (int)hopper.getLocation().getX() % 16;
+                    int y = (int)hopper.getLocation().getY();
+                    int z = (int)hopper.getLocation().getZ() % 16;
+                    ChunkSnapshot snapshot = map.get(hopper);
+                    boolean stillChests = true;
+                    while(y >= 0 && stillChests){
+                        y--;
+
+                        Material material = snapshot.getBlockType(x, y, z);
+                        if (material.equals(Material.CHEST) || (OVersion.isOrAfter(14) && material.equals(XMaterial.fromString("BARREL").parseMaterial()))){
+                            Location loc = hopper.getLocation().clone().add(0, y-hopper.getLocation().getY(), 0);
+                            if(!hopper.isLinkedTo(loc)){
+                                hopper.link(loc);
+                            }
+                        }
+                        else {
+                            stillChests = false;
+                        }
+                    }
+                }
+            }
+        }.runTaskAsynchronously(MFHoppers.getInstance());
     }
 }
