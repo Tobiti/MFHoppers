@@ -339,6 +339,9 @@ public class Methods {
                 for (LivingEntity ent : ents) {
                     NBTEntity nbt = new NBTEntity(ent);
                     if (nbt.getByte("NoAI") == 1 && ent.getType() != EntityType.ENDERMAN) {
+                        if(loc.distance(ent.getLocation()) >= 3){
+                            ent.teleport(loc);
+                        }
                         return;
                     }
                     PotionEffect effect = new PotionEffect(PotionEffectType.SLOW, 999999999, 60);

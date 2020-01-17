@@ -209,7 +209,7 @@ public class TaskManager implements Listener {
                     boolean isGlobal = (boolean) hopper.getData().get("isGlobal");
 
                     final Set<Entity> savedEntityList = EntitiesGatherer.from(hopper.getLocation().getChunk()).accepts(LivingEntity.class).gather();
-                    List<LivingEntity> entities = Methods.getSortedEntities(savedEntityList, BLACKLIST).stream().filter(e -> e.getLocation().distance(hopper.getLocation()) < (type.equals(EntityType.GHAST) || isGlobal ? 2 : 1)).filter(e -> e.getType().equals(type) || isGlobal).collect(Collectors.toList());
+                    List<LivingEntity> entities = Methods.getSortedEntities(savedEntityList, BLACKLIST).stream().filter(e -> e.getLocation().distance(hopper.getLocation()) < (type.equals(EntityType.GHAST) || isGlobal ? 4 : 1)).filter(e -> e.getType().equals(type) || isGlobal).collect(Collectors.toList());
 
                     for (LivingEntity ent : entities) {
                         if (Bukkit.getPluginManager().isPluginEnabled("WildStacker") || Bukkit.getPluginManager().isPluginEnabled("BeastCore")) {
