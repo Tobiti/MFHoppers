@@ -321,30 +321,19 @@ public class MFHoppers extends PluginBuilder {
             if (event.isCancelled()) return;
 
             if (Methods.isHopper(event.getItemInHand())) {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-
-                        NBTItem nbt = new NBTItem(event.getItemInHand());
-                        Map<String, Object> data = new HashMap<>();
-                        data.put("type", nbt.getString("type"));
-                        data.put("name", nbt.getString("name0"));
-                        data.put("lvl", nbt.getString("lvl"));
-
-                        if (!Methods.hasReachedLimit(data, event.getBlock().getLocation().getChunk(), event.getPlayer())) {
-                            DataManager.getInstance().add(event.getItemInHand(), event.getBlock().getLocation(), event.getPlayer());
-                            Lang.PLACE.send(new MapBuilder().add("%type%", nbt.getString("type")).add("%lvl%", nbt.getString("lvl")).add("%name%", nbt.getString("name0")).add("%displayName%", event.getItemInHand().getItemMeta().getDisplayName()).getMap(), event.getPlayer());
-
-                        } else {
-                            Methods.breakBlock(event.getBlock());
-                            if (nbt.getString("type").equalsIgnoreCase(HopperEnum.Grind.toString())) {
-                                event.getPlayer().getInventory().addItem(configHoppers.get(nbt.getString("name0")).buildItemByLevel(Integer.valueOf(nbt.getString("lvl")), EntityType.valueOf(nbt.getString("ent")), Boolean.valueOf(nbt.getString("isAuto")), Boolean.valueOf(nbt.getString("isGlobal"))));
-                            } else {
-                                event.getPlayer().getInventory().addItem(configHoppers.get(nbt.getString("name0")).buildItemByLevel(Integer.valueOf(nbt.getString("lvl"))));
-                            }
+                ItemStack item = event.getItemInHand();
+                if(OVersion.isOrAfter(15)){
+                    // Moved here because on 1.15 the hopper is placed before it can get the item. So it gets the empty item slot and breaks!
+                    PlaceHopper(event, item);
+                }
+                else {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            PlaceHopper(event, item);
                         }
-                    }
-                }.runTaskAsynchronously(this);
+                    }.runTaskAsynchronously(this);
+                }
             }
         });
         addListener(PlayerInteractEvent.class, EventPriority.NORMAL, event -> {
@@ -1049,6 +1038,29 @@ public class MFHoppers extends PluginBuilder {
         }
         cnf = initConfig("config.yml", getDataFolder());
 
+    }
+
+    private void PlaceHopper(BlockPlaceEvent event, ItemStack item) {
+        NBTItem nbt = new NBTItem(item);
+        getLogger().info("[Item Material] " + item.getType().toString());
+        Map<String, Object> data = new HashMap<>();
+        data.put("type", nbt.getString("type"));
+        data.put("name", nbt.getString("name0"));
+        data.put("lvl", nbt.getString("lvl"));
+
+        if (!Methods.hasReachedLimit(data, event.getBlock().getLocation().getChunk(), event.getPlayer())) {
+            DataManager.getInstance().add(item, event.getBlock().getLocation(), event.getPlayer());
+            Lang.PLACE.send(new MapBuilder().add("%type%", nbt.getString("type")).add("%lvl%", nbt.getString("lvl")).add("%name%", nbt.getString("name0")).add("%displayName%", event.getItemInHand().getItemMeta().getDisplayName()).getMap(), event.getPlayer());
+
+        } else {
+            
+            Methods.breakBlock(event.getBlock());
+            if (nbt.getString("type").equalsIgnoreCase(HopperEnum.Grind.toString())) {
+                event.getPlayer().getInventory().addItem(configHoppers.get(nbt.getString("name0")).buildItemByLevel(Integer.valueOf(nbt.getString("lvl")), EntityType.valueOf(nbt.getString("ent")), Boolean.valueOf(nbt.getString("isAuto")), Boolean.valueOf(nbt.getString("isGlobal"))));
+            } else {
+                event.getPlayer().getInventory().addItem(configHoppers.get(nbt.getString("name0")).buildItemByLevel(Integer.valueOf(nbt.getString("lvl"))));
+            }
+        }
     }
 
 }
