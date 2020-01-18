@@ -1,6 +1,8 @@
 package net.squidstudios.mfhoppers.util;
 
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
+import com.bgsoftware.wildchests.api.WildChestsAPI;
+import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.tr7zw.changeme.nbtapi.NBTEntity;
@@ -161,11 +163,29 @@ public class Methods {
             if (hopper.isLinked()) {
                 boolean itemWasAdded = false;
                 for (Inventory destination : Methods.GetLinkedInventorys(hopper)) {
-                    if (Methods.canFit(item, item.getAmount(), destination)) {
-                        added += item.getAmount();
-                        destination.addItem(item);
-                        itemWasAdded = true;
-                        break;
+                    if(Bukkit.getPluginManager().isPluginEnabled("WildChests")){
+                        Chest chest = WildChestsAPI.getChest(destination.getLocation());
+                        if(chest != null){
+                            Map<Integer, ItemStack> integerItemStackMap = chest.addItems(item);
+                            if (integerItemStackMap.isEmpty()) {
+                                added += item.getAmount();
+                                itemWasAdded = true;
+                                break;
+
+                            } else {
+                                int minus = integerItemStackMap.keySet().stream().findFirst().orElse(0);
+                                added += item.getAmount() - minus;
+                                item.setAmount(minus);
+                            }
+                        }
+                    }
+                    else {
+                        if (Methods.canFit(item, item.getAmount(), destination)) {
+                            added += item.getAmount();
+                            destination.addItem(item);
+                            itemWasAdded = true;
+                            break;
+                        }
                     }
                 }
                 if (itemWasAdded) {
