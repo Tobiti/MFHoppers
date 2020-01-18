@@ -1,6 +1,5 @@
 package net.squidstudios.mfhoppers.util;
 
-import net.squidstudios.mfhoppers.MFHoppers;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 
@@ -45,7 +44,7 @@ public class Drop {
 
     public ItemStack getItem(Material mat) {
 
-        if(mat == Material.GOLD_ORE || mat == Material.IRON_ORE){
+        if (mat == Material.GOLD_ORE || mat == Material.IRON_ORE) {
 
             mat = Material.valueOf(mat.name().split("_")[0] + "_INGOT");
 
@@ -53,14 +52,9 @@ public class Drop {
 
         ItemStack item = new ItemStack(mat);
 
-        if(MFHoppers.mcVersion < 13){
-
-            if(item.getType() == MMaterial.matchMaterial("INK_SACK")){
-
-                item.setDurability((byte)4);
-
-            }
-
+        if (OVersion.isBefore(13)) {
+            if (item.getType() == MMaterial.matchMaterial("INK_SACK"))
+                item.setDurability((byte) 4);
         }
 
         if (hasMin()) {

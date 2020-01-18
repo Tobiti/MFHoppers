@@ -1,10 +1,9 @@
 package net.squidstudios.mfhoppers.util;
 
-import net.squidstudios.mfhoppers.MFHoppers;
+import net.squidstudios.mfhoppers.util.item.ItemBuilder;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
-import net.squidstudios.mfhoppers.util.item.ItemBuilder;
 
 public enum GlassColor {
 
@@ -26,12 +25,12 @@ public enum GlassColor {
 
     private int glass_id = 0;
 
-    GlassColor(int id){
+    GlassColor(int id) {
         this.glass_id = id;
     }
-    public ItemStack getItem(){
 
-        if(MFHoppers.mcVersion >= 13){
+    public ItemStack getItem() {
+        if (OVersion.isOrAfter(13)) {
 
             String name = name() + "_STAINED_GLASS_PANE";
             return new ItemBuilder(XMaterial.fromString(name).parseMaterial()).
@@ -40,13 +39,12 @@ public enum GlassColor {
                     addNbt("filler", "filler").
                     setName(" ").buildItem();
 
-        } else{
-
+        } else {
             Material mat = MMaterial.matchMaterial("STAINED_GLASS_PANE");
             return new ItemBuilder(mat).
                     addNbt("filler", "filler").
                     setName(" ").
-                    setDurability((byte)this.glass_id).buildItem();
+                    setDurability((byte) this.glass_id).buildItem();
 
         }
 

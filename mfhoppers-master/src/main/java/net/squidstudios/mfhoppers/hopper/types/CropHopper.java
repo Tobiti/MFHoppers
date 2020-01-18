@@ -69,6 +69,4 @@ public class CropHopper extends IHopper {
 
         return Methods.serialize(ret);
     }
-
-
 }

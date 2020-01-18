@@ -16,13 +16,11 @@ public class ConnectionManager {
     private DataManager manager;
     private List<Connection> connections = new ArrayList<>();
     public String url;
+    
     public ConnectionManager(DataManager manager){
-
         this.manager = manager;
         this.url = "jdbc:sqlite:" + MFHoppers.getInstance().getDataFolder().getAbsolutePath() + File.separator + "data.db";
-
     }
-
 
     public Connection getConnection() {
         Connection c = null;

@@ -1,6 +1,6 @@
-
 *.iml
 *.jar
 *.lst
 target/
 .idea/
+out/

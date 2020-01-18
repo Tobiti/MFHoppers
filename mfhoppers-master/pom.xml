@@ -6,7 +6,7 @@
 
     <groupId>net.squidstudios</groupId>
     <artifactId>MFHoppers</artifactId>
-    <version>3.11-v1.14</version>
+    <version>3.15-v1.14</version>
     <name>MFHoppers</name>
 
     <properties>
@@ -14,7 +14,6 @@
     </properties>
 
     <repositories>
-
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
@@ -29,7 +28,6 @@
             <id>spigot</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/public</url>
         </repository>
-
 		
         <repository>
             <id>vault-repo</id>
@@ -57,9 +55,26 @@
             <url>http://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
 
+        <repository>
+            <id>item-nbt-api</id>
+            <url>https://repo.codemc.io/repository/maven-public/</url>
+        </repository>
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>de.tr7zw</groupId>
+            <artifactId>item-nbt-api</artifactId>
+            <version>LATEST</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>de.tr7zw</groupId>
+            <artifactId>item-nbt-api</artifactId>
+            <version>LATEST</version>
+            <scope>compile</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.github.OmerBenGera</groupId>
@@ -90,14 +105,14 @@
         <dependency>
            <groupId>org.spigotmc</groupId>
            <artifactId>spigot-api</artifactId>
-           <version>LATEST</version>
+           <version>1.14.2-R0.1-SNAPSHOT</version>
            <scope>provided</scope>
         </dependency>
         <!--Bukkit API-->
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.13.2-R0.1-SNAPSHOT</version>
+            <version>1.14.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 
@@ -143,7 +158,7 @@
             <artifactId>shopguiplus</artifactId>
             <version>1.19.4-SNAPSHOT</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../Libraries/ShopGUIPlus-1.19.4 [Spigot 1.7-1.12].jar</systemPath>
+            <systemPath>${project.basedir}/../Libraries/ShopGUIPlus.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -165,9 +180,9 @@
         <dependency>
             <groupId>beast.core</groupId>
             <artifactId>beastcore</artifactId>
-            <version>2.4.4.0</version>
+            <version>4.1.2.0</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../Libraries/BeastCore.jar</systemPath>
+            <systemPath>${project.basedir}/../Libraries/BeastCore-4.1.2.0-STABLE_1.jar</systemPath>
         </dependency>
 
         <dependency>
@@ -177,6 +192,7 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/../Libraries/CustomDrops-Legacy.jar</systemPath>
         </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -184,6 +200,11 @@
             <scope>provided</scope>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.OmerBenGera</groupId>
+            <artifactId>WildChestsAPI</artifactId>
+            <version>latest</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -210,13 +231,25 @@
 
                         <configuration>
                             <!--This animate tells maven where to put the jar, in this case the plugins folder.-->
-                            <outputFile>${project.basedir}/target/${project.artifactId}.jar</outputFile>
-                            <minimizeJar>true</minimizeJar>
+                            <outputFile>${project.basedir}/out/${project.artifactId}-${project.version}.jar</outputFile>
+
+                            <relocations>
+                                <relocation>
+                                    <pattern>de.tr7zw.changeme.nbtapi</pattern>
+                                    <shadedPattern>net.squidstudios.mfhoppers.util.nbt</shadedPattern>
+                                </relocation>
+                            </relocations>
+
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>com.*</exclude>
+                                </excludes>
+                            </artifactSet>
+
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
         <resources>
             <resource>

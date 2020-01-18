@@ -1,22 +1,36 @@
 package net.squidstudios.mfhoppers;
 
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
-import com.sun.org.apache.xpath.internal.operations.Bool;
+import com.google.common.collect.Sets;
+import de.tr7zw.changeme.nbtapi.NBTItem;
+import de.tr7zw.changeme.nbtapi.utils.MinecraftVersion;
 import net.milkbowl.vault.economy.Economy;
 import net.squidstudios.mfhoppers.api.events.ItemsHopperCatchEvent;
+import net.squidstudios.mfhoppers.hopper.ConfigHopper;
+import net.squidstudios.mfhoppers.hopper.HopperEnum;
+import net.squidstudios.mfhoppers.hopper.IHopper;
+import net.squidstudios.mfhoppers.hopper.convert.EntityPrice;
+import net.squidstudios.mfhoppers.hopper.convert.HopperConvert;
 import net.squidstudios.mfhoppers.hopper.filter.FilterInventory;
-import net.squidstudios.mfhoppers.hopper.types.GrindHopper;
 import net.squidstudios.mfhoppers.hopper.upgrades.UpgradeEnum;
+import net.squidstudios.mfhoppers.hopper.upgrades.UpgradeInventory;
 import net.squidstudios.mfhoppers.manager.DataManager;
 import net.squidstudios.mfhoppers.manager.HookManager;
 import net.squidstudios.mfhoppers.manager.SellManager;
 import net.squidstudios.mfhoppers.tasks.Listeners.BeastCoreListener;
 import net.squidstudios.mfhoppers.tasks.TaskManager;
 import net.squidstudios.mfhoppers.util.*;
+import net.squidstudios.mfhoppers.util.cmd.Cmd;
 import net.squidstudios.mfhoppers.util.cmd.Sender;
-import net.squidstudios.mfhoppers.util.item.nbt.NBTItem;
+import net.squidstudios.mfhoppers.util.ent.Textures12;
+import net.squidstudios.mfhoppers.util.ent.Textures13;
+import net.squidstudios.mfhoppers.util.inv.InvManager;
+import net.squidstudios.mfhoppers.util.inv.InvType;
+import net.squidstudios.mfhoppers.util.inv.InventoryBuilder;
+import net.squidstudios.mfhoppers.util.item.ItemBuilder;
 import net.squidstudios.mfhoppers.util.moveableItem.MoveItem;
 import net.squidstudios.mfhoppers.util.plugin.PluginBuilder;
+import net.squidstudios.mfhoppers.util.plugin.Tasks;
 import objectexplorer.MemoryMeasurer;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -38,30 +52,19 @@ import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.scheduler.BukkitRunnable;
-import net.squidstudios.mfhoppers.hopper.ConfigHopper;
-import net.squidstudios.mfhoppers.hopper.HopperEnum;
-import net.squidstudios.mfhoppers.hopper.IHopper;
-import net.squidstudios.mfhoppers.hopper.convert.EntityPrice;
-import net.squidstudios.mfhoppers.hopper.convert.HopperConvert;
-import net.squidstudios.mfhoppers.hopper.upgrades.UpgradeInventory;
-import net.squidstudios.mfhoppers.util.cmd.Cmd;
-import net.squidstudios.mfhoppers.util.ent.Textures12;
-import net.squidstudios.mfhoppers.util.ent.Textures13;
-import net.squidstudios.mfhoppers.util.inv.InvManager;
-import net.squidstudios.mfhoppers.util.inv.InvType;
-import net.squidstudios.mfhoppers.util.inv.InventoryBuilder;
-import net.squidstudios.mfhoppers.util.item.ItemBuilder;
-import net.squidstudios.mfhoppers.util.plugin.Tasks;
+import sun.reflect.Reflection;
 
-import javax.xml.crypto.Data;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.util.stream.Collectors.toList;
 
@@ -71,10 +74,6 @@ public class MFHoppers extends PluginBuilder {
     private Economy economy = null;
     public YamlConfiguration cnf;
 
-    public static int mcVersion = 9;
-
-    private static String serverVersion;
-
     public Map<String, ConfigHopper> configHoppers = new ConcurrentHashMap<>();
     public Map<String, HopperConvert> convertHoppers = new ConcurrentHashMap<>();
 
@@ -82,20 +81,26 @@ public class MFHoppers extends PluginBuilder {
 
     @Override
     public void init() {
+        MinecraftVersion.logger.setLevel(Level.OFF);
 
+        if (ReflectionUtil.SERVER_VERSION_NUM < 14) {
+            out("This Jar is for server versions between 1.14.X-1.15.X", OutType.ERROR);
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
         instance = this;
 
         File oldName = new File(getDataFolder().getAbsolutePath().replace("MFHoppers", "AquaHoppers"));
 
-        if(!getDataFolder().exists()){
+        if (!getDataFolder().exists()) {
             getDataFolder().mkdirs();
         }
 
-        if(oldName.exists() && oldName.isDirectory()){
+        if (oldName.exists() && oldName.isDirectory()) {
 
-            for(File source : oldName.listFiles()){
+            for (File source : oldName.listFiles()) {
                 File dest = new File(getDataFolder(), source.getName());
-                try{
+                try {
                     InputStream is = null;
                     OutputStream os = null;
                     try {
@@ -110,7 +115,7 @@ public class MFHoppers extends PluginBuilder {
                         is.close();
                         os.close();
                     }
-                } catch (Exception ex){
+                } catch (Exception ex) {
                     out(ex);
                 }
             }
@@ -120,7 +125,6 @@ public class MFHoppers extends PluginBuilder {
         initConfig();
         //updateConfig();
 
-        new Tasks(this);
         new Tasks(this);
         new Methods(this);
         new DataManager(this);
@@ -133,7 +137,7 @@ public class MFHoppers extends PluginBuilder {
         initCommands();
         Lang.init();
 
-        if(Bukkit.getPluginManager().getPlugin("Vault") != null){
+        if (Bukkit.getPluginManager().getPlugin("Vault") != null) {
 
             RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
             if (rsp != null) {
@@ -141,8 +145,7 @@ public class MFHoppers extends PluginBuilder {
                 out("&3Vault found, hooked!");
             }
 
-        } else{
-
+        } else {
             out("&cVault not found, economy support disabled.");
             economy = null;
 
@@ -156,20 +159,21 @@ public class MFHoppers extends PluginBuilder {
     public Map<String, ConfigHopper> getConfigHoppers() {
         return configHoppers;
     }
-    void initConfig(){
 
-        for(String hopperName : cnf.getConfigurationSection("Hoppers").getKeys(false)){
+    void initConfig() {
 
-            if(cnf.contains("Hoppers." + hopperName + ".upgrades")){
+        for (String hopperName : cnf.getConfigurationSection("Hoppers").getKeys(false)) {
+
+            if (cnf.contains("Hoppers." + hopperName + ".upgrades")) {
 
                 HashMap<Integer, Map<String, Object>> upgrades = new HashMap<>();
 
-                for(String level : cnf.getConfigurationSection("Hoppers." + hopperName + ".upgrades").getKeys(false)){
+                for (String level : cnf.getConfigurationSection("Hoppers." + hopperName + ".upgrades").getKeys(false)) {
 
                     Map<String, Object> wrongData = cnf.getConfigurationSection("Hoppers." + hopperName + ".upgrades." + level).getValues(true);
                     Map<String, Object> rightData = new HashMap<>();
 
-                    for(String key : wrongData.keySet()){
+                    for (String key : wrongData.keySet()) {
                         rightData.put(key.replaceAll("upgrades." + level + ".", ""), wrongData.get(key));
                     }
                     upgrades.put(Integer.valueOf(level), rightData);
@@ -191,55 +195,41 @@ public class MFHoppers extends PluginBuilder {
     }
 
     void initListeners() {
-
-        if (Bukkit.getServer().getClass().getPackage().toString().contains("14")) {
-            mcVersion = 14;
-            out("&cYour server is running 1.13.X which currently doesn't support particles!");
-        }
-        if (Bukkit.getServer().getClass().getPackage().toString().contains("13")) {
-            mcVersion = 13;
-            out("&cYour server is running 1.13.X which currently doesn't support particles!");
-        }
-
-        if (Bukkit.getServer().getClass().getPackage().toString().contains("8")) {
-            mcVersion = 8;
-        }
-
-        if(Bukkit.getPluginManager().isPluginEnabled("BeastCore")) {
+        if (Bukkit.getPluginManager().isPluginEnabled("BeastCore")) {
             BeastCoreListener listener = new BeastCoreListener();
             listener.Init();
             MFHoppers.getInstance().getServer().getPluginManager().registerEvents(listener, this);
         }
 
         addListener(ItemSpawnEvent.class, EventPriority.LOWEST, event -> {
+            if (event.isCancelled()) return;
 
             if (event.getEntityType() == EntityType.DROPPED_ITEM) {
-                if(event.getEntity() == null || event.isCancelled()) return;
-
                 Item item = event.getEntity();
-                HashMap<Location, IHopper> hoppers = Methods.getSorted(HopperEnum.Mob, event.getEntity().getLocation().getChunk(), item.getItemStack().getType(), item.getItemStack().getDurability());
+                ItemStack itemStack = Objects.requireNonNull(item.getItemStack(), "ItemStack cannot be null!");
 
-                hoppers.putAll(Methods.getSorted(HopperEnum.Crop, event.getEntity().getLocation().getChunk(), item.getItemStack().getType(), item.getItemStack().getDurability()));
+                Collection<IHopper> hoppers = Sets.newHashSet();
+                DataManager.getInstance().worldHolder(event.getLocation()).ifPresent(holder -> hoppers.addAll(holder.hoppersAt(
+                        Objects.requireNonNull(event.getLocation().getChunk(), "Chunk cannot be null!"),
+                        hopper -> (hopper.getType() == HopperEnum.Mob || hopper.getType() == HopperEnum.Crop) && hopper.ContainsInFilterMaterialList(itemStack.getType(), itemStack.getDurability()))));
                 if (hoppers.isEmpty()) return;
 
                 List<MoveItem> items = new ArrayList<>();
                 items.add(MoveItem.getFrom(item));
 
-                ItemsHopperCatchEvent catchEvent = new ItemsHopperCatchEvent(items, new ArrayList<>(hoppers.values()));
+                ItemsHopperCatchEvent catchEvent = new ItemsHopperCatchEvent(items, hoppers);
                 Bukkit.getPluginManager().callEvent(catchEvent);
+                if (catchEvent.isCancelled()) return;
 
-                if(catchEvent.isCancelled()) return;
+                Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+                    List<MoveItem> items2 = Methods.addItem(catchEvent.getItemList(), catchEvent.getHopperList());
+                    if (items2.stream().map(MoveItem::getAmount).max(Integer::compare).get() <= 0) {
+                        Methods.forceSync(() -> event.getEntity().remove());
 
-                items = Methods.addItem(catchEvent.getItemList(), catchEvent.getHopperList());
-
-                if(items.stream().map(i -> i.getAmount()).max(Integer::compare).get() <= 0) {
-                    event.setCancelled(true);
-                }
-                else {
-                    item.getItemStack().setAmount(items.get(0).getAmount());
-                }
+                    } else
+                        Methods.forceSync(() -> item.getItemStack().setAmount(items.get(0).getAmount()));
+                });
             }
-
         });
 
         addListener(EntityExplodeEvent.class, EventPriority.NORMAL, event -> {
@@ -256,22 +246,27 @@ public class MFHoppers extends PluginBuilder {
 
             }
         });
-        addListener(BlockBreakEvent.class, EventPriority.NORMAL, event -> {
 
+        addListener(ChunkLoadEvent.class, EventPriority.HIGHEST, event -> {
+            DataManager dm = DataManager.getInstance();
+            dm.worldHolder(event.getChunk()).ifPresent(worldHolder -> Bukkit.getScheduler().runTaskLater(this, () -> worldHolder.hoppersAt(event.getChunk().getX(), event.getChunk().getZ()).forEach(IHopper::recacheInventory), 1));
+        });
+
+        addListener(BlockBreakEvent.class, EventPriority.HIGHEST, event -> {
             if (event.isCancelled() || !DataManager.getInstance().isHopper(event.getBlock().getLocation())) return;
+            if (event.getBlock().getType() == Material.AIR) return;
+
             event.setCancelled(true);
+            event.getBlock().getDrops().clear();
 
             new BukkitRunnable() {
                 @Override
                 public void run() {
                     if (DataManager.getInstance().isHopper(event.getBlock().getLocation())) {
-
                         IHopper hopper = DataManager.getInstance().getHopper(event.getBlock().getLocation());
-
-                        Lang.BROKE.send(new MapBuilder().add("%type%", hopper.getType().name()).add("%lvl%", hopper.getLevel()).add("%name%", hopper.getName()).add("%displayName%",hopper.getConfigHopper().getItemOfData(hopper).getItemMeta().getDisplayName()).getMap(), event.getPlayer());
+                        Lang.BROKE.send(new MapBuilder().add("%type%", hopper.getType().name()).add("%lvl%", hopper.getLevel()).add("%name%", hopper.getName()).add("%displayName%", hopper.getConfigHopper().getItemOfData(hopper).getItemMeta().getDisplayName()).getMap(), event.getPlayer());
 
                         if (hopper.getType() == HopperEnum.Grind) {
-
                             new BukkitRunnable() {
                                 @Override
                                 public void run() {
@@ -284,14 +279,13 @@ public class MFHoppers extends PluginBuilder {
                                     }
                                 }
                             }.runTask(getInstance());
-
                         }
 
                         DataManager.getInstance().remove(event.getBlock().getLocation());
                         boolean alreadyDropped = false;
                         Map<String, Object> dataOfHopper = configHoppers.get(hopper.getName()).getDataOfHopper(hopper);
-                        if(dataOfHopper.containsKey("DropToInventory") && (boolean) dataOfHopper.get("DropToInventory")){
-                            if(event.getPlayer().getInventory().firstEmpty() != -1) {
+                        if (dataOfHopper.containsKey("DropToInventory") && (boolean) dataOfHopper.get("DropToInventory")) {
+                            if (event.getPlayer().getInventory().firstEmpty() != -1) {
                                 if (hopper.getType() == HopperEnum.Grind) {
                                     event.getPlayer().getInventory().addItem(configHoppers.get(hopper.getName()).buildItemByLevel(hopper.getLevel(), (EntityType) hopper.getData().get("ent"), (Boolean) hopper.getData().get("isAuto"), (Boolean) hopper.getData().get("isGlobal")));
                                 } else {
@@ -300,63 +294,47 @@ public class MFHoppers extends PluginBuilder {
                                 alreadyDropped = true;
                             }
                         }
-                        if(!alreadyDropped) {
+                        if (!alreadyDropped) {
                             Methods.drop(configHoppers.get(hopper.getName()).getItemOfData(hopper), hopper.getLocation());
                         }
+
                         Methods.breakBlock(event.getBlock());
-                        new BukkitRunnable(){
+                        new BukkitRunnable() {
                             @Override
                             public void run() {
                                 Bukkit.getPluginManager().callEvent(new BlockBreakEvent(event.getBlock(), event.getPlayer()));
                             }
                         }.runTask(instance);
 
-                        if(Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")){
+                        if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")) {
                             SuperiorSkyblockAPI.getPlayer(event.getPlayer()).getIsland().handleBlockBreak(event.getBlock(), 1);
                         }
 
-                    } else if(MContainer.isContainer(event.getBlock().getLocation())){
-
-                        if(Methods.getLinkedHopper(event.getBlock().getLocation()) != null){
-
+                    } else if (MContainer.isContainer(event.getBlock().getLocation())) {
+                        if (Methods.getLinkedHopper(event.getBlock().getLocation()) != null) {
                             Methods.getLinkedHopper(event.getBlock().getLocation()).unlink(event.getBlock().getLocation());
-
                         }
                     }
                 }
             }.runTaskAsynchronously(this);
-
         });
         addListener(BlockPlaceEvent.class, EventPriority.HIGHEST, event -> {
-
             if (event.isCancelled()) return;
 
             if (Methods.isHopper(event.getItemInHand())) {
-                new BukkitRunnable() {
-                    @Override
-                    public void run() {
-
-                        NBTItem nbt = new NBTItem(event.getItemInHand());
-                        Map<String, Object> data = new HashMap<>();
-                        data.put("type", nbt.getString("type"));
-                        data.put("name", nbt.getString("name0"));
-                        data.put("lvl", nbt.getString("lvl"));
-
-                        if (!Methods.hasReachedLimit(data, DataManager.getInstance().getCustomChunk(event.getBlock().getLocation()), event.getPlayer())) {
-                            DataManager.getInstance().add(event.getItemInHand(), event.getBlock().getLocation(), event.getPlayer());
-                            Lang.PLACE.send(new MapBuilder().add("%type%", nbt.getString("type")).add("%lvl%", nbt.getString("lvl")).add("%name%", nbt.getString("name0")).add("%displayName%", event.getItemInHand().getItemMeta().getDisplayName()).getMap(), event.getPlayer());
-                        } else {
-                            Methods.breakBlock(event.getBlock());
-                            if(nbt.getString("type").equalsIgnoreCase(HopperEnum.Grind.toString())){
-                                event.getPlayer().getInventory().addItem(configHoppers.get(nbt.getString("name0")).buildItemByLevel(Integer.valueOf(nbt.getString("lvl")), EntityType.valueOf(nbt.getString("ent")), Boolean.valueOf(nbt.getString("isAuto")), Boolean.valueOf(nbt.getString("isGlobal"))));
-                            }
-                            else {
-                                event.getPlayer().getInventory().addItem(configHoppers.get(nbt.getString("name0")).buildItemByLevel(Integer.valueOf(nbt.getString("lvl"))));
-                            }
-                            event.setCancelled(true);
+                ItemStack item = event.getItemInHand();
+                if(OVersion.isOrAfter(15)){
+                    // Moved here because on 1.15 the hopper is placed before it can get the item. So it gets the empty item slot and breaks!
+                    PlaceHopper(event, item);
+                }
+                else {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            PlaceHopper(event, item);
                         }
-                    }
-                }.runTaskAsynchronously(this);
+                    }.runTaskAsynchronously(this);
+                }
             }
         });
         addListener(PlayerInteractEvent.class, EventPriority.NORMAL, event -> {
@@ -374,7 +352,7 @@ public class MFHoppers extends PluginBuilder {
 
                         Map<String, Object> upgrade = CONFIG_HOPPER.getNextHopperUpgrade(HOPPER);
                         if (upgrade == null) {
-                            if(event.getItem() == null || (event.getItem().getType() != Material.HOPPER && event.getItem().getType() != Material.CHEST)) {
+                            if (event.getItem() == null || (event.getItem().getType() != Material.HOPPER && event.getItem().getType() != Material.CHEST)) {
                                 Lang.HOPPER_ALREADY_IS_MAX_LEVEL.send(event.getPlayer());
                                 event.setCancelled(true);
                                 return;
@@ -385,9 +363,8 @@ public class MFHoppers extends PluginBuilder {
                         event.setCancelled(true);
 
                     }
-                    if(CONFIG_HOPPER.isEditableFilter() /*|| event.getPlayer().hasPermission("mfh.editfilter")*/)
-                    {
-                        if(HOPPER.getType() == HopperEnum.Mob || HOPPER.getType() == HopperEnum.Crop) {
+                    if (CONFIG_HOPPER.isEditableFilter() /*|| event.getPlayer().hasPermission("mfh.editfilter")*/) {
+                        if (HOPPER.getType() == HopperEnum.Mob || HOPPER.getType() == HopperEnum.Crop) {
                             event.getPlayer().openInventory(FilterInventory.getInstance().build(HOPPER));
                             event.setCancelled(true);
                         }
@@ -400,18 +377,18 @@ public class MFHoppers extends PluginBuilder {
 
                     event.setCancelled(true);
 
-                    if(MContainer.isContainer(event.getClickedBlock().getLocation())) {
+                    if (MContainer.isContainer(event.getClickedBlock().getLocation())) {
 
                         IHopper linkedHopper = DataManager.getInstance().getHopper(hopperLocation);
 
                         int currentlyHas = linkedHopper.getLinked().size();
 
-                        int limit = linkedHopper.getConfigHopper().getDataOfHopper(linkedHopper).containsKey("linkedLimit") ? (int)linkedHopper.getConfigHopper().getDataOfHopper(linkedHopper).get("linkedLimit") : -1;
+                        int limit = linkedHopper.getConfigHopper().getDataOfHopper(linkedHopper).containsKey("linkedLimit") ? (int) linkedHopper.getConfigHopper().getDataOfHopper(linkedHopper).get("linkedLimit") : -1;
 
-                        if(limit > -1){
-                            if(limit == currentlyHas){
+                        if (limit > -1) {
+                            if (limit == currentlyHas) {
 
-                                Lang.LINKING_CONTAINER_REACHED_LIMIT.send(new MapBuilder().add("%limit%", limit).getMap(),event.getPlayer());
+                                Lang.LINKING_CONTAINER_REACHED_LIMIT.send(new MapBuilder().add("%limit%", limit).getMap(), event.getPlayer());
                                 event.getPlayer().removeMetadata("link", this);
                                 return;
 
@@ -419,11 +396,12 @@ public class MFHoppers extends PluginBuilder {
 
                         }
 
-                        if(Methods.getLinkedHopper(event.getClickedBlock().getLocation()) != null){
+                        if (Methods.getLinkedHopper(event.getClickedBlock().getLocation()) != null) {
 
-                            if(!cnf.getBoolean("allowMultipleHoppersToLinkOneContainer")){
+                            if (!cnf.getBoolean("allowMultipleHoppersToLinkOneContainer")) {
 
                                 Lang.CONTAINER_IS_ALREADY_LINKED.send(event.getPlayer());
+                                return;
 
                             }
 
@@ -433,7 +411,7 @@ public class MFHoppers extends PluginBuilder {
                         DataManager.getInstance().link(hopperLocation, event.getClickedBlock().getLocation());
                         event.getPlayer().removeMetadata("link", this);
 
-                    } else{
+                    } else {
                         Lang.HOPPER_LINK_CLICKED_BLOCK_IS_NOT_CONTAINER.send(event.getPlayer());
                     }
                 }
@@ -454,15 +432,12 @@ public class MFHoppers extends PluginBuilder {
                     Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), title), 1);
 
                 }
-
             } else {
-                if(cnf.contains("EnableLinkedContainerRenaming") && cnf.getBoolean("EnableLinkedContainerRenaming")) {
+                if (cnf.contains("EnableLinkedContainerRenaming") && cnf.getBoolean("EnableLinkedContainerRenaming")) {
                     MContainer container = MContainer.getFromHolder(event.getInventory().getHolder());
-
                     if (container == null) return;
 
                     Location containerLocation = container.getLocation(event.getInventory().getHolder());
-
                     if (containerLocation == null) return;
 
                     IHopper hopper = Methods.getLinkedHopper(containerLocation);
@@ -500,11 +475,12 @@ public class MFHoppers extends PluginBuilder {
 
         });*/
     }
-    private String getTitle(String mcName,String title){
 
-        if(mcName.contains(".")){
+    private String getTitle(String mcName, String title) {
+
+        if (mcName.contains(".")) {
             mcName = StringUtils.capitalize(mcName.split("\\.")[1].toLowerCase());
-        } else{
+        } else {
             mcName = StringUtils.capitalize(mcName.toLowerCase());
         }
         return title.replace("%name%", mcName);
@@ -513,7 +489,7 @@ public class MFHoppers extends PluginBuilder {
 
     //public Map<Player, Map<String, Object>> linkData = new HashMap<>();
 
-    void initCommands(){
+    void initCommands() {
         List<String> al = new ArrayList<>();
         al.add("mfh");
         addCommand("mfhoppers", "Main command for MFHoppers", "", al, cmd -> {
@@ -553,12 +529,10 @@ public class MFHoppers extends PluginBuilder {
                         }
                     }
 
-                    DataManager.getInstance().getHoppers().forEach((mChunk, locationIHopperMap) -> {
-                        locationIHopperMap.forEach((location, iHopper) -> iHopper.ResetFilterList());
-                    });
+                    DataManager.getInstance().getHoppersSet().forEach(hopper -> hopper.ResetFilterList());
                     cmd.getSender().sendMessage("&b&l(!)&7 The command replaced all filter lists of all existing hopper!");
 
-                }else if (cmd.args()[0].equalsIgnoreCase("cleanWrongHoppers")) {
+                } else if (cmd.args()[0].equalsIgnoreCase("cleanWrongHoppers")) {
                     if (sender.isPlayer()) {
                         if (!sender.getPlayer().hasPermission("mfh.cleanWrongHoppers")) {
                             sender.sendMessage(c("&c&l(!)&7 You don't have permission!"));
@@ -566,24 +540,18 @@ public class MFHoppers extends PluginBuilder {
                         }
                     }
 
-                    DataManager.getInstance().getHoppers().forEach((mChunk, locationIHopperMap) -> {
-                        List<IHopper> hoppers = locationIHopperMap.values().stream().collect(toList());
-                        for(int i = 0; i < hoppers.size(); i++){
-                            if(hoppers.get(i) == null || hoppers.get(i).getConfigHopper() == null)
-                            {
-                                DataManager.getInstance().remove(hoppers.get(i));
-                            }
-                            else {
-                                if (hoppers.get(i).getConfigHopper().getDataOfHopper(hoppers.get(i)) == null) {
-                                    hoppers.get(i).getData().put("lvl", hoppers.get(i).getConfigHopper().getUpgrades().size());
-
-                                    if (hoppers.get(i).getConfigHopper().getDataOfHopper(hoppers.get(i)) == null) {
-                                        DataManager.getInstance().remove(hoppers.get(i));
-                                    }
-                                }
-                            }
+                    Set<IHopper> hoppers = DataManager.getInstance().getHoppersSet();
+                    for (IHopper hopper : hoppers) {
+                        if (hopper == null) continue;
+                        if (hopper.getConfigHopper() == null) {
+                            DataManager.getInstance().remove(hopper);
+                            continue;
                         }
-                    });
+
+                        if (hopper.getConfigHopper().getDataOfHopper(hopper) == null)
+                            DataManager.getInstance().remove(hopper);
+
+                    }
                     cmd.getSender().sendMessage("&b&l(!)&7 The command removes or sets the level down of all hoppers without data!");
 
                 } else if (cmd.args()[0].equalsIgnoreCase("dump")) {
@@ -619,13 +587,6 @@ public class MFHoppers extends PluginBuilder {
                                         MFHoppers.getInstance().getLogger().info("\t \t \t Filter:");
                                         for (IHopper.FilterElement element : hopper.getFilterMaterialList()) {
                                             MFHoppers.getInstance().getLogger().info(String.format("\t \t \t \t - %s", element.Material + (element.HasDamageValue ? ":" + String.valueOf(element.DamageValue) : "")));
-                                        }
-                                    }
-                                    if(en == HopperEnum.Break){
-                                        MFHoppers.getInstance().getLogger().info("\t \t \t Drops:");
-                                        List<ConfigHopper.BreakDropsElement> elements = (List<ConfigHopper.BreakDropsElement>) hopper.getConfigHopper().getDataOfHopper(hopper).get("drops");
-                                        for (ConfigHopper.BreakDropsElement drop : elements) {
-                                            MFHoppers.getInstance().getLogger().info(String.format("\t \t \t \t - %s", drop.Material + (drop.HasDamageValue ? ":" + String.valueOf(drop.DamageValue) : "")));
                                         }
                                     }
                                 }
@@ -677,14 +638,13 @@ public class MFHoppers extends PluginBuilder {
 
                             if (hopper.getType() == HopperEnum.Grind) {
 
-                                if(isAuto || isGlobal){
+                                if (isAuto || isGlobal) {
                                     item = hopper.getItem(isAuto, isGlobal);
-                                } else{
+                                } else {
                                     item = hopper.getItem();
                                 }
 
                             } else {
-
                                 if (isAuto || isGlobal) {
 
                                     cmd.getSender().sendMessage(c("&c&l(!)&7 You can't add args &c[IsAuto, IsGlobal] on non grind hoppers!"));
@@ -693,12 +653,11 @@ public class MFHoppers extends PluginBuilder {
                                 }
 
                                 item = hopper.getItem();
-
                             }
                             item.setAmount(amount);
-                            if(player.getInventory().firstEmpty() != -1) {
+                            if (player.getInventory().firstEmpty() != -1) {
                                 player.getInventory().setItem(player.getInventory().firstEmpty(), item);
-                            }else {
+                            } else {
                                 Methods.drop(item, player.getLocation());
                                 Lang.HOPPER_GIVE_INVENTORY_FULL.send(player);
                             }
@@ -716,25 +675,25 @@ public class MFHoppers extends PluginBuilder {
         }, new Function<Cmd, List<String>>() {
             @Override
             public List<String> apply(Cmd cmd) {
-                if(cmd.args().length == 2){
+                if (cmd.args().length == 2) {
                     return Bukkit.getOnlinePlayers().stream().map(p -> p.getName()).collect(toList());
-                } else if(cmd.args().length == 3) {
+                } else if (cmd.args().length == 3) {
                     return configHoppers.keySet().stream().collect(toList());
-                } else if(cmd.args().length == 5){
+                } else if (cmd.args().length == 5) {
                     String name = cmd.args()[2];
-                    if(configHoppers.get(name).getType() == HopperEnum.Grind) {
+                    if (configHoppers.get(name).getType() == HopperEnum.Grind) {
                         String strings[] = {"true", "false"};
                         return Arrays.stream(strings).collect(toList());
-                    } else{
+                    } else {
                         String strings[] = {"It's not a grind hopper :/"};
                         return Arrays.stream(strings).collect(toList());
                     }
-                } else if(cmd.args().length == 6){
+                } else if (cmd.args().length == 6) {
                     String name = cmd.args()[2];
-                    if(configHoppers.get(name).getType() == HopperEnum.Grind) {
+                    if (configHoppers.get(name).getType() == HopperEnum.Grind) {
                         String strings[] = {"true", "false"};
                         return Arrays.stream(strings).collect(toList());
-                    } else{
+                    } else {
                         String strings[] = {"It's not a grind hopper :/"};
                         return Arrays.stream(strings).collect(toList());
                     }
@@ -744,19 +703,21 @@ public class MFHoppers extends PluginBuilder {
         });
         addCommand("linkHopper", "Link Hoppers to Containers!", "", null, command -> {
 
-            if(command.getSender().isPlayer() && (command.getSender().getPlayer().hasPermission("mfh.linkhopper"))){
+            if (command.getSender().isPlayer() && (command.getSender().getPlayer().hasPermission("mfh.linkhopper"))) {
 
                 Player player = command.getSender().getPlayer();
-                Block b = player.getTargetBlock(null,12);
-                if(b != null && DataManager.getInstance().isHopper(b.getLocation())){
-                    if(DataManager.getInstance().getHopper(b.getLocation()).getOwner() == player.getName() || command.getSender().getPlayer().hasPermission("mfh.adminlinkhopper")) {
+                Block b = player.getTargetBlock(null, 50);
+
+                if (b != null && DataManager.getInstance().isHopper(b.getLocation())) {
+                    String owner = DataManager.getInstance().getHopper(b.getLocation()).getOwner();
+
+                    if ((owner != null && owner.contentEquals(player.getName())) || command.getSender().getPlayer().hasPermission("mfh.adminlinkhopper")) {
                         player.setMetadata("link", new FixedMetadataValue(this, Methods.toString(b.getLocation())));
                         Lang.HOPPER_LINK_NOW_SELECT_CONTAINER.send(player);
-                    }
-                    else {
+                    } else {
                         Lang.HOPPER_LINK_NOT_OWNER.send(player);
                     }
-                } else{
+                } else {
 
                     Lang.HOPPER_LINK_MAKE_SURE_TO_LOOK_AT_HOPPER.send(player);
 
@@ -772,18 +733,18 @@ public class MFHoppers extends PluginBuilder {
 
                 Player player = command.getSender().getPlayer();
 
-                if(!player.hasPermission("mfh.convert")){
+                if (!player.hasPermission("mfh.convert")) {
                     player.sendMessage(c("&c&l(!)&7 You don't have permission!"));
                     return;
                 }
 
-                ItemStack hand = null;
-                if(mcVersion > 8){
+                ItemStack hand;
+                if (OVersion.isAfter(8)) {
                     hand = player.getInventory().getItemInMainHand();
+
                 } else {
                     hand = player.getInventory().getItemInHand();
                 }
-
 
                 final ItemStack handClone = hand.clone();
                 int slot = player.getInventory().first(hand);
@@ -802,7 +763,7 @@ public class MFHoppers extends PluginBuilder {
                     }
 
                     boolean isGlobal = Boolean.valueOf(nbt.getString("isGlobal"));
-                    if(isGlobal){
+                    if (isGlobal) {
                         Lang.HOPPER_CONVERT_CANT_CONVERT_GLOBAL.send(player);
                         return;
                     }
@@ -832,11 +793,8 @@ public class MFHoppers extends PluginBuilder {
                         return;
                     }
                     for (EntityType type : Arrays.stream(EntityType.values()).filter(e -> e.isAlive() && !BLACKLIST1.contains(e) && !BLACKLIST2.contains(e) && e != currentType).collect(toList())) {
-
-                        if(mcVersion >= 13){
-
+                        if (OVersion.isOrAfter(13)) {
                             if (Textures13.matchEntity(type.name()) != null) {
-
                                 int price = defPrice;
                                 UpgradeEnum priceType = UpgradeEnum.ECO;
 
@@ -857,9 +815,7 @@ public class MFHoppers extends PluginBuilder {
 
                             }
                         } else {
-
                             if (Textures12.matchEntity(type.name()) != null) {
-
                                 int price = defPrice;
                                 UpgradeEnum priceType = UpgradeEnum.ECO;
 
@@ -884,7 +840,7 @@ public class MFHoppers extends PluginBuilder {
                     }
                     builder.setClickListener(event -> {
 
-                        if(event.getClickedInventory().equals(event.getWhoClicked().getOpenInventory().getTopInventory()) && event.getCurrentItem() != null) {
+                        if (event.getClickedInventory().equals(event.getWhoClicked().getOpenInventory().getTopInventory()) && event.getCurrentItem() != null) {
 
                             event.setCancelled(true);
 
@@ -893,27 +849,25 @@ public class MFHoppers extends PluginBuilder {
                             double price = Double.valueOf(nbtitem.getString("price"));
                             UpgradeEnum priceType = UpgradeEnum.valueOf(nbtitem.getString("priceType"));
 
-                            if(economy == null && priceType == UpgradeEnum.ECO)
-                            {
+                            if (economy == null && priceType == UpgradeEnum.ECO) {
                                 player.sendMessage(c("&c&l(!)&7 Economy is disabled, failed to convert."));
                                 return;
                             }
 
                             price = handClone.getAmount() * price;
-
                             double currentAmount = 0;
 
                             switch (priceType) {
                                 case ECO:
-                                currentAmount = getEconomy().getBalance(player);
-                                break;
+                                    currentAmount = getEconomy().getBalance(player);
+                                    break;
                                 default:
                                     currentAmount = ExperienceManager.getTotalExperience(player);
                                     break;
                             }
 
 
-                            if(!isSimilar(handClone, player.getInventory().getItem(slot))){
+                            if (!isSimilar(handClone, player.getInventory().getItem(slot))) {
                                 player.closeInventory();
                                 return;
                             }
@@ -925,7 +879,7 @@ public class MFHoppers extends PluginBuilder {
                                         getEconomy().withdrawPlayer(player, price);
                                         break;
                                     default:
-                                        ExperienceManager.setTotalExperience(player, (int)currentAmount - (int)price);
+                                        ExperienceManager.setTotalExperience(player, (int) currentAmount - (int) price);
                                 }
                                 Methods.convertGrind(player, handClone, type, shouldLevelResetAfterConvert, amount);
                                 Lang.HOPPER_CONVERT_GRIND_SUCCESSFUL.send(new MapBuilder().add("%type%", StringUtils.capitalize(type.name().replace("_", " ").toLowerCase())).add("%pricetype%", priceType).getMap(), player);
@@ -934,26 +888,26 @@ public class MFHoppers extends PluginBuilder {
                             } else {
                                 Lang.HOPPER_CONVERT_NOT_ENOUGH_FUNDS_GRIND.send(new MapBuilder().add("%type%", StringUtils.capitalize(type.name().replace("_", " ").toLowerCase())).add("%required%", price).add("%have%", currentAmount).add("%pricetype%", priceType).getMap(), player);
                             }
-                        } else{
+                        } else {
                             event.setCancelled(true);
                         }
 
                     });
                     player.openInventory(builder.buildInventory());
 
-                } else{
+                } else {
 
                     //IS DEFAULT
-                    InventoryBuilder builder = new InventoryBuilder(cnf.getString("HopperConvert.title"),27, InvType.PAGED);
+                    InventoryBuilder builder = new InventoryBuilder(cnf.getString("HopperConvert.title"), 27, InvType.PAGED);
                     builder.setBack(new ItemBuilder(Material.ARROW).setName("&b<<").buildItem());
                     builder.setForward(new ItemBuilder(Material.ARROW).setName("&b>>").buildItem());
 
-                    if(convertHoppers.keySet().stream().filter(it -> configHoppers.containsKey(it)).collect(toList()).isEmpty()) {
+                    if (convertHoppers.keySet().stream().filter(it -> configHoppers.containsKey(it)).collect(toList()).isEmpty()) {
                         Lang.CONVERT_HOPPER_CANNOT_FIND_ANY_CONVERT_HOPPERS.send(player);
                         return;
                     }
 
-                    for(HopperConvert hopper : convertHoppers.values()){
+                    for (HopperConvert hopper : convertHoppers.values()) {
 
                         ConfigHopper configHopper = configHoppers.get(hopper.getHopperName());
                         int price = hopper.getPrice();
@@ -966,10 +920,10 @@ public class MFHoppers extends PluginBuilder {
                                 buildItem());
 
                     }
-                    builder.setClickListener( event -> {
-                        if(event.getClickedInventory().equals(event.getWhoClicked().getOpenInventory().getTopInventory())) {
+                    builder.setClickListener(event -> {
+                        if (event.getClickedInventory().equals(event.getWhoClicked().getOpenInventory().getTopInventory())) {
                             event.setCancelled(true);
-                            if(economy == null){
+                            if (economy == null) {
 
                                 player.sendMessage(c("&c&l(!)&7 Economy is disabled, failed to convert."));
                                 return;
@@ -979,7 +933,7 @@ public class MFHoppers extends PluginBuilder {
                             NBTItem nbtitem = new NBTItem(event.getCurrentItem());
                             double price = Double.valueOf(nbtitem.getString("price"));
                             double currentMoney = getEconomy().getBalance(player);
-                            if(!isSimilar(handClone, player.getInventory().getItem(slot))){
+                            if (!isSimilar(handClone, player.getInventory().getItem(slot))) {
                                 player.closeInventory();
                                 return;
                             }
@@ -996,12 +950,12 @@ public class MFHoppers extends PluginBuilder {
                                 ItemStack toGive = hopper.getItem();
                                 toGive.setAmount(amount);
                                 player.getInventory().setItem(slot, toGive);
-                                Lang.HOPPER_CONVERT_DEFAULT_SUCCESSFUL.send(new MapBuilder().add("%name%",name).getMap(), player);
+                                Lang.HOPPER_CONVERT_DEFAULT_SUCCESSFUL.send(new MapBuilder().add("%name%", name).getMap(), player);
 
                                 event.getWhoClicked().closeInventory();
 
                             } else {
-                                Lang.HOPPER_CONVERT_NOT_ENOUGH_FUNDS_DEFAULT.send(new MapBuilder().add("%name%",name).getMap(), player);
+                                Lang.HOPPER_CONVERT_NOT_ENOUGH_FUNDS_DEFAULT.send(new MapBuilder().add("%name%", name).getMap(), player);
                             }
                         }
                     });
@@ -1013,7 +967,8 @@ public class MFHoppers extends PluginBuilder {
 
         });
     }
-    void restart(){
+
+    void restart() {
 
         out("&8=-------------------------------------------=");
         out("");
@@ -1041,12 +996,13 @@ public class MFHoppers extends PluginBuilder {
     public Economy getEconomy() {
         return economy;
     }
-    public boolean isSimilar(ItemStack first, ItemStack second)
-    {
-        if(first == null || second == null){
+
+    public boolean isSimilar(ItemStack first, ItemStack second) {
+        if (first == null || second == null) {
             return false;
         }
-        if(first.getType() != second.getType()){
+
+        if (first.getType() != second.getType()) {
             return false;
         }
 
@@ -1056,11 +1012,11 @@ public class MFHoppers extends PluginBuilder {
         boolean sameEnchantments = (first.getEnchantments().equals(second.getEnchantments()));
         boolean sameItemMeta = true;
 
-        if(sameHasItemMeta) {
+        if (sameHasItemMeta) {
             sameItemMeta = Bukkit.getItemFactory().equals(first.getItemMeta(), second.getItemMeta());
         }
 
-        if(sameDurability && sameAmount && sameHasItemMeta && sameEnchantments && sameItemMeta){
+        if (sameDurability && sameAmount && sameHasItemMeta && sameEnchantments && sameItemMeta) {
             return true;
         }
 
@@ -1068,18 +1024,40 @@ public class MFHoppers extends PluginBuilder {
 
     }
 
-    public void updateConfig(){
+    public void updateConfig() {
 
         //cnf.addDefault();
 
         cnf.options().copyDefaults(true);
-        try{
+        try {
             cnf.save(new File(getDataFolder(), "config.yml"));
-        } catch (Exception ex){
+        } catch (Exception ex) {
 
         }
         cnf = initConfig("config.yml", getDataFolder());
 
+    }
+
+    private void PlaceHopper(BlockPlaceEvent event, ItemStack item) {
+        NBTItem nbt = new NBTItem(item);
+        Map<String, Object> data = new HashMap<>();
+        data.put("type", nbt.getString("type"));
+        data.put("name", nbt.getString("name0"));
+        data.put("lvl", nbt.getString("lvl"));
+
+        if (!Methods.hasReachedLimit(data, event.getBlock().getLocation().getChunk(), event.getPlayer())) {
+            DataManager.getInstance().add(item, event.getBlock().getLocation(), event.getPlayer());
+            Lang.PLACE.send(new MapBuilder().add("%type%", nbt.getString("type")).add("%lvl%", nbt.getString("lvl")).add("%name%", nbt.getString("name0")).add("%displayName%", event.getItemInHand().getItemMeta().getDisplayName()).getMap(), event.getPlayer());
+
+        } else {
+            
+            Methods.breakBlock(event.getBlock());
+            if (nbt.getString("type").equalsIgnoreCase(HopperEnum.Grind.toString())) {
+                event.getPlayer().getInventory().addItem(configHoppers.get(nbt.getString("name0")).buildItemByLevel(Integer.valueOf(nbt.getString("lvl")), EntityType.valueOf(nbt.getString("ent")), Boolean.valueOf(nbt.getString("isAuto")), Boolean.valueOf(nbt.getString("isGlobal"))));
+            } else {
+                event.getPlayer().getInventory().addItem(configHoppers.get(nbt.getString("name0")).buildItemByLevel(Integer.valueOf(nbt.getString("lvl"))));
+            }
+        }
     }
 
 }
