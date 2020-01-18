@@ -454,8 +454,8 @@ public class Methods {
         new BukkitRunnable() {
             @Override
             public void run() {
-                block.setType(Material.AIR, false);
-
+                block.setType(Material.AIR, true);
+                
                 if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")) {
                     SuperiorSkyblockAPI.getIslandAt(block.getLocation()).handleBlockBreak(block);
                 }
