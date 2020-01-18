@@ -57,12 +57,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.scheduler.BukkitRunnable;
+import sun.reflect.Reflection;
 
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.util.stream.Collectors.toList;
 
@@ -144,7 +146,6 @@ public class MFHoppers extends PluginBuilder {
             }
 
         } else {
-
             out("&cVault not found, economy support disabled.");
             economy = null;
 
@@ -431,15 +432,12 @@ public class MFHoppers extends PluginBuilder {
                     Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), title), 1);
 
                 }
-
             } else {
                 if (cnf.contains("EnableLinkedContainerRenaming") && cnf.getBoolean("EnableLinkedContainerRenaming")) {
                     MContainer container = MContainer.getFromHolder(event.getInventory().getHolder());
-
                     if (container == null) return;
 
                     Location containerLocation = container.getLocation(event.getInventory().getHolder());
-
                     if (containerLocation == null) return;
 
                     IHopper hopper = Methods.getLinkedHopper(containerLocation);

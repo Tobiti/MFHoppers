@@ -55,7 +55,6 @@ public class Drop {
         if (OVersion.isBefore(13)) {
             if (item.getType() == MMaterial.matchMaterial("INK_SACK"))
                 item.setDurability((byte) 4);
-
         }
 
         if (hasMin()) {

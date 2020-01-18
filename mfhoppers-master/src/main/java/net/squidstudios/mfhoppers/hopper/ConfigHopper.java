@@ -1,17 +1,16 @@
 package net.squidstudios.mfhoppers.hopper;
 
 import net.squidstudios.mfhoppers.MFHoppers;
+import net.squidstudios.mfhoppers.hopper.upgrades.Upgrade;
 import net.squidstudios.mfhoppers.util.Drop;
 import net.squidstudios.mfhoppers.util.Methods;
+import net.squidstudios.mfhoppers.util.item.ItemBuilder;
 import net.squidstudios.mfhoppers.util.plugin.PluginBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.block.Hopper;
 import org.bukkit.entity.EntityType;
 import org.bukkit.inventory.ItemStack;
-import net.squidstudios.mfhoppers.hopper.upgrades.Upgrade;
-import net.squidstudios.mfhoppers.util.item.ItemBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,8 +28,7 @@ public class ConfigHopper {
         public short DamageValue = -1;
         public Drop Drop;
 
-        public BreakDropsElement(Material material, boolean hasDamageValue, short damageValue, Drop drop)
-        {
+        public BreakDropsElement(Material material, boolean hasDamageValue, short damageValue, Drop drop) {
             this.DamageValue = damageValue;
             this.HasDamageValue = hasDamageValue;
             this.Material = material;
@@ -47,11 +45,9 @@ public class ConfigHopper {
     public ConfigHopper(Map<String, Object> data, MFHoppers pl, String hopperName) {
         this.data = data;
         this.data.put("name0", hopperName);
-
         this.type = HopperEnum.match(data.get("type").toString());
 
         if (type == null) {
-
             pl.out(" !-> Failed to init config hopper named: " + hopperName + ", maybe there's options missing?", PluginBuilder.OutType.ERROR_NOPREFIX);
 
         }
@@ -175,8 +171,7 @@ public class ConfigHopper {
         this.hopperName = hopperName;
         pl.configHoppers.put(hopperName, this);
         new Upgrade(data, null, this, 1, pl, true);
-        for (int level : upgr.keySet())
-        {
+        for (int level : upgr.keySet()) {
             new Upgrade(upgr.get(level), upgrades.get(level - 1).getToUpgrade(), this, level, pl, false);
         }
     }
@@ -201,16 +196,13 @@ public class ConfigHopper {
 
     }
 
-    public BreakDropsElement GetBreakDropELement(IHopper hopper, Material mat, short damage){
-        for (BreakDropsElement elem : (List<BreakDropsElement>)getDataOfHopper(hopper).get("drops"))
-        {
-            if(elem.Material == mat)
-            {
-                if(!elem.HasDamageValue){
+    public BreakDropsElement GetBreakDropELement(IHopper hopper, Material mat, short damage) {
+        for (BreakDropsElement elem : (List<BreakDropsElement>) getDataOfHopper(hopper).get("drops")) {
+            if (elem.Material == mat) {
+                if (!elem.HasDamageValue) {
                     return elem;
-                }
-                else {
-                    if(elem.DamageValue == damage){
+                } else {
+                    if (elem.DamageValue == damage) {
                         return elem;
                     }
                 }
@@ -269,33 +261,33 @@ public class ConfigHopper {
         return null;
     }
 
-    String c(String text){
+    String c(String text) {
         return ChatColor.translateAlternateColorCodes('&', text);
     }
-    public boolean isUpgradable(){
-        if(upgrades.size() <= 1){
+
+    public boolean isUpgradable() {
+        if (upgrades.size() <= 1) {
             return false;
-        } else{
+        } else {
             return true;
         }
     }
 
-    public boolean isEditableFilter(){
-        if(getData().containsKey("Editable_Filter")) {
+    public boolean isEditableFilter() {
+        if (getData().containsKey("Editable_Filter")) {
             return Boolean.valueOf(getData().get("Editable_Filter").toString());
-        }
-        else {
+        } else {
             return false;
         }
     }
 
-    public ItemStack getItemOfData(IHopper hopper){
+    public ItemStack getItemOfData(IHopper hopper) {
 
-        int level = (int)hopper.getData().get("lvl");
+        int level = (int) hopper.getData().get("lvl");
         Map<String, Object> upgradeData = upgrades.get(level).getToUpgrade();
-        if(type == HopperEnum.Grind){
+        if (type == HopperEnum.Grind) {
 
-            List<String> lore = (List<String>)upgradeData.get("lore");
+            List<String> lore = (List<String>) upgradeData.get("lore");
             String name = upgradeData.get("name").toString();
             boolean isAuto = Boolean.valueOf(hopper.getData().get("isAuto").toString());
             boolean isGlobal = Boolean.valueOf(hopper.getData().get("isGlobal").toString());
@@ -308,8 +300,8 @@ public class ConfigHopper {
                     .addNbt("name0", name0)
                     .addNbt("lvl", level)
                     .addNbt("isAuto", isAuto).
-                    addNbt("isGlobal", isGlobal).
-                    addNbt("ent", ent)
+                            addNbt("isGlobal", isGlobal).
+                            addNbt("ent", ent)
                     .setLore(lore, true)
                     .replaceInLore("%type%", StringUtils.capitalize(ent.replace("_", " ").toLowerCase()))
                     .buildItem();
@@ -327,21 +319,23 @@ public class ConfigHopper {
                     .buildItem();
         }
     }
-    public Map<String, Object> getNextHopperUpgrade(IHopper hopper){
-        int upgradeLevel = (int)hopper.getData().get("lvl");
+
+    public Map<String, Object> getNextHopperUpgrade(IHopper hopper) {
+        int upgradeLevel = (int) hopper.getData().get("lvl");
         upgradeLevel++;
         Upgrade upgrade = upgrades.get(upgradeLevel);
-        if(upgrade == null){
+        if (upgrade == null) {
             return null;
-        } else{
+        } else {
             return upgrade.getToUpgrade();
         }
     }
-    public ItemStack buildItemByLevel(int level){
-        Map<String, Object> upgradeData = upgrades.get(level).getToUpgrade();
-        if(type == HopperEnum.Grind){
 
-            List<String> lore = (List<String>)upgradeData.get("lore");
+    public ItemStack buildItemByLevel(int level) {
+        Map<String, Object> upgradeData = upgrades.get(level).getToUpgrade();
+        if (type == HopperEnum.Grind) {
+
+            List<String> lore = (List<String>) upgradeData.get("lore");
             String name = upgradeData.get("name").toString();
             name = name.replace("%type%", StringUtils.capitalize(EntityType.valueOf(upgradeData.get("mob").toString()).name().replace("_", " ").toLowerCase()));
             boolean isAuto = false;
@@ -370,13 +364,14 @@ public class ConfigHopper {
                     .buildItem();
         }
     }
-    public ItemStack buildItemByLevel(int level, EntityType ent, boolean isAuto, boolean isGlobal){
+
+    public ItemStack buildItemByLevel(int level, EntityType ent, boolean isAuto, boolean isGlobal) {
 
 
         Map<String, Object> upgradeData = upgrades.get(level).getToUpgrade();
-        if(type == HopperEnum.Grind){
+        if (type == HopperEnum.Grind) {
 
-            List<String> lore = (List<String>)upgradeData.get("lore");
+            List<String> lore = (List<String>) upgradeData.get("lore");
             String name = upgradeData.get("name").toString();
             name = name.replace("%type%", StringUtils.capitalize(ent.name().replace("_", " ").toLowerCase()));
             return new ItemBuilder(Material.HOPPER)
