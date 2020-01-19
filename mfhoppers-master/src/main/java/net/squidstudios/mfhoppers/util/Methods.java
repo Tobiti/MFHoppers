@@ -181,6 +181,7 @@ public class Methods {
                         }
                         else {
                             if (Methods.canFit(item, item.getAmount(), destination)) {
+                                MFHoppers.getInstance().getLogger().info("WildChest Plugin. Add to linked Chest!");
                                 added += item.getAmount();
                                 destination.addItem(item);
                                 itemWasAdded = true;
@@ -190,6 +191,7 @@ public class Methods {
                     }
                     else {
                         if (Methods.canFit(item, item.getAmount(), destination)) {
+                            MFHoppers.getInstance().getLogger().info("No WildChest Plugin. Add to linked Chest!");
                             added += item.getAmount();
                             destination.addItem(item);
                             itemWasAdded = true;
@@ -202,7 +204,9 @@ public class Methods {
                 }
             }
 
+
             if (inv.firstEmpty() != -1) {
+                MFHoppers.getInstance().getLogger().info("Add to Hopper!");
                 added += item.getAmount();
                 inv.addItem(item);
                 continue;
