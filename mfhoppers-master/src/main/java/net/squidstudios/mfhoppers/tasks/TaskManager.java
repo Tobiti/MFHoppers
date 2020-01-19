@@ -133,7 +133,7 @@ public class TaskManager implements Listener {
 
                 for (LivingEntity entity : LIVING_ENTITIES) {
                     NBTEntity nbt = new NBTEntity(entity);
-                    if (nbt.getByte("NoAI") == 1 && entity.getType() != EntityType.ENDERMAN) {
+                    if ((nbt.getByte("NoAI") == 1 && entity.getType() != EntityType.ENDERMAN) && hopper.getLocation().distance(entity.getLocation()) < 3) {
                         continue;
                     }
 
