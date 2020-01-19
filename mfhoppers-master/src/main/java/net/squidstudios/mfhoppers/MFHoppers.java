@@ -83,8 +83,8 @@ public class MFHoppers extends PluginBuilder {
     public void init() {
         MinecraftVersion.logger.setLevel(Level.OFF);
 
-        if (ReflectionUtil.SERVER_VERSION_NUM > 13) {
-            out("This Jar is for server versions between 1.8-1.13.X", OutType.ERROR);
+        if (ReflectionUtil.SERVER_VERSION_NUM < 8 || ReflectionUtil.SERVER_VERSION_NUM > 15) {
+            out("This Jar is for server versions between 1.8-1.15.X", OutType.ERROR);
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
@@ -438,7 +438,7 @@ public class MFHoppers extends PluginBuilder {
                     IHopper hopper = DataManager.getInstance().getHopper(mcHopper.getBlock().getLocation());
 
                     String title = hopper.getConfigHopper().getTitle(hopper);
-                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), title, "minecraft:hopper"), 1);
+                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), title), 1);
 
                 }
             } else {
@@ -458,7 +458,7 @@ public class MFHoppers extends PluginBuilder {
                     String title = cnf.getString("LinkedContainer");
                     String mcName = event.getView().getTitle();
 
-                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), getTitle(mcName, title), MContainer.getMinecraftName(event.getInventory().getHolder())), 0);
+                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), getTitle(mcName, title)), 0);
                 }
             }
         });
