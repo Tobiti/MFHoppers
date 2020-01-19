@@ -164,18 +164,26 @@ public class Methods {
                 boolean itemWasAdded = false;
                 for (Inventory destination : Methods.GetLinkedInventorys(hopper)) {
                     if(Bukkit.getPluginManager().isPluginEnabled("WildChests")){
-                        Chest chest = WildChestsAPI.getChest(destination.getLocation());
+                        Chest chest = WildChestsAPI.getChest(MContainer.getLocation(destination.getHolder()));
                         if(chest != null){
                             Map<Integer, ItemStack> integerItemStackMap = chest.addItems(item);
                             if (integerItemStackMap.isEmpty()) {
                                 added += item.getAmount();
                                 itemWasAdded = true;
                                 break;
-
                             } else {
-                                int minus = integerItemStackMap.keySet().stream().findFirst().orElse(0);
-                                added += item.getAmount() - minus;
+                                ItemStack itemStack = integerItemStackMap.values().stream().findFirst().orElse(null);
+                                int minus = itemStack != null ? itemStack.getAmount() : 0;
+                                added += item.getAmount() - minus;                                
                                 item.setAmount(minus);
+                            }
+                        }
+                        else {
+                            if (Methods.canFit(item, item.getAmount(), destination)) {
+                                added += item.getAmount();
+                                destination.addItem(item);
+                                itemWasAdded = true;
+                                break;
                             }
                         }
                     }
@@ -749,16 +757,18 @@ public class Methods {
         World world = location.getWorld();
         List<Player> players = new ArrayList<>(world.getPlayers());
 
-        for (Player p : players) {
-            int chunkX3 = p.getLocation().getBlockX() >> 4;
-            int chunkZ3 = p.getLocation().getBlockZ() >> 4;
+        try{
+            for (Player p : players) {
+                int chunkX3 = p.getLocation().getBlockX() >> 4;
+                int chunkZ3 = p.getLocation().getBlockZ() >> 4;
 
-            if (Math.min(chunkX, chunkX2) <= chunkX3 && chunkX3 <= Math.max(chunkX, chunkX2)) {
-                if (Math.min(chunkZ, chunkZ2) <= chunkZ3 && chunkZ3 <= Math.max(chunkZ, chunkZ2)) {
-                    return true;
+                if (Math.min(chunkX, chunkX2) <= chunkX3 && chunkX3 <= Math.max(chunkX, chunkX2)) {
+                    if (Math.min(chunkZ, chunkZ2) <= chunkZ3 && chunkZ3 <= Math.max(chunkZ, chunkZ2)) {
+                        return true;
+                    }
                 }
             }
-        }
+        } catch (ConcurrentModificationException ignored){}
         return false;
     }
 

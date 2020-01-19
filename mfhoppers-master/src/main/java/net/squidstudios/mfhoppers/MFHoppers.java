@@ -387,11 +387,9 @@ public class MFHoppers extends PluginBuilder {
 
                         if (limit > -1) {
                             if (limit == currentlyHas) {
-
                                 Lang.LINKING_CONTAINER_REACHED_LIMIT.send(new MapBuilder().add("%limit%", limit).getMap(), event.getPlayer());
                                 event.getPlayer().removeMetadata("link", this);
                                 return;
-
                             }
 
                         }
@@ -399,9 +397,9 @@ public class MFHoppers extends PluginBuilder {
                         if (Methods.getLinkedHopper(event.getClickedBlock().getLocation()) != null) {
 
                             if (!cnf.getBoolean("allowMultipleHoppersToLinkOneContainer")) {
-
                                 Lang.CONTAINER_IS_ALREADY_LINKED.send(event.getPlayer());
-
+                                event.getPlayer().removeMetadata("link", this);
+                                return;
                             }
 
                         }

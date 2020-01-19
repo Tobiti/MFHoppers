@@ -35,11 +35,11 @@ public enum MContainer {
         classLocation = location;
     }
 
-    public Location getLocation(InventoryHolder holder) {
+    public static Location getLocation(InventoryHolder holder) {
 
         try {
-            if (holder.getInventory() instanceof DoubleChestInventory)
-                return ((org.bukkit.block.Chest) holder).getLocation();
+            if (holder instanceof org.bukkit.block.DoubleChest)
+                return ((org.bukkit.block.DoubleChest) holder).getLocation();
 
             if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_9_R1.getVersionId()) {
                 Container container = (Container) holder;
@@ -68,6 +68,9 @@ public enum MContainer {
 
         if (holder instanceof Chest)
             return CHEST;
+
+        else if (holder instanceof DoubleChest)
+            return DoubleChest;
 
         else if (holder instanceof Dispenser)
             return Dispenser;
@@ -175,6 +178,9 @@ public enum MContainer {
             BlockState state = location.getBlock().getState();
             if (state instanceof Chest) {
                 toReturn = ((Chest) state).getInventory().getHolder();
+
+            } else if (state instanceof DoubleChest) {
+                toReturn = ((DoubleChest) state).getInventory().getHolder();
 
             } else if (state instanceof Hopper) {
                 toReturn = ((Hopper) state).getInventory().getHolder();
