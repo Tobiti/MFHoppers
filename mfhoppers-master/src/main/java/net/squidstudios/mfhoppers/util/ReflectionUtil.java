@@ -14,6 +14,7 @@ import java.util.TreeSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import net.squidstudios.mfhoppers.util.plugin.MinecraftVersion;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
@@ -104,7 +105,7 @@ public final class ReflectionUtil {
 
 	// get the current class versioning
 	private static String getClassVersioning() {
-		final String curr = OVersion.getStringVersion();
+		final String curr = MinecraftVersion.getServerVersion();
 
 		return curr.equals("craftbukkit") ? "" : curr + ".";
 	}
@@ -181,10 +182,10 @@ public final class ReflectionUtil {
 	 */
 	public static void updateInventoryTitle(Player player, String title) {
 		try {
-			if (OVersion.isBefore(8))
+			if (MinecraftVersion.olderThan(MinecraftVersion.V.v1_8))
 				return;
 
-			if (OVersion.isBefore(9) && title.length() > 16)
+			if (MinecraftVersion.olderThan(MinecraftVersion.V.v1_9) && title.length() > 16)
 				title = title.substring(0, 15);
 
 			final Object entityPlayer = player.getClass().getMethod("getHandle").invoke(player);
@@ -197,7 +198,7 @@ public final class ReflectionUtil {
 
 			final Object packet;
 
-			if (OVersion.isOrAfter(14)) {
+			if (MinecraftVersion.newerThan(MinecraftVersion.V.v1_13)) {
 				final Class<?> containersClass = getNMSClass("Containers");
 				final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow").getConstructor(/*windowID*/int.class, /*containers*/containersClass, /*msg*/getNMSClass("IChatBaseComponent"));
 
@@ -601,7 +602,7 @@ public final class ReflectionUtil {
 	 * @return the enum or error
 	 */
 	public static <E extends Enum<E>> E lookupEnum(Class<E> enumType, String name) {
-		return lookupEnum(enumType, name, "The enum '" + enumType.getSimpleName() + "' does not contain '" + name + "' on MC " + OVersion.getStringVersion() + "! Available values: {available}");
+		return lookupEnum(enumType, name, "The enum '" + enumType.getSimpleName() + "' does not contain '" + name + "' on MC " + MinecraftVersion.getServerVersion() + "! Available values: {available}");
 	}
 
 	/**
@@ -625,7 +626,7 @@ public final class ReflectionUtil {
 		// Some compatibility workaround for ChatControl, Boss, CoreArena and other plugins
 		// having these values in their default config. This prevents
 		// malfunction on plugin's first load, in case it is loaded on an older MC version.
-		if (OVersion.isOrAfter(13) && enumType == Material.class) {
+		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_13) && enumType == Material.class) {
 			if (rawName.equals("RAW_FISH"))
 				name = "PUFFERFISH";
 
@@ -633,7 +634,7 @@ public final class ReflectionUtil {
 				name = "SHEEP_SPAWN_EGG";
 		}
 
-		if (OVersion.isOrAfter(14) && enumType == EntityType.class) {
+		if (MinecraftVersion.atLeast(MinecraftVersion.V.v1_14) && enumType == EntityType.class) {
 			if (rawName.equals("TIPPED_ARROW"))
 				name = "ARROW";
 		}
