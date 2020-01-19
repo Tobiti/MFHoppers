@@ -438,7 +438,7 @@ public class MFHoppers extends PluginBuilder {
                     IHopper hopper = DataManager.getInstance().getHopper(mcHopper.getBlock().getLocation());
 
                     String title = hopper.getConfigHopper().getTitle(hopper);
-                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), title), 1);
+                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), title, "minecraft:hopper"), 1);
 
                 }
             } else {
@@ -458,7 +458,7 @@ public class MFHoppers extends PluginBuilder {
                     String title = cnf.getString("LinkedContainer");
                     String mcName = event.getView().getTitle();
 
-                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), getTitle(mcName, title)), 0);
+                    Tasks.getInstance().runTaskLater(() -> ReflectionUtil.updateInventoryTitle((Player) event.getPlayer(), getTitle(mcName, title), MContainer.getMinecraftName(event.getInventory().getHolder())), 0);
                 }
             }
         });

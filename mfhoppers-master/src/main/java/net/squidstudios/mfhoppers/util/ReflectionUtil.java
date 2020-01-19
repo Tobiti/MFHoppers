@@ -180,7 +180,7 @@ public final class ReflectionUtil {
 	 * @param player the player
 	 * @param title  the new title
 	 */
-	public static void updateInventoryTitle(Player player, String title) {
+	public static void updateInventoryTitle(Player player, String title, String inventoryType) {
 		try {
 			if (MinecraftVersion.olderThan(MinecraftVersion.V.v1_8))
 				return;
@@ -216,7 +216,7 @@ public final class ReflectionUtil {
 			} else {
 				final Constructor<?> packetConst = getNMSClass("PacketPlayOutOpenWindow").getConstructor(int.class, String.class, getNMSClass("IChatBaseComponent"), int.class);
 
-				packet = packetConst.newInstance(windowId, "minecraft:chest", chatMessage, player.getOpenInventory().getTopInventory().getSize());
+				packet = packetConst.newInstance(windowId, inventoryType, chatMessage, player.getOpenInventory().getTopInventory().getSize());
 			}
 
 			sendPacket(player, packet);
