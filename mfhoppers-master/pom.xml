@@ -203,7 +203,7 @@
         <dependency>
             <groupId>com.github.OmerBenGera</groupId>
             <artifactId>WildChestsAPI</artifactId>
-            <version>latest</version>
+            <version>b2</version>
         </dependency>
     </dependencies>
 
