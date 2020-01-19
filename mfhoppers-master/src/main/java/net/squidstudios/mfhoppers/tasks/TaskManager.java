@@ -332,6 +332,8 @@ public class TaskManager implements Listener {
     public void runBreakTask() {
         final Set<IHopper> hoppers = Methods.getActiveHopperByType(HopperEnum.Break);
 
+        ItemStack tool = new ItemStack(Material.DIAMOND_PICKAXE);
+
         for (IHopper hopper : hoppers) {
             if (!hopper.isChunkLoaded()) {
                 continue;
@@ -358,9 +360,9 @@ public class TaskManager implements Listener {
 
                 final List<ItemStack> dropItems = new LinkedList<>();
                 if (!dropElement.HasDamageValue) {
-                    upper.getBlock().getDrops().forEach(it -> dropItems.add(dropElement.Drop.getItem(it.getType())));
+                    upper.getBlock().getDrops(tool).forEach(it -> dropItems.add(dropElement.Drop.getItem(it.getType())));
                 } else {
-                    upper.getBlock().getDrops().forEach(it -> {
+                    upper.getBlock().getDrops(tool).forEach(it -> {
 
                         ItemStack item = dropElement.Drop.getItem(it.getType());
                         item.setDurability(dropElement.DamageValue);
