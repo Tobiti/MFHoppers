@@ -59,9 +59,6 @@ public class FilterInventory {
                 }
             }
             hopper.SetFilterMaterialList(newFilter);
-
-            // Update Hopper
-            DataManager.getInstance().update(hopper);
         });
         builder.setClickListener(inventoryClickEvent -> {
             if (inventoryClickEvent.getCurrentItem() != null) {

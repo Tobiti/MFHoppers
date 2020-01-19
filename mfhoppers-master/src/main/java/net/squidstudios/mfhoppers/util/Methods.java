@@ -164,6 +164,7 @@ public class Methods {
                 boolean itemWasAdded = false;
                 for (Inventory destination : Methods.GetLinkedInventorys(hopper)) {
                     if(Bukkit.getPluginManager().isPluginEnabled("WildChests")){
+                        int startAmount = item.getAmount();
                         Chest chest = WildChestsAPI.getChest(MContainer.getLocation(destination.getHolder()));
                         if(chest != null){
                             Map<Integer, ItemStack> integerItemStackMap = chest.addItems(item);
@@ -174,7 +175,7 @@ public class Methods {
                             } else {
                                 ItemStack itemStack = integerItemStackMap.values().stream().findFirst().orElse(null);
                                 int minus = itemStack != null ? itemStack.getAmount() : 0;
-                                added += item.getAmount() - minus;                                
+                                added += startAmount - minus;                                
                                 item.setAmount(minus);
                             }
                         }
@@ -201,11 +202,8 @@ public class Methods {
                 }
             }
 
-
             if (inv.firstEmpty() != -1) {
-
                 added += item.getAmount();
-
                 inv.addItem(item);
                 continue;
             }

@@ -2,6 +2,7 @@ package net.squidstudios.mfhoppers.hopper;
 
 import com.google.common.collect.Sets;
 import net.squidstudios.mfhoppers.MFHoppers;
+import net.squidstudios.mfhoppers.manager.DataManager;
 import net.squidstudios.mfhoppers.util.MContainer;
 import net.squidstudios.mfhoppers.util.Methods;
 import net.squidstudios.mfhoppers.util.OFuture;
@@ -183,7 +184,8 @@ public abstract class IHopper {
         locations.remove(Methods.toString(location));
         getData().remove("linked");
         getData().put("linked", locations);
-
+        
+        DataManager.getInstance().update(this);
     }
 
     public boolean ContainsInFilterMaterialList(Material mat, short damage) {
@@ -198,6 +200,7 @@ public abstract class IHopper {
         if (getType() == HopperEnum.Crop || getType() == HopperEnum.Mob) {
             filterList.clear();
             getFilterMaterialList(true);
+            DataManager.getInstance().update(this);
         }
     }
 
@@ -256,6 +259,9 @@ public abstract class IHopper {
             }
         }
         getData().put("filter", _stringMats);
+
+        // Update Hopper
+        DataManager.getInstance().update(this);
     }
 
     public void link(Location loc) {
@@ -274,6 +280,7 @@ public abstract class IHopper {
             getData().put("linked", locations);
 
         }
+        DataManager.getInstance().update(this);
     }
 
     public String getOwner() {

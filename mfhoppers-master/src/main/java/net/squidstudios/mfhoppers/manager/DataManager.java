@@ -675,10 +675,8 @@ public class DataManager {
     }
 
     public void link(Location hopperloc, Location loc) {
-
         IHopper hopper = getHopper(hopperloc);
         hopper.link(loc);
-
     }
 
     public Set<IHopper> getHoppersSet() {

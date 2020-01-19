@@ -3,13 +3,14 @@ package net.squidstudios.mfhoppers.util;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 
+import net.squidstudios.mfhoppers.MFHoppers;
+
 public class OVersion {
 
     private static String stringVersion;
     private static int intVersion;
 
     static {
-
         String fullVersion = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
         stringVersion = StringUtils.replace(fullVersion, "_", " ");
         intVersion = Integer.parseInt(StringUtils.replace(fullVersion.split("_")[1].split("_R")[0], "v", ""));
