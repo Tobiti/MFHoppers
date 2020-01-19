@@ -78,12 +78,14 @@ public enum MContainer {
         else if (holder instanceof Hopper)
             return HOPPER;
 
-        else if (holder instanceof ShulkerBox)
-            return SHULKER_BOX;
+        else if (OVersion.isOrAfter(11)){
+            if (holder instanceof ShulkerBox)
+                return SHULKER_BOX;
 
-        else if (OVersion.isOrAfter(14))
-            if (holder.getClass().getSimpleName().contains("Barrel"))
-                return BARREL;
+            else if (OVersion.isOrAfter(14))
+                if (holder.getClass().getSimpleName().contains("Barrel"))
+                    return BARREL;
+        }
         return null;
     }
 
@@ -129,7 +131,7 @@ public enum MContainer {
             return "minecraft:dispenser";
         } else if (holder instanceof Hopper)
             return "minecraft:hopper";
-
+        
         if (containsInBukkit("org.bukkit.block." + SHULKER_BOX.classLocation)) {
             if (holder instanceof ShulkerBox) {
                 return "minecraft:shulker_box";
