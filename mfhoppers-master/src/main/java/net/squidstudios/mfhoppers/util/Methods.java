@@ -469,7 +469,13 @@ public class Methods {
                             }
                         }
                     } else {
-                        if(OVersion.isOrAfter(13) && ent.getType() == EntityType.valueOf("PHANTOM")){
+                        List<EntityType> entitiesToKillByPlayer = new ArrayList();
+                        if(OVersion.isOrAfter(13)){
+                            entitiesToKillByPlayer.add(EntityType.valueOf("PHANTOM"));
+                        }
+                        entitiesToKillByPlayer.add(EntityType.BLAZE);
+
+                        if(entitiesToKillByPlayer.contains(ent.getType())){
                             Player player = null;
                             if (Bukkit.getOnlinePlayers().stream().anyMatch(p -> ((Player) p).getName().equals(hopper.getOwner()))) {
                                 player = Bukkit.getOnlinePlayers().stream().filter(p -> ((Player) p).getName().equals(hopper.getOwner())).findFirst().get();
