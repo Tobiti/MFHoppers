@@ -589,7 +589,7 @@ public class TaskManager implements Listener {
                         y--;
 
                         Material material = snapshot.getBlockType(x, y, z);
-                        if (material.equals(Material.CHEST) || (OVersion.isOrAfter(14) && material.equals(XMaterial.fromString("BARREL").parseMaterial()))){
+                        if (material.equals(Material.CHEST) || (OVersion.isOrAfter(14) && material.equals(XMaterial.matchXMaterial("BARREL").get().parseMaterial()))){
                             Location loc = hopper.getLocation().clone().add(0, y-hopper.getLocation().getY(), 0);
                             if(!hopper.isLinkedTo(loc)){
                                 hopper.link(loc);

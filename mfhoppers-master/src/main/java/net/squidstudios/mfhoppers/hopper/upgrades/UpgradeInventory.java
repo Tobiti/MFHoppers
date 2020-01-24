@@ -64,9 +64,11 @@ public class UpgradeInventory {
                 addNbt("upgrade", "up").
                 addItemFlag(ItemFlag.HIDE_ATTRIBUTES).buildItem();
 
-        return new InventoryBuilder(c(data.get("title")), 9).
-                fill(filler).
-                setItem(3, upgradeItem).
+        InventoryBuilder builder = new InventoryBuilder(c(data.get("title")), 9);
+        if(filler != null){
+            builder.fill(filler);
+        }
+        return  builder.setItem(3, upgradeItem).
                 setItem(5, infoItem).
                 setClickListener(event -> {
                     if (event.getCurrentItem() != null) {

@@ -1,6 +1,9 @@
 package net.squidstudios.mfhoppers.util;
 
 import net.squidstudios.mfhoppers.MFHoppers;
+
+import java.util.Optional;
+
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -34,7 +37,12 @@ public enum GlassColor {
         if (OVersion.isOrAfter(13)) {
 
             String name = name() + "_STAINED_GLASS_PANE";
-            return new ItemBuilder(XMaterial.fromString(name).parseMaterial()).
+            Optional<XMaterial> optMat = XMaterial.matchXMaterial(name);
+            if(!optMat.isPresent()){
+                return null;
+            }
+
+            return new ItemBuilder(optMat.get().parseMaterial()).
                     addItemFlag(ItemFlag.HIDE_ATTRIBUTES).
                     addItemFlag(ItemFlag.HIDE_ENCHANTS).
                     addNbt("filler", "filler").

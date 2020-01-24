@@ -23,6 +23,7 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
@@ -227,8 +228,9 @@ public abstract class IHopper {
                 String[] parts = s.split(":");
                 Material mat = Material.getMaterial(parts[0]);
                 if (mat == null) {
-                    if (XMaterial.fromString(s) != null) {
-                        mat = XMaterial.fromString(s).parseMaterial();
+                    Optional<XMaterial> optMat = XMaterial.matchXMaterial(s);
+                    if (optMat.isPresent()) {
+                        mat = optMat.get().parseMaterial();
                     } else {
                         MFHoppers.getInstance().getLogger().warning("Could not find Material to " + s);
                     }
