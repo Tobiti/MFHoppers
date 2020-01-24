@@ -469,6 +469,28 @@ public class Methods {
                             }
                         }
                     } else {
+                        if(OVersion.isOrAfter(13) && ent.getType() == EntityType.valueOf("PHANTOM")){
+                            Player player = null;
+                            if (Bukkit.getOnlinePlayers().stream().anyMatch(p -> ((Player) p).getName().equals(hopper.getOwner()))) {
+                                player = Bukkit.getOnlinePlayers().stream().filter(p -> ((Player) p).getName().equals(hopper.getOwner())).findFirst().get();
+                            } else {
+                                player = Bukkit.getOnlinePlayers().stream().findFirst().get();
+                            }
+                            if(player != null){
+                                ent.damage(amount, player);
+                                if (damageType == null) {
+                                    ent.setLastDamageCause(new EntityDamageByEntityEvent(player, ent, EntityDamageEvent.DamageCause.CUSTOM, amount));
+                                } else {
+                                    try {
+                                        ent.setLastDamageCause(new EntityDamageByEntityEvent(player, ent, EntityDamageEvent.DamageCause.valueOf(damageType.toUpperCase()), amount));
+                                    } catch (IllegalArgumentException ex) {
+                                        MFHoppers.getInstance().getLogger().warning("There is no damage type: " + damageType);
+                                    }
+                                }
+                                return;
+                            }
+                        }
+
                         ent.damage(amount);
                         if (damageType == null) {
                             if (Bukkit.getPluginManager().isPluginEnabled("BeastCore")) {
