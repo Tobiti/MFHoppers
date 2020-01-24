@@ -181,9 +181,15 @@ public class Methods {
                         }
                         else {
                             if (Methods.canFit(item, item.getAmount(), destination)) {
-                                MFHoppers.getInstance().getLogger().info("WildChest Plugin. Add to linked Chest!");
                                 added += item.getAmount();
+                                try{
                                 destination.addItem(item);
+                                } catch(Exception e){
+                                    Location loc = MContainer.getLocation(destination.getHolder());
+                                    MFHoppers.getInstance().getLogger().info(String.format("Notmal Chest Location: [%s, %s, %s] Hopper Location: [%s, %s, %s] WildChests: %s", String.valueOf(loc.getX()), String.valueOf(loc.getY()), String.valueOf(loc.getZ())
+                                    , hopper.getLocation().getX(), hopper.getLocation().getY(), hopper.getLocation().getZ(), String.valueOf(Bukkit.getPluginManager().isPluginEnabled("WildChests"))));
+                                    e.printStackTrace();
+                                }
                                 itemWasAdded = true;
                                 break;
                             }
@@ -191,9 +197,15 @@ public class Methods {
                     }
                     else {
                         if (Methods.canFit(item, item.getAmount(), destination)) {
-                            MFHoppers.getInstance().getLogger().info("No WildChest Plugin. Add to linked Chest!");
                             added += item.getAmount();
-                            destination.addItem(item);
+                            try {
+                                destination.addItem(item);
+                            } catch(Exception e){
+                                Location loc = MContainer.getLocation(destination.getHolder());
+                                MFHoppers.getInstance().getLogger().info(String.format("Notmal Chest Location: [%s, %s, %s] Hopper Location: [%s, %s, %s] WildChests: %s", String.valueOf(loc.getX()), String.valueOf(loc.getY()), String.valueOf(loc.getZ())
+                                , hopper.getLocation().getX(), hopper.getLocation().getY(), hopper.getLocation().getZ(), String.valueOf(Bukkit.getPluginManager().isPluginEnabled("WildChests"))));
+                                e.printStackTrace();
+                            }
                             itemWasAdded = true;
                             break;
                         }
@@ -206,9 +218,14 @@ public class Methods {
 
 
             if (inv.firstEmpty() != -1) {
-                MFHoppers.getInstance().getLogger().info("Add to Hopper!");
                 added += item.getAmount();
-                inv.addItem(item);
+                try {
+                    inv.addItem(item);
+                    
+                } catch(Exception e){
+                    MFHoppers.getInstance().getLogger().info(String.format("Hopper Location: [%s, %s, %s]", hopper.getLocation().getX(), hopper.getLocation().getY(), hopper.getLocation().getZ()));
+                    e.printStackTrace();
+                }
                 continue;
             }
 
