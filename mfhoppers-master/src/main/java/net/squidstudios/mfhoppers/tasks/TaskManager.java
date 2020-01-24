@@ -383,10 +383,15 @@ public class TaskManager implements Listener {
                 }
 
                 if (DATA.containsKey("particle")) {
-                    int version = Integer.parseInt(ReflectionUtils.PackageType.getServerVersion().split("_")[1]);
-                    if (version > 8) {
-                        for (Player player : Bukkit.getOnlinePlayers())
-                            player.spawnParticle(Particle.valueOf(DATA.get("particle").toString()), upper.getBlock().getLocation().add(0.5, 0, 0.5), 1);
+                    if (OVersion.isAfter(8)) {
+                        for (Player player : Bukkit.getOnlinePlayers()){
+                            try {
+                                Particle particle = Particle.valueOf(DATA.get("particle").toString());
+                                player.spawnParticle(particle, upper.getBlock().getLocation().add(0.5, 0, 0.5), 1);
+                            } catch (IllegalArgumentException e){
+                                MFHoppers.getInstance().getLogger().warning(String.format("%s is no valid particle for your version.", DATA.get("particle").toString()));
+                            }
+                        }
                     } else {
                         ParticleEffect effect = ParticleEffect.fromName(DATA.get("particle").toString());
 
@@ -561,7 +566,7 @@ public class TaskManager implements Listener {
     }
 
     public void runAutoLinkTask(){
-        Set<IHopper> hoppers = DataManager.getInstance().getHoppersSet(hopper -> hopper != null && hopper.getConfigHopper() != null && hopper.getConfigHopper().getDataOfHopper(hopper).get("autoLinkToChest") != null && Boolean.valueOf((String)hopper.getConfigHopper().getDataOfHopper(hopper).get("autoLinkToChest")));
+        Set<IHopper> hoppers = DataManager.getInstance().getHoppersSet(hopper -> hopper != null && hopper.getConfigHopper() != null && hopper.getConfigHopper().getDataOfHopper(hopper).get("autoLinkToChest") != null && ((boolean)hopper.getConfigHopper().getDataOfHopper(hopper).get("autoLinkToChest")));
 
         final HashMap<IHopper, ChunkSnapshot> map = new HashMap<>();
         for (IHopper hopper : hoppers) {
