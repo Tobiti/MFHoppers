@@ -3,6 +3,8 @@ package net.squidstudios.mfhoppers.tasks;
 import com.bgsoftware.wildstacker.api.WildStackerAPI;
 import com.bgsoftware.wildstacker.api.objects.StackedEntity;
 import com.google.common.collect.Sets;
+
+import de.Linus122.DropEdit.DropContainer;
 import de.Linus122.DropEdit.Main;
 import de.Linus122.EntityInfo.EntityKeyInfo;
 import de.Linus122.EntityInfo.KeyGetter;
@@ -35,6 +37,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -77,7 +80,8 @@ public class TaskManager implements Listener {
                     runItemsTask();
                 }
             }
-        }.runTaskTimerAsynchronously(MFHoppers, 0, 20 * MFHoppers.getInstance().getConfig().getLong("CollectItemsEvery", 3)));
+        }.runTaskTimerAsynchronously(MFHoppers, 0,
+                20 * MFHoppers.getInstance().getConfig().getLong("CollectItemsEvery", 3)));
 
         // Auto Link Task
         add(new BukkitRunnable() {
@@ -86,7 +90,6 @@ public class TaskManager implements Listener {
                 runAutoLinkTask();
             }
         }.runTaskTimer(MFHoppers, 0, 20 * MFHoppers.getInstance().getConfig().getLong("AutoLinkEvery", 3)));
-
 
     }
 
@@ -106,10 +109,12 @@ public class TaskManager implements Listener {
 
             boolean IS_GLOBAL = (boolean) hopper.getData().get("isGlobal");
             ConfigHopper CONFIG_HOPPER = pl.configHoppers.get(hopper.getData().get("name").toString());
-            List<EntityType> BLACKLIST = Methods.toEntityType((List<String>) CONFIG_HOPPER.getDataOfHopper(hopper).get("mob-blacklist"));
+            List<EntityType> BLACKLIST = Methods
+                    .toEntityType((List<String>) CONFIG_HOPPER.getDataOfHopper(hopper).get("mob-blacklist"));
 
             Location MIDDLE = hopper.getLocation().clone().add(0.5, 0.7, 0.5);
-            final Set<Entity> entityList = EntitiesGatherer.from(MIDDLE.getChunk()).accepts(LivingEntity.class).gather();
+            final Set<Entity> entityList = EntitiesGatherer.from(MIDDLE.getChunk()).accepts(LivingEntity.class)
+                    .gather();
             final Set<LivingEntity> LIVING_ENTITIES = Methods.getSortedEntities(entityList, BLACKLIST);
             Set<LivingEntity> toAddSlowness = Sets.newHashSet();
 
@@ -133,7 +138,8 @@ public class TaskManager implements Listener {
 
                 for (LivingEntity entity : LIVING_ENTITIES) {
                     NBTEntity nbt = new NBTEntity(entity);
-                    if ((nbt.getByte("NoAI") == 1 && entity.getType() != EntityType.ENDERMAN) && hopper.getLocation().distance(entity.getLocation()) < 3) {
+                    if ((nbt.getByte("NoAI") == 1 && entity.getType() != EntityType.ENDERMAN)
+                            && hopper.getLocation().distance(entity.getLocation()) < 3) {
                         continue;
                     }
 
@@ -159,7 +165,8 @@ public class TaskManager implements Listener {
 
             } else {
                 EntityType type = EntityType.valueOf(hopper.getData().get("ent").toString());
-                final Set<LivingEntity> entities = LIVING_ENTITIES.stream().filter(e -> e.getType() == type).collect(Collectors.toSet());
+                final Set<LivingEntity> entities = LIVING_ENTITIES.stream().filter(e -> e.getType() == type)
+                        .collect(Collectors.toSet());
 
                 toAddSlowness.addAll(entities);
             }
@@ -195,31 +202,43 @@ public class TaskManager implements Listener {
 
                 int time = 0;
 
-                if (autoKillTask.containsKey(hopper)) time = autoKillTask.get(hopper);
-                else time = (int) pl.configHoppers.get(hopper.getName()).getDataOfHopper(hopper).get("time");
+                if (autoKillTask.containsKey(hopper))
+                    time = autoKillTask.get(hopper);
+                else
+                    time = (int) pl.configHoppers.get(hopper.getName()).getDataOfHopper(hopper).get("time");
 
                 time--;
                 if (time <= 0) {
                     autoKillTask.remove(hopper);
-                    autoKillTask.put(hopper, (int) pl.configHoppers.get(hopper.getName()).getDataOfHopper(hopper).get("time"));
+                    autoKillTask.put(hopper,
+                            (int) pl.configHoppers.get(hopper.getName()).getDataOfHopper(hopper).get("time"));
                     ConfigHopper CONFIG_HOPPER = pl.configHoppers.get(hopper.getData().get("name").toString());
-                    List<EntityType> BLACKLIST = Methods.toEntityType((List<String>) CONFIG_HOPPER.getDataOfHopper(hopper).get("mob-blacklist"));
-                    
+                    List<EntityType> BLACKLIST = Methods
+                            .toEntityType((List<String>) CONFIG_HOPPER.getDataOfHopper(hopper).get("mob-blacklist"));
+
                     EntityType type = EntityType.valueOf(hopper.getData().get("ent").toString());
                     boolean isGlobal = (boolean) hopper.getData().get("isGlobal");
 
-                    final Set<Entity> savedEntityList = EntitiesGatherer.from(hopper.getLocation().getChunk()).accepts(LivingEntity.class).gather();
-                    List<LivingEntity> entities = Methods.getSortedEntities(savedEntityList, BLACKLIST).stream().filter(e -> e.getLocation().distance(hopper.getLocation()) < (type.equals(EntityType.GHAST) || isGlobal ? 3 : 1)).filter(e -> e.getType().equals(type) || isGlobal).collect(Collectors.toList());
+                    final Set<Entity> savedEntityList = EntitiesGatherer.from(hopper.getLocation().getChunk())
+                            .accepts(LivingEntity.class).gather();
+                    List<LivingEntity> entities = Methods.getSortedEntities(savedEntityList, BLACKLIST).stream()
+                            .filter(e -> e.getLocation().distance(
+                                    hopper.getLocation()) < (type.equals(EntityType.GHAST) || isGlobal ? 3 : 1))
+                            .filter(e -> e.getType().equals(type) || isGlobal).collect(Collectors.toList());
 
                     for (LivingEntity ent : entities) {
-                        if (Bukkit.getPluginManager().isPluginEnabled("WildStacker") || Bukkit.getPluginManager().isPluginEnabled("BeastCore")) {
-                            if (pl.configHoppers.get(hopper.getName()).getDataOfHopper(hopper).containsKey("stack_kill") && Integer.valueOf(pl.configHoppers.get(hopper.getName()).getDataOfHopper(hopper).get("stack_kill").toString()) > 1) {
+                        if (Bukkit.getPluginManager().isPluginEnabled("WildStacker")
+                                || Bukkit.getPluginManager().isPluginEnabled("BeastCore")) {
+                            if (pl.configHoppers.get(hopper.getName()).getDataOfHopper(hopper).containsKey("stack_kill")
+                                    && Integer.valueOf(pl.configHoppers.get(hopper.getName()).getDataOfHopper(hopper)
+                                            .get("stack_kill").toString()) > 1) {
 
                                 int stackKill = 1;
                                 if (Bukkit.getPluginManager().isPluginEnabled("WildStacker")) {
                                     stackKill = WildStackerAPI.getEntityAmount(ent);
                                 }
-                                stackKill = Math.min(Integer.valueOf(pl.configHoppers.get(hopper.getName()).getDataOfHopper(hopper).get("stack_kill").toString()), stackKill);
+                                stackKill = Math.min(Integer.valueOf(pl.configHoppers.get(hopper.getName())
+                                        .getDataOfHopper(hopper).get("stack_kill").toString()), stackKill);
 
                                 int finalStackKill = stackKill;
                                 final List<DropElement> dropList = new ArrayList<>();
@@ -240,10 +259,18 @@ public class TaskManager implements Listener {
                                         isAllItems = true;
                                     }
                                     if (Bukkit.getPluginManager().isPluginEnabled("DropEdit2")) {
-                                        EntityKeyInfo var2 = (EntityKeyInfo) Main.data.getKeyInfo(KeyGetter.getKey(ent.getType()));
-                                        if (var2 != null) {
+                                        DropContainer container = ((Main) Main.pl)
+                                                .getDrops(KeyGetter.getKey(ent.getType()), ent);
+                                        if (container != null) {
                                             isSingleItem = true;
-                                            entDrops = Arrays.asList(var2.getDrops());
+                                            Field field;
+                                            try {
+                                                field = container.getClass().getDeclaredField("itemDrops");
+                                                field.setAccessible(true);
+                                                entDrops = (List<ItemStack>)field.get(container);
+                                            } catch (NoSuchFieldException e1) {
+                                            } catch (SecurityException e1) {
+                                            }
                                         }
                                     }
                                     if (Bukkit.getPluginManager().isPluginEnabled("CustomDrops")) {
