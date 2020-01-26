@@ -1,9 +1,6 @@
 package net.squidstudios.mfhoppers.util;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.BiConsumer;
 
 public class OFuture<O> extends CompletableFuture<O> {

@@ -182,7 +182,7 @@ public class Methods {
                         else {
                             if (Methods.canFit(item, item.getAmount(), destination)) {
                                 added += item.getAmount();
-                                    forceSync(() -> destination.addItem(item));
+                                destination.addItem(item);
                                 itemWasAdded = true;
                                 break;
                             }
@@ -191,7 +191,7 @@ public class Methods {
                     else {
                         if (Methods.canFit(item, item.getAmount(), destination)) {
                             added += item.getAmount();
-                            forceSync(() -> destination.addItem(item));
+                            destination.addItem(item);
                             itemWasAdded = true;
                             break;
                         }
@@ -205,7 +205,7 @@ public class Methods {
             final Inventory finalHopperInventory = inv;
             if (finalHopperInventory.firstEmpty() != -1) {
                 added += item.getAmount();
-                forceSync(() -> finalHopperInventory.addItem(item));
+                finalHopperInventory.addItem(item);
                 continue;
             }
 
