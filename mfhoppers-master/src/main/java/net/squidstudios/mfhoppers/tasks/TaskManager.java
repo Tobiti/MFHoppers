@@ -263,14 +263,7 @@ public class TaskManager implements Listener {
                                                 .getDrops(KeyGetter.getKey(ent.getType()), ent);
                                         if (container != null) {
                                             isSingleItem = true;
-                                            Field field;
-                                            try {
-                                                field = container.getClass().getDeclaredField("itemDrops");
-                                                field.setAccessible(true);
-                                                entDrops = (List<ItemStack>)field.get(container);
-                                            } catch (NoSuchFieldException e1) {
-                                            } catch (SecurityException e1) {
-                                            }
+                                            entDrops = container.getItemDrops();
                                         }
                                     }
                                     if (Bukkit.getPluginManager().isPluginEnabled("CustomDrops")) {
