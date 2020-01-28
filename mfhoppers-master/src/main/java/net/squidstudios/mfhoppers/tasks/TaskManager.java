@@ -263,6 +263,7 @@ public class TaskManager implements Listener {
                                                 .getDrops(KeyGetter.getKey(ent.getType()), ent);
                                         if (container != null) {
                                             isSingleItem = true;
+                                            isAllItems = false;
                                             entDrops = container.getItemDrops();
                                         }
                                     }
@@ -276,23 +277,14 @@ public class TaskManager implements Listener {
 
                                     boolean finalIsDropEdit = isSingleItem;
                                     boolean finalIsAllItems = isAllItems;
-                                    List<ItemStack> finalEntDrops = entDrops;
                                     entDrops.forEach(itemStack ->
                                     {
                                         if (itemStack != null) {
-                                            if (finalIsAllItems) {
-                                                dropList.add(new DropElement(ent.getWorld(), ent.getLocation(), itemStack));
+                                            if (finalIsDropEdit) {
+                                                    dropList.add(new DropElement(ent.getWorld(), ent.getLocation(), new ItemStack(itemStack.getType(), finalStackKill * itemStack.getAmount())));
                                             } else {
-                                                if (finalIsDropEdit) {
-                                                    if (finalEntDrops.indexOf(itemStack) != 49) {
-                                                        dropList.add(new DropElement(ent.getWorld(), ent.getLocation(), new ItemStack(itemStack.getType(), finalStackKill * itemStack.getAmount())));
-                                                    }
-
-                                                } else {
-
-                                                    if (Bukkit.getPluginManager().isPluginEnabled("WildStacker")) {
-                                                        dropList.add(new DropElement(ent.getWorld(), ent.getLocation(), new ItemStack(itemStack.getType(), finalStackKill * (itemStack.getAmount() / Math.min(WildStackerAPI.getStackedEntity(ent).getStackAmount(), 1)))));
-                                                    }
+                                                if (finalIsAllItems) {
+                                                    dropList.add(new DropElement(ent.getWorld(), ent.getLocation(), itemStack));
                                                 }
                                             }
                                         }
