@@ -172,7 +172,9 @@ public enum MContainer {
     private static InventoryHolder _getInventoryHolder(Location location) {
         InventoryHolder toReturn = null;
         if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_9_R1.getVersionId()) {
-            toReturn = ((Container) location.getBlock().getState()).getInventory().getHolder();
+            if(location.getBlock().getState() instanceof Container){
+                toReturn = ((Container) location.getBlock().getState()).getInventory().getHolder();
+            }
 
         } else {
             BlockState state = location.getBlock().getState();

@@ -446,7 +446,7 @@ public class TaskManager implements Listener {
 
                         Inventory source = null;
                         try {
-                            source = MContainer.getOfLocation(hopper.getLocation()).getInventory(hopper.getLocation()).get().getInventory();
+                            source = MContainer.getInventory(hopper.getLocation()).get().getInventory();
                         } catch (InterruptedException | ExecutionException e) {
                             e.printStackTrace();
                         }
