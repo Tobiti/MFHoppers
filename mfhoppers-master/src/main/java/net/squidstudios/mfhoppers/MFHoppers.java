@@ -492,7 +492,7 @@ public class MFHoppers extends PluginBuilder {
             Sender sender = cmd.getSender();
 
             if (cmd.args().length == 0) {
-                if (!sender.getPlayer().hasPermission("mfh.adminhelp") && !sender.getPlayer().hasPermission("mfh.help")) {
+                if (!(sender.getPlayer().hasPermission("mfh.adminhelp") || sender.getPlayer().hasPermission("mfh.help"))) {
                     sender.sendMessage(c("&c&l(!)&7 You don't have permission!"));
                     return;
                 }
