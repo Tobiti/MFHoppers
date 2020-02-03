@@ -25,7 +25,6 @@ import net.squidstudios.mfhoppers.util.XMaterial;
 import net.squidstudios.mfhoppers.util.ent.EntitiesGatherer;
 import net.squidstudios.mfhoppers.util.moveableItem.MoveItem;
 import net.squidstudios.mfhoppers.util.particles.ParticleEffect;
-import net.squidstudios.mfhoppers.util.particles.ReflectionUtils;
 import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.Listener;
@@ -37,7 +36,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.util.Vector;
 
-import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -289,9 +287,7 @@ public class TaskManager implements Listener {
                                             }
                                         }
                                     });
-                                    //stackedEnt.setStackAmount(stackedEnt.getStackAmount() - (stackKill - 1), false);
                                 }
-                                //Methods.damage(ent.getHealth(), ent);
                                 new BukkitRunnable() {
 
                                     @Override
@@ -543,10 +539,8 @@ public class TaskManager implements Listener {
 
                         int amount = Math.min(sellAmount, item.getFirst().getAmount());
                         boolean removed = Methods.removeItem(item.getFirst(), amount, inventory);
-                        //System.out.println(item.getFirst() + " ; " + item.getSecond());
 
                         if (removed) {
-                            //System.out.println("Sold " + item.getFirst() + " x" + amount + " for " + (item.getSecond() * amount));
                             finalPrice += item.getSecond() * amount;
                             sellAmount -= amount;
                         }

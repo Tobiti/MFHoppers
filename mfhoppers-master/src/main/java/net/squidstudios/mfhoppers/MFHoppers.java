@@ -492,7 +492,23 @@ public class MFHoppers extends PluginBuilder {
             Sender sender = cmd.getSender();
 
             if (cmd.args().length == 0) {
-                sender.sendMessage(Center.getCenteredMessage("&b&l---&3&l---&b&l---&3&l---{ &aMFHoppers &b&l}&b&l---&3&l---&b&l---&3&l---"));
+                if (!sender.getPlayer().hasPermission("mfh.adminhelp") && !sender.getPlayer().hasPermission("mfh.help")) {
+                    sender.sendMessage(c("&c&l(!)&7 You don't have permission!"));
+                    return;
+                }
+
+                sender.sendMessage(Center.getCenteredMessage("&b&l---&3&l---&b&l---&3&l---{ &aMFHoppers Help &b&l}&b&l---&3&l---&b&l---&3&l---"));
+                sender.sendMessage("");
+                sender.sendMessage(Center.getCenteredMessage("&b&l* &a/linkhopper &7to link a hopper to a chest"));
+                sender.sendMessage(Center.getCenteredMessage("&b&l* &a/converthopper &7to change the type of a grind hopper or convert a normal hopper to a mfhopper"));
+                sender.sendMessage("");
+                sender.sendMessage(Center.getCenteredMessage("&b&l---&3&l---&b&l---&3&l---&b&l---&3&l---&b&l---&3&l---"));
+
+                if (!sender.getPlayer().hasPermission("mfh.adminhelp")) {
+                    sender.sendMessage(c("&c&l(!)&7 You don't have permission!"));
+                    return;
+                }
+                sender.sendMessage(Center.getCenteredMessage("&b&l---&3&l---&b&l---&3&l---{ &aMFHoppers Admin Help &b&l}&b&l---&3&l---&b&l---&3&l---"));
                 sender.sendMessage("");
                 sender.sendMessage(Center.getCenteredMessage("&b&l* &7/mfhoppers give <player> <name> [amount]"));
                 sender.sendMessage(Center.getCenteredMessage("&b&l* &7If hopper is &bGrind&7 type you can use after amount: &b[isGlobal] [isAuto] &7each value should be either &btrue&7, or &bfalse!"));
