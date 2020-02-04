@@ -209,10 +209,14 @@ public abstract class IHopper {
         return getFilterMaterialList(false);
     }
 
+    public boolean hasEditableFilter(){
+        return MFHoppers.getInstance().getConfigHoppers().get(getData().get("name").toString()).isEditableFilter();
+    }
+
     public Set<FilterElement> getFilterMaterialList(boolean forceConfig) {
         if (filterList.size() == 0) {
             List<String> _stringMats = new ArrayList<>();
-            if (!getData().containsKey("filter") || forceConfig) {
+            if (!hasEditableFilter() || !getData().containsKey("filter") || forceConfig) {
                 if (getType() == HopperEnum.Crop) {
                     _stringMats = (List<String>) MFHoppers.getInstance().getConfigHoppers().get(getData().get("name").toString()).getDataOfHopper(this).get("crops");
                 } else {
