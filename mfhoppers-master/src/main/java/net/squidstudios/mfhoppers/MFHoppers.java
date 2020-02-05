@@ -57,14 +57,12 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.scheduler.BukkitRunnable;
-import sun.reflect.Reflection;
 
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import static java.util.stream.Collectors.toList;
 
@@ -493,30 +491,16 @@ public class MFHoppers extends PluginBuilder {
 
             if (cmd.args().length == 0) {
                 if (!(sender.getPlayer().hasPermission("mfh.adminhelp") || sender.getPlayer().hasPermission("mfh.help"))) {
-                    sender.sendMessage(c("&c&l(!)&7 You don't have permission!"));
+                    Lang.NO_PERMISSION.send(sender);
                     return;
                 }
-
-                sender.sendMessage(Center.getCenteredMessage("&b&l---&3&l---&b&l---&3&l---{ &aMFHoppers Help &b&l}&b&l---&3&l---&b&l---&3&l---"));
-                sender.sendMessage("");
-                sender.sendMessage(Center.getCenteredMessage("&b&l* &a/linkhopper &7to link a hopper to a chest"));
-                sender.sendMessage(Center.getCenteredMessage("&b&l* &a/converthopper &7to change the type of a grind hopper or convert a normal hopper to a mfhopper"));
-                sender.sendMessage("");
-                sender.sendMessage(Center.getCenteredMessage("&b&l---&3&l---&b&l---&3&l---&b&l---&3&l---&b&l---&3&l---"));
+                Lang.HELP.send(sender);
 
                 if (!sender.getPlayer().hasPermission("mfh.adminhelp")) {
                     sender.sendMessage(c("&c&l(!)&7 You don't have permission!"));
                     return;
                 }
-                sender.sendMessage(Center.getCenteredMessage("&b&l---&3&l---&b&l---&3&l---{ &aMFHoppers Admin Help &b&l}&b&l---&3&l---&b&l---&3&l---"));
-                sender.sendMessage("");
-                sender.sendMessage(Center.getCenteredMessage("&b&l* &7/mfhoppers give <player> <name> [amount]"));
-                sender.sendMessage(Center.getCenteredMessage("&b&l* &7If hopper is &bGrind&7 type you can use after amount: &b[isGlobal] [isAuto] &7each value should be either &btrue&7, or &bfalse!"));
-                sender.sendMessage(Center.getCenteredMessage("&b&l* &7/mfhoppers cleanWrongHoppers"));
-                sender.sendMessage(Center.getCenteredMessage("&b&l* &7/mfhoppers reload"));
-                sender.sendMessage(Center.getCenteredMessage("&b&l* &7/mfhoppers replacefilter"));
-                sender.sendMessage("");
-                sender.sendMessage(Center.getCenteredMessage("&b&l---&3&l---&b&l---&3&l---&b&l---&3&l---&b&l---&3&l---"));
+                Lang.ADMIN_HELP.send(sender);
             } else if (cmd.args().length > 0) {
 
                 if (cmd.args()[0].equalsIgnoreCase("reload")) {
@@ -524,7 +508,7 @@ public class MFHoppers extends PluginBuilder {
                     if (sender.isPlayer()) {
 
                         if (!sender.getPlayer().hasPermission("mfh.reload")) {
-                            sender.sendMessage(c("&c&l(!)&7 You don't have permission!"));
+                            Lang.NO_PERMISSION.send(sender);
                             return;
                         }
 
@@ -536,7 +520,7 @@ public class MFHoppers extends PluginBuilder {
                 } else if (cmd.args()[0].equalsIgnoreCase("replacefilter")) {
                     if (sender.isPlayer()) {
                         if (!sender.getPlayer().hasPermission("mfh.replacefilter")) {
-                            sender.sendMessage(c("&c&l(!)&7 You don't have permission!"));
+                            Lang.NO_PERMISSION.send(sender);
                             return;
                         }
                     }
@@ -547,7 +531,7 @@ public class MFHoppers extends PluginBuilder {
                 } else if (cmd.args()[0].equalsIgnoreCase("cleanWrongHoppers")) {
                     if (sender.isPlayer()) {
                         if (!sender.getPlayer().hasPermission("mfh.cleanWrongHoppers")) {
-                            sender.sendMessage(c("&c&l(!)&7 You don't have permission!"));
+                            Lang.NO_PERMISSION.send(sender);
                             return;
                         }
                     }
@@ -567,6 +551,12 @@ public class MFHoppers extends PluginBuilder {
                     cmd.getSender().sendMessage("&b&l(!)&7 The command removes or sets the level down of all hoppers without data!");
 
                 } else if (cmd.args()[0].equalsIgnoreCase("dump")) {
+                    if (sender.isPlayer()) {
+                        if (!sender.getPlayer().hasPermission("mfh.dump")) {
+                            Lang.NO_PERMISSION.send(sender);
+                            return;
+                        }
+                    }
                     Tasks.getInstance().runTaskAsync(() -> {
                         MFHoppers.getInstance().getLogger().info("-------- MFHopper DUMP START --------");
                         MFHoppers.getInstance().getLogger().info("MFHopper Overview: ");
@@ -612,7 +602,7 @@ public class MFHoppers extends PluginBuilder {
                     if (sender.isPlayer()) {
 
                         if (!sender.getPlayer().hasPermission("mfh.give")) {
-                            sender.sendMessage(c("&c&l(!)&7 You don't have permission!"));
+                            Lang.NO_PERMISSION.send(sender);
                             return;
                         }
 
@@ -743,7 +733,7 @@ public class MFHoppers extends PluginBuilder {
                 Player player = command.getSender().getPlayer();
 
                 if (!player.hasPermission("mfh.convert")) {
-                    player.sendMessage(c("&c&l(!)&7 You don't have permission!"));
+                    Lang.NO_PERMISSION.send(player);
                     return;
                 }
 

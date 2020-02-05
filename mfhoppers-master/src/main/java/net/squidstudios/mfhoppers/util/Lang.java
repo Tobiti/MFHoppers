@@ -4,8 +4,10 @@ import org.bukkit.ChatColor;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import net.squidstudios.mfhoppers.MFHoppers;
+import net.squidstudios.mfhoppers.util.cmd.Sender;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Map;
 
 public enum Lang {
@@ -34,15 +36,34 @@ public enum Lang {
     CONVERT_HOPPER_CANNOT_FIND_ANY_CONVERT_HOPPERS("&c&l(!) &7 Cannot find any convertable hoppers!"),
     LINKING_CONTAINER_REACHED_LIMIT("&c&l(!)&7 You have reached limit of linked containers for this hopper! &c(%limit%)"),
     CONTAINER_IS_ALREADY_LINKED("&c&l(!)&7 You can only link one hopper per container!"),
-    HOPPER_GIVE_INVENTORY_FULL("&c&l(!)&7 Your inventory is full, so the hopper got dropped!");
+    HOPPER_GIVE_INVENTORY_FULL("&c&l(!)&7 Your inventory is full, so the hopper got dropped!"), 
+    NO_PERMISSION("&c&l(!)&7 You don't have permission!"),
+    HELP(Center.getCenteredMessage("&b&l---&3&l---&b&l---&3&l---{ &aMFHoppers Help &b&l}&b&l---&3&l---&b&l---&3&l---"), 
+        "", 
+        Center.getCenteredMessage("&b&l* &a/linkhopper &7to link a hopper to a chest"),
+        Center.getCenteredMessage("&b&l* &a/converthopper &7to change the type of a grind hopper or convert a normal hopper to a mfhopper"),
+        "", 
+        Center.getCenteredMessage("&b&l---&3&l---&b&l---&3&l---&b&l---&3&l---&b&l---&3&l---")),
+    ADMIN_HELP(Center.getCenteredMessage("&b&l---&3&l---&b&l---&3&l---{ &aMFHoppers Help &b&l}&b&l---&3&l---&b&l---&3&l---"), 
+        "", 
+        Center.getCenteredMessage("&b&l* &7/mfhoppers give <player> <name> [amount]"),
+        Center.getCenteredMessage("&b&l* &7If hopper is &bGrind&7 type you can use after amount: &b[isGlobal] [isAuto] &7each value should be either &btrue&7, or &bfalse!"),
+        Center.getCenteredMessage("&b&l* &7/mfhoppers cleanWrongHoppers"),
+        Center.getCenteredMessage("&b&l* &7/mfhoppers reload"),
+        Center.getCenteredMessage("&b&l* &7/mfhoppers replacefilter"),
+        "", 
+        Center.getCenteredMessage("&b&l---&3&l---&b&l---&3&l---&b&l---&3&l---&b&l---&3&l---"));
 
 
     protected static String NOT_SEND = "99999999999999999";
 
-    private String text;
-    Lang(String text){
+    private ArrayList<String> text;
+    Lang(String... inputStringArray){
 
-        this.text = text;
+        this.text = new ArrayList<String>();
+        for (String string : inputStringArray) {
+            this.text.add(string);
+        }
 
     }
     public static void init(){
@@ -71,13 +92,18 @@ public enum Lang {
 
             }
             String value = cnf.getString(lang.name());
-            if(value == null && value.toCharArray().length == 0){
-
-                lang.text = NOT_SEND;
-
+            if(value == null && value.toCharArray().length == 0)
+            {
+                lang.text = new ArrayList<String>();
+                lang.text.add(NOT_SEND);
             } else{
-
-                lang.text = cnf.getString(lang.name());
+                if(cnf.isList(lang.name())){
+                    lang.text = (ArrayList<String>) cnf.getList(lang.name());
+                }
+                else {
+                    lang.text = new ArrayList<String>();
+                    lang.text.add(cnf.getString(lang.name()));
+                }
 
             }
             try{
@@ -94,27 +120,40 @@ public enum Lang {
     }
     public void send(Map<String, Object> data, Player player){
 
-        if(!text.equalsIgnoreCase(NOT_SEND)){
-
-            String t = this.text;
-            for(String key : data.keySet()){
-
-                t = t.replace(key, data.get(key).toString());
-
+        if(!text.stream().anyMatch(s -> s.equalsIgnoreCase(NOT_SEND))){
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < this.text.size(); i++) {
+                String temp = this.text.get(i);
+                for(String key : data.keySet()){
+    
+                    temp = temp.replace(key, data.get(key).toString());
+    
+                }
+                builder.append(ChatColor.translateAlternateColorCodes('&', temp));
+                if(i < this.text.size() - 1){
+                    builder.append("\n");
+                }
             }
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', t));
-
+            player.sendMessage(builder.toString());
         }
 
     }
+
+    
     public void send(Player player){
+        this.send(player);
+    }
 
-        if(!text.equalsIgnoreCase(NOT_SEND)){
-
-            String t = this.text;
-            player.sendMessage(ChatColor.translateAlternateColorCodes('&', t));
-
+    public void send(Sender sender){
+        if(!text.stream().anyMatch(s -> s.equalsIgnoreCase(NOT_SEND))){
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < this.text.size(); i++) {
+                builder.append(ChatColor.translateAlternateColorCodes('&', this.text.get(i)));
+                if(i < this.text.size() - 1){
+                    builder.append("\n");
+                }
+            }
+            sender.sendMessage(builder.toString());
         }
-
     }
 }
