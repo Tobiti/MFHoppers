@@ -586,9 +586,9 @@ public class TaskManager implements Listener {
             @Override
             public void run() {
                 for (IHopper hopper : map.keySet()) {
-                    int x = (int)hopper.getLocation().getX() % 16;
+                    int x = (int)Math.abs(hopper.getLocation().getX()) % 16;
                     int y = (int)hopper.getLocation().getY();
-                    int z = (int)hopper.getLocation().getZ() % 16;
+                    int z = (int)Math.abs(hopper.getLocation().getZ()) % 16;
                     ChunkSnapshot snapshot = map.get(hopper);
                     boolean stillChests = true;
                     while(y >= 0 && stillChests){

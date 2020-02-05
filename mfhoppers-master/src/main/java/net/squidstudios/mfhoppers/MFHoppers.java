@@ -233,13 +233,22 @@ public class MFHoppers extends PluginBuilder {
         addListener(EntityExplodeEvent.class, EventPriority.NORMAL, event -> {
             if (DataManager.getInstance().containsHoppersChunk(event.getLocation().getChunk())) {
 
+                ArrayList<Block> removedBlocks = new ArrayList();
+
                 for (Block b : event.blockList()) {
                     if (b.getType() == Material.HOPPER) {
                         if (DataManager.getInstance().isHopper(b.getLocation())) {
+                            if(event.getEntityType().equals(EntityType.CREEPER)){
+                                removedBlocks.add(b);
+                            }
+
                             b.getLocation().getWorld().dropItem(b.getLocation(), configHoppers.get(DataManager.getInstance().getHopper(b.getLocation()).getName()).getItemOfData(DataManager.getInstance().getHopper(b.getLocation())));
                             DataManager.getInstance().remove(b.getLocation());
                         }
                     }
+                }
+                for (Block block : removedBlocks) {
+                    event.blockList().remove(block);
                 }
 
             }
