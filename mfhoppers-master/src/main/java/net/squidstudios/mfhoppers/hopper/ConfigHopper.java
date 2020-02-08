@@ -280,6 +280,14 @@ public class ConfigHopper {
         }
     }
 
+    public boolean isBreakAll() {
+        if (getData().containsKey("breakAll")) {
+            return Boolean.valueOf(getData().get("breakAll").toString());
+        } else {
+            return false;
+        }
+    }
+
     public ItemStack getItemOfData(IHopper hopper) {
 
         int level = (int) hopper.getData().get("lvl");

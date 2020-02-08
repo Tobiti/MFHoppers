@@ -65,6 +65,7 @@ Hoppers:
       - "Auto breaks blocks above it"
     breakEvery: 10
     collectDrops: true #Allowes the breakHopper to instant pickup the dropped items
+    breakAll: true
     drops:
       - "DIAMOND_ORE:10" #Specify the amount that will drop, or use for example: 1-5 so it will choose random number between them!
   "breakWithUpgrades":

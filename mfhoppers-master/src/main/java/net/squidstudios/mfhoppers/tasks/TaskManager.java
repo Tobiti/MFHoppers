@@ -361,21 +361,31 @@ public class TaskManager implements Listener {
                 Location upper = hopper.getLocation().clone().add(new Vector(0, 1, 0));
 
                 final ConfigHopper.BreakDropsElement dropElement = CONFIG_HOPPER.GetBreakDropELement(hopper, upper.getBlock().getType(), upper.getBlock().getData());
-                if (dropElement == null) continue;
+                if(!CONFIG_HOPPER.isBreakAll()){
+                    if (dropElement == null) continue;
+                }
+
+                if(dropElement == null && upper.getBlock().getType() == Material.BEDROCK){
+                    continue;
+                }
 
                 Methods.breakBlock(upper.getBlock());
                 upper.add(new Vector(0.5, 0, 0.5));
 
                 final List<ItemStack> dropItems = new LinkedList<>();
-                if (!dropElement.HasDamageValue) {
-                    upper.getBlock().getDrops(tool).forEach(it -> dropItems.add(dropElement.Drop.getItem(it.getType())));
-                } else {
-                    upper.getBlock().getDrops(tool).forEach(it -> {
+                if(dropElement != null){
+                    if (!dropElement.HasDamageValue) {
+                        upper.getBlock().getDrops(tool).forEach(it -> dropItems.add(dropElement.Drop.getItem(it.getType())));
+                    } else {
+                        upper.getBlock().getDrops(tool).forEach(it -> {
 
-                        ItemStack item = dropElement.Drop.getItem(it.getType());
-                        item.setDurability(dropElement.DamageValue);
-                        dropItems.add(item);
-                    });
+                            ItemStack item = dropElement.Drop.getItem(it.getType());
+                            item.setDurability(dropElement.DamageValue);
+                            dropItems.add(item);
+                        });
+                    }
+                }else {
+                    upper.getBlock().getDrops(tool).forEach(it -> dropItems.add(it.clone()));
                 }
 
                 if (DATA.containsKey("collectDrops") && Boolean.valueOf(DATA.get("collectDrops").toString())) {
@@ -597,9 +607,14 @@ public class TaskManager implements Listener {
                         Material material = snapshot.getBlockType(x, y, z);
                         if (material.equals(Material.CHEST) || (OVersion.isOrAfter(14) && material.equals(XMaterial.matchXMaterial("BARREL").get().parseMaterial()))){
                             Location loc = hopper.getLocation().clone().add(0, y-hopper.getLocation().getY(), 0);
-                            if(!hopper.isLinkedTo(loc)){
-                                hopper.link(loc);
-                            }
+                            new BukkitRunnable(){
+                                @Override
+                                public void run() {
+                                    if(!hopper.isLinkedTo(loc)){
+                                        hopper.link(loc);
+                                    }
+                                }
+                            }.runTask(MFHoppers.getInstance());
                         }
                         else {
                             stillChests = false;
