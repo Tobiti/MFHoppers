@@ -351,7 +351,7 @@ public class MFHoppers extends PluginBuilder {
                     return;
                 }
                 
-                if (Methods.isHopper(event.getItemInHand())) {
+                if (Methods.isHopper(event.getPlayer().getEquipment().getItemInHand())) {
                     return;
                 }
 
