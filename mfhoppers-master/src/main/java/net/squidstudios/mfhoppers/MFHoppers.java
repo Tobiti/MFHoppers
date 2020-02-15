@@ -1,6 +1,8 @@
 package net.squidstudios.mfhoppers;
 
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
+import com.bgsoftware.wildchests.api.WildChestsAPI;
+import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.google.common.collect.Sets;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import de.tr7zw.changeme.nbtapi.utils.MinecraftVersion;
@@ -467,10 +469,21 @@ public class MFHoppers extends PluginBuilder {
 
                 if(event.getSource().getHolder() instanceof Hopper)
                 {
-                    
                     Chest chest = WildChestsAPI.getChest(event.getDestination().getLocation());
-                    event.setCancelled(true);
+                    if(chest != null){
+                        event.setCancelled(true);
 
+                        //Remove right amount from chest
+                        Map<Integer, ItemStack> integerItemStackMap = chest.addItems(event.getItem());
+                        if (integerItemStackMap.isEmpty()) {
+                            event.getSource().removeItem(event.getItem());
+                        } else {
+                            ItemStack itemStack = integerItemStackMap.values().stream().findFirst().orElse(null);
+                            ItemStack removeItem = event.getItem().clone();
+                            removeItem.setAmount(event.getItem().getAmount() - itemStack.getAmount());
+                            event.getSource().removeItem(removeItem);
+                        }
+                    }
                 }
 
             });
