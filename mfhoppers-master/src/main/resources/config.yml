@@ -15,6 +15,7 @@ Hoppers:
       - "&a&l* &7Current mob: %type%"
     should_drop_from_explosions: true #This options makes that hopper drops from explosions.
     mob: PIG
+    allowNamedMobs: false
     damageType: CUSTOM #Can be any minecraft damage type
     mob-blacklist:
       - "ENDER_DRAGON"

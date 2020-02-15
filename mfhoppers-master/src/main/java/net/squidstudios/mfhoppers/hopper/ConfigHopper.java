@@ -415,4 +415,13 @@ public class ConfigHopper {
         else return getItemOfData(hopper).getItemMeta().getDisplayName();
 
     }
+
+	public boolean allowNamedMobs() {
+        if(getData().containsKey("allowNamedMobs")){
+            if(Boolean.getBoolean(getData().get("allowNamedMobs").toString())){
+                return true;
+            }
+        }
+		return false;
+	}
 }

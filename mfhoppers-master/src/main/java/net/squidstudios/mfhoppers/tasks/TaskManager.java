@@ -113,7 +113,7 @@ public class TaskManager implements Listener {
             Location MIDDLE = hopper.getLocation().clone().add(0.5, 0.7, 0.5);
             final Set<Entity> entityList = EntitiesGatherer.from(MIDDLE.getChunk()).accepts(LivingEntity.class)
                     .gather();
-            final Set<LivingEntity> LIVING_ENTITIES = Methods.getSortedEntities(entityList, BLACKLIST);
+            final Set<LivingEntity> LIVING_ENTITIES = Methods.getSortedEntities(entityList, BLACKLIST, CONFIG_HOPPER.allowNamedMobs());
             Set<LivingEntity> toAddSlowness = Sets.newHashSet();
 
             if (IS_GLOBAL) {

@@ -141,7 +141,7 @@ public enum Lang {
 
     
     public void send(Player player){
-        this.send(player);
+        this.send((Sender)player);
     }
 
     public void send(Sender sender){
