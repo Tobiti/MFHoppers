@@ -364,7 +364,7 @@ public class Methods {
                 continue;
             }
             
-            if(!allowCustomName && entity.getCustomName() == null){
+            if(!allowCustomName && entity.getCustomName() != null){
                 continue;
             }
 
