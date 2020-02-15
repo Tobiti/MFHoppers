@@ -350,6 +350,10 @@ public class MFHoppers extends PluginBuilder {
                 if (!event.getPlayer().isSneaking()) {
                     return;
                 }
+                
+                if (Methods.isHopper(event.getItemInHand())) {
+                    return;
+                }
 
                 if (DataManager.getInstance().isHopper(event.getClickedBlock().getLocation())) {
 
