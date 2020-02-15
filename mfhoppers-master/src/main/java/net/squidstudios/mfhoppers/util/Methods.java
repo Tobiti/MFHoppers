@@ -9,7 +9,6 @@ import de.tr7zw.changeme.nbtapi.NBTEntity;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import lombok.NonNull;
 import net.squidstudios.mfhoppers.MFHoppers;
-import net.squidstudios.mfhoppers.api.events.ItemsMoveToInventoryEvent;
 import net.squidstudios.mfhoppers.hopper.ConfigHopper;
 import net.squidstudios.mfhoppers.hopper.HopperEnum;
 import net.squidstudios.mfhoppers.hopper.IHopper;
@@ -157,13 +156,6 @@ public class Methods {
             e.printStackTrace();
         }
         if (inv == null) return added;
-        
-        ItemsMoveToInventoryEvent moveEvent = new ItemsMoveToInventoryEvent(items, hopper);
-        Bukkit.getPluginManager().callEvent(moveEvent);
-        if (moveEvent.isCancelled()){
-             return items.stream().mapToInt(it -> it.getAmount()).sum() - moveEvent.getItemList().stream().mapToInt(it -> it.getAmount()).sum();
-        }
-        items = moveEvent.getItemList();
 
         for (ItemStack item : items) {
             if (inv == null) return added;
@@ -353,7 +345,7 @@ public class Methods {
 
     
     public static Set<LivingEntity> getSortedEntities(Set<Entity> entityList, List<EntityType> blacklist) {
-        return getSortedEntities(entityList, blacklist, true);
+        return getSortedEntities(entityList, blacklist, false);
     }
 
     public static Set<LivingEntity> getSortedEntities(Set<Entity> entityList, List<EntityType> blacklist, boolean allowCustomName) {
@@ -363,12 +355,13 @@ public class Methods {
             if (entity == null) {
                 continue;
             }
-            
-            if(!allowCustomName && entity.getCustomName() != null){
-                continue;
-            }
 
             if (entity.getType() != EntityType.PLAYER && entity.getType() != EntityType.ARMOR_STAND && entity.getType() != EntityType.DROPPED_ITEM && entity.getType().isAlive() && (blacklist == null || !blacklist.contains(entity.getType()))) {
+            
+                if(!allowCustomName && entity.getCustomName() != null){
+                    continue;
+                }
+                //MFHoppers.getInstance().getLogger().info(String.format("Enitity Type: %s Allow Custom Name: %b CustomName: %s", entity.getType().toString(), allowCustomName, entity.getCustomName()));
                 entities.add((LivingEntity) entity);
             }
         }

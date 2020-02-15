@@ -219,7 +219,7 @@ public class TaskManager implements Listener {
 
                     final Set<Entity> savedEntityList = EntitiesGatherer.from(hopper.getLocation().getChunk())
                             .accepts(LivingEntity.class).gather();
-                    List<LivingEntity> entities = Methods.getSortedEntities(savedEntityList, BLACKLIST).stream()
+                    List<LivingEntity> entities = Methods.getSortedEntities(savedEntityList, BLACKLIST, CONFIG_HOPPER.allowNamedMobs()).stream()
                             .filter(e -> e.getLocation().distance(
                                     hopper.getLocation()) < (type.equals(EntityType.GHAST) || isGlobal ? 3 : 1))
                             .filter(e -> e.getType().equals(type) || isGlobal).collect(Collectors.toList());

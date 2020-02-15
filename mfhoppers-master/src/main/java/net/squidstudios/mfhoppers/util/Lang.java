@@ -139,11 +139,6 @@ public enum Lang {
 
     }
 
-    
-    public void send(Player player){
-        this.send((Sender)player);
-    }
-
     public void send(Sender sender){
         if(!text.stream().anyMatch(s -> s.equalsIgnoreCase(NOT_SEND))){
             StringBuilder builder = new StringBuilder();
