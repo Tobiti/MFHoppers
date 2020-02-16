@@ -1,6 +1,8 @@
 package net.squidstudios.mfhoppers;
 
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
+import com.bgsoftware.wildchests.api.WildChestsAPI;
+import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.google.common.collect.Sets;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import de.tr7zw.changeme.nbtapi.utils.MinecraftVersion;
@@ -365,7 +367,7 @@ public class MFHoppers extends PluginBuilder {
                         Map<String, Object> upgrade = CONFIG_HOPPER.getNextHopperUpgrade(HOPPER);
                         if (upgrade == null) {
                             if (event.getItem() == null || (event.getItem().getType() != Material.HOPPER && event.getItem().getType() != Material.CHEST)) {
-                                Lang.HOPPER_ALREADY_IS_MAX_LEVEL.send((Sender)event.getPlayer());
+                                Lang.HOPPER_ALREADY_IS_MAX_LEVEL.send(event.getPlayer());
                                 event.setCancelled(true);
                                 return;
                             }
@@ -409,19 +411,19 @@ public class MFHoppers extends PluginBuilder {
                         if (Methods.getLinkedHopper(event.getClickedBlock().getLocation()) != null) {
 
                             if (!cnf.getBoolean("allowMultipleHoppersToLinkOneContainer")) {
-                                Lang.CONTAINER_IS_ALREADY_LINKED.send((Sender)event.getPlayer());
+                                Lang.CONTAINER_IS_ALREADY_LINKED.send(event.getPlayer());
                                 event.getPlayer().removeMetadata("link", this);
                                 return;
                             }
 
                         }
 
-                        Lang.HOPPER_LINK_SUCCESSFULLY_LINKED.send((Sender)event.getPlayer());
+                        Lang.HOPPER_LINK_SUCCESSFULLY_LINKED.send(event.getPlayer());
                         DataManager.getInstance().link(hopperLocation, event.getClickedBlock().getLocation());
                         event.getPlayer().removeMetadata("link", this);
 
                     } else {
-                        Lang.HOPPER_LINK_CLICKED_BLOCK_IS_NOT_CONTAINER.send((Sender)event.getPlayer());
+                        Lang.HOPPER_LINK_CLICKED_BLOCK_IS_NOT_CONTAINER.send(event.getPlayer());
                     }
                 }
 
@@ -467,10 +469,19 @@ public class MFHoppers extends PluginBuilder {
 
                 if(event.getSource().getHolder() instanceof Hopper)
                 {
-                    
                     Chest chest = WildChestsAPI.getChest(event.getDestination().getLocation());
+                    if(chest != null){
+                        Map<Integer, ItemStack> integerItemStackMap = chest.addItems(event.getItem());
+                        if (integerItemStackMap.isEmpty()) {
+                            event.getSource().removeItem(event.getItem());
+                        } else {
+                            ItemStack itemStack = integerItemStackMap.values().stream().findFirst().orElse(null);
+                            ItemStack removeItem = event.getItem().clone();
+                            removeItem.setAmount(event.getItem().getAmount() - itemStack.getAmount());
+                            event.getSource().removeItem(removeItem);
+                        }
+                    }
                     event.setCancelled(true);
-
                 }
 
             });
@@ -668,7 +679,7 @@ public class MFHoppers extends PluginBuilder {
                                 player.getInventory().setItem(player.getInventory().firstEmpty(), item);
                             } else {
                                 Methods.drop(item, player.getLocation());
-                                Lang.HOPPER_GIVE_INVENTORY_FULL.send((Sender)player);
+                                Lang.HOPPER_GIVE_INVENTORY_FULL.send(player);
                             }
 
                             Lang.HOPPER_GIVE.send(new MapBuilder().add("%type%", hopper.getType()).add("%amount%", amount).add("%displayName%", item.getItemMeta().getDisplayName()).add("%name%", hopperName).getMap(), player);
@@ -722,12 +733,12 @@ public class MFHoppers extends PluginBuilder {
 
                     if ((owner != null && owner.contentEquals(player.getName())) || command.getSender().getPlayer().hasPermission("mfh.adminlinkhopper")) {
                         player.setMetadata("link", new FixedMetadataValue(this, Methods.toString(b.getLocation())));
-                        Lang.HOPPER_LINK_NOW_SELECT_CONTAINER.send((Sender)player);
+                        Lang.HOPPER_LINK_NOW_SELECT_CONTAINER.send(player);
                     } else {
-                        Lang.HOPPER_LINK_NOT_OWNER.send((Sender)player);
+                        Lang.HOPPER_LINK_NOT_OWNER.send(player);
                     }
                 } else {
-                    Lang.HOPPER_LINK_MAKE_SURE_TO_LOOK_AT_HOPPER.send((Sender)player);
+                    Lang.HOPPER_LINK_MAKE_SURE_TO_LOOK_AT_HOPPER.send(player);
                 }
             }
 
@@ -740,7 +751,7 @@ public class MFHoppers extends PluginBuilder {
                 Player player = command.getSender().getPlayer();
 
                 if (!player.hasPermission("mfh.convert")) {
-                    Lang.NO_PERMISSION.send((Sender)player);
+                    Lang.NO_PERMISSION.send(player);
                     return;
                 }
 
@@ -757,20 +768,20 @@ public class MFHoppers extends PluginBuilder {
                 final int amount = handClone.getAmount();
 
                 if (hand == null || hand.getType() == Material.AIR || hand.getType() != Material.HOPPER) {
-                    Lang.HOPPER_CONVERT_MUST_HOLD.send((Sender)player);
+                    Lang.HOPPER_CONVERT_MUST_HOLD.send(player);
                     return;
                 }
 
                 NBTItem nbt = new NBTItem(hand);
                 if (nbt.hasKey("lvl") && nbt.hasKey("type")) {
                     if (!nbt.getString("type").equalsIgnoreCase("Grind")) {
-                        Lang.HOPPER_CONVERT_CAN_ONLY_CONVERT_GRIND_OR_DEFAULT.send((Sender)player);
+                        Lang.HOPPER_CONVERT_CAN_ONLY_CONVERT_GRIND_OR_DEFAULT.send(player);
                         return;
                     }
 
                     boolean isGlobal = Boolean.valueOf(nbt.getString("isGlobal"));
                     if (isGlobal) {
-                        Lang.HOPPER_CONVERT_CANT_CONVERT_GLOBAL.send((Sender)player);
+                        Lang.HOPPER_CONVERT_CANT_CONVERT_GLOBAL.send(player);
                         return;
                     }
 
@@ -795,7 +806,7 @@ public class MFHoppers extends PluginBuilder {
 
                     int level = Integer.valueOf(nbt.getString("lvl"));
                     if (level != 1 && !allowConvertUpgradedHoppers) {
-                        Lang.HOPPER_CONVERT_CANT_CONVERT_UPGRADED_HOPPERS.send((Sender)player);
+                        Lang.HOPPER_CONVERT_CANT_CONVERT_UPGRADED_HOPPERS.send(player);
                         return;
                     }
                     for (EntityType type : Arrays.stream(EntityType.values()).filter(e -> e.isAlive() && !BLACKLIST1.contains(e) && !BLACKLIST2.contains(e) && e != currentType).collect(toList())) {
@@ -911,7 +922,7 @@ public class MFHoppers extends PluginBuilder {
                     builder.setForward(new ItemBuilder(Material.ARROW).setName("&b>>").buildItem());
 
                     if (convertHoppers.keySet().stream().filter(it -> configHoppers.containsKey(it)).collect(toList()).isEmpty()) {
-                        Lang.CONVERT_HOPPER_CANNOT_FIND_ANY_CONVERT_HOPPERS.send((Sender)player);
+                        Lang.CONVERT_HOPPER_CANNOT_FIND_ANY_CONVERT_HOPPERS.send(player);
                         return;
                     }
 

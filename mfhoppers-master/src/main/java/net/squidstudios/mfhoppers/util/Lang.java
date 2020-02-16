@@ -151,4 +151,17 @@ public enum Lang {
             sender.sendMessage(builder.toString());
         }
     }
+
+    public void send(Player player){
+        if(!text.stream().anyMatch(s -> s.equalsIgnoreCase(NOT_SEND))){
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < this.text.size(); i++) {
+                builder.append(ChatColor.translateAlternateColorCodes('&', this.text.get(i)));
+                if(i < this.text.size() - 1){
+                    builder.append("\n");
+                }
+            }
+            player.sendMessage(builder.toString());
+        }
+    }
 }
