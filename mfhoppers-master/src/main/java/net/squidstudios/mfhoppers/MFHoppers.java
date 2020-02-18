@@ -354,8 +354,15 @@ public class MFHoppers extends PluginBuilder {
                     return;
                 }
                 
-                if (Methods.isHopper(event.getPlayer().getEquipment().getItemInHand())) {
-                    return;
+                if(OVersion.isBefore(14)){
+                    if (Methods.isHopper(event.getPlayer().getEquipment().getItemInHand())) {
+                        return;
+                    }
+                }
+                else {
+                    if (Methods.isHopper(event.getPlayer().getEquipment().getItemInMainHand())) {
+                        return;
+                    }
                 }
 
                 if (DataManager.getInstance().isHopper(event.getClickedBlock().getLocation())) {
@@ -472,6 +479,16 @@ public class MFHoppers extends PluginBuilder {
                     Chest chest = WildChestsAPI.getChest(event.getDestination().getLocation());
                     if(chest != null){
                         Map<Integer, ItemStack> integerItemStackMap = chest.addItems(event.getItem());
+
+                        //Debug
+                        /*MFHoppers.getInstance().getLogger().info(String.format("InventoryMoveItemEvent Add to WildChest: (%s, %f, %f, %f)", chest.getLocation().getWorld().getName(), chest.getLocation().getX(), chest.getLocation().getY(), chest.getLocation().getZ()));
+                        MFHoppers.getInstance().getLogger().info("\tSent  Items:");
+                        MFHoppers.getInstance().getLogger().info(String.format("\t\t -%s %d", event.getItem().getType().toString(), event.getItem().getAmount()));
+                        MFHoppers.getInstance().getLogger().info("\tNot added Items:");
+                        for (ItemStack itemStack : integerItemStackMap.values()) {
+                            MFHoppers.getInstance().getLogger().info(String.format("\t\t -%s %d", itemStack.getType().toString(), itemStack.getAmount()));
+                        }*/
+                        
                         if (integerItemStackMap.isEmpty()) {
                             event.getSource().removeItem(event.getItem());
                         } else {
@@ -480,8 +497,8 @@ public class MFHoppers extends PluginBuilder {
                             removeItem.setAmount(event.getItem().getAmount() - itemStack.getAmount());
                             event.getSource().removeItem(removeItem);
                         }
+                        event.setCancelled(true);
                     }
-                    event.setCancelled(true);
                 }
 
             });
