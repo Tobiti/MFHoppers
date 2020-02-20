@@ -168,6 +168,17 @@ public class Methods {
                         Chest chest = WildChestsAPI.getChest(MContainer.getLocation(destination.getHolder()));
                         if(chest != null){
                             Map<Integer, ItemStack> integerItemStackMap = chest.addItems(item);
+                            //Debug
+                            /*MFHoppers.getInstance().getLogger().info(String.format("Add to WildChest: (%s, %f, %f, %f)", chest.getLocation().getWorld().getName(), chest.getLocation().getX(), chest.getLocation().getY(), chest.getLocation().getZ()));
+                            MFHoppers.getInstance().getLogger().info("\tSended Items:");
+                            for (ItemStack itemStack : items) {
+                                MFHoppers.getInstance().getLogger().info(String.format("\t\t -%s %d", itemStack.getType().toString(), itemStack.getAmount()));
+                            }
+                            MFHoppers.getInstance().getLogger().info("\tNot added Items:");
+                            for (ItemStack itemStack : integerItemStackMap.values()) {
+                                MFHoppers.getInstance().getLogger().info(String.format("\t\t -%s %d", itemStack.getType().toString(), itemStack.getAmount()));
+                            }*/
+                            
                             if (integerItemStackMap.isEmpty()) {
                                 added += item.getAmount();
                                 itemWasAdded = true;
@@ -249,6 +260,9 @@ public class Methods {
     }
 
     public static boolean isHopper(ItemStack item) {
+        if(item == null){
+            return false;
+        }
         NBTItem nbt = new NBTItem(item);
 
         if (nbt.hasKey("lvl") && nbt.hasKey("type")) {
@@ -792,7 +806,12 @@ public class Methods {
         int chunkZ2 = chunkZ + serverViewDistance;
 
         World world = location.getWorld();
-        List<Player> players = new ArrayList<>(world.getPlayers());
+        List<Player> players = new ArrayList<>();
+        try{
+            for (Player player : world.getPlayers()) {
+                players.add(player);
+            }
+        } catch (ConcurrentModificationException ignored){}
 
         try{
             for (Player p : players) {
