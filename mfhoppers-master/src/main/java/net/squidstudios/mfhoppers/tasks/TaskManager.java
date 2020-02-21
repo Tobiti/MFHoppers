@@ -137,7 +137,7 @@ public class TaskManager implements Listener {
                 for (LivingEntity entity : LIVING_ENTITIES) {
                     NBTEntity nbt = new NBTEntity(entity);
                     if ((nbt.getByte("NoAI") == 1 && entity.getType() != EntityType.ENDERMAN)
-                            && hopper.getLocation().distance(entity.getLocation()) < 3) {
+                            && hopper.getLocation().distance(entity.getLocation()) < (entity.getType().equals(EntityType.GHAST) ? 3 : 2)) {
                         continue;
                     }
 
@@ -221,7 +221,7 @@ public class TaskManager implements Listener {
                             .accepts(LivingEntity.class).gather();
                     List<LivingEntity> entities = Methods.getSortedEntities(savedEntityList, BLACKLIST, CONFIG_HOPPER.allowNamedMobs()).stream()
                             .filter(e -> e.getLocation().distance(
-                                    hopper.getLocation()) < (type.equals(EntityType.GHAST) || isGlobal ? 3 : 1))
+                                    hopper.getLocation()) < (type.equals(EntityType.GHAST) || isGlobal ? 3 : 2))
                             .filter(e -> e.getType().equals(type) || isGlobal).collect(Collectors.toList());
 
                     for (LivingEntity ent : entities) {
@@ -343,6 +343,10 @@ public class TaskManager implements Listener {
         ItemStack tool = new ItemStack(Material.DIAMOND_PICKAXE);
 
         for (IHopper hopper : hoppers) {
+            if(hopper == null){
+                continue;
+            }
+
             if (!hopper.isChunkLoaded()) {
                 continue;
             }
@@ -350,8 +354,12 @@ public class TaskManager implements Listener {
             ConfigHopper CONFIG_HOPPER = pl.configHoppers.get(hopper.getName());
             Map<String, Object> DATA = CONFIG_HOPPER.getDataOfHopper(hopper);
 
+            if(DATA == null) {
+                continue;
+            }
+
             int time = 0;
-            if (hopper.getData().get("time") == null) {
+            if (hopper.getData() == null || hopper.getData().get("time") == null) {
                 time = (int) DATA.get("breakEvery");
             } else {
                 time = (int) hopper.getData().get("time");
