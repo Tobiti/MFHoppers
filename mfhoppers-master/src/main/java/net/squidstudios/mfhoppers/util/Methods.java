@@ -3,6 +3,8 @@ package net.squidstudios.mfhoppers.util;
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
 import com.bgsoftware.wildchests.api.WildChestsAPI;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
+import com.bgsoftware.wildstacker.api.WildStackerAPI;
+import com.bgsoftware.wildstacker.api.objects.StackedEntity;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import de.tr7zw.changeme.nbtapi.NBTEntity;
@@ -376,9 +378,17 @@ public class Methods {
             if (entity.getType() != EntityType.PLAYER && entity.getType() != EntityType.ARMOR_STAND && entity.getType() != EntityType.DROPPED_ITEM && entity.getType().isAlive() && (blacklist == null || !blacklist.contains(entity.getType()))) {
             
                 if(!allowCustomName && entity.getCustomName() != null){
-                    continue;
+                    if (Bukkit.getPluginManager().isPluginEnabled("WildStacker")){
+                        StackedEntity stackedEntity = WildStackerAPI.getStackedEntity((LivingEntity) entity);
+                        if(stackedEntity == null || stackedEntity.hasNameTag()){
+                                continue;
+                        }
+                    }
+                    else {
+                        continue;
+                    }
                 }
-                //MFHoppers.getInstance().getLogger().info(String.format("Enitity Type: %s Allow Custom Name: %b CustomName: %s", entity.getType().toString(), allowCustomName, entity.getCustomName()));
+                
                 entities.add((LivingEntity) entity);
             }
         }

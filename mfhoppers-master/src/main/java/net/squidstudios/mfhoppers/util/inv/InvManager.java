@@ -13,6 +13,8 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import net.squidstudios.mfhoppers.util.OVersion;
+
 import static org.bukkit.Bukkit.getServer;
 
 public class InvManager implements Listener {
@@ -41,7 +43,7 @@ public class InvManager implements Listener {
                         event.getWhoClicked().closeInventory();
                         Inventory inv = builder.getBackInv(event.getClickedInventory());
                         if (inv != null) {
-                            event.getWhoClicked().openInventory(View.from((Player) event.getWhoClicked(), inv));
+                            event.getWhoClicked().openInventory(inv);
                         } else {
                             event.getWhoClicked().sendMessage(ChatColor.translateAlternateColorCodes('&', "&cERROR! Contact staff now!"));
                         }
@@ -54,7 +56,7 @@ public class InvManager implements Listener {
                         event.getWhoClicked().closeInventory();
                         Inventory inv = builder.getForwardInv(event.getClickedInventory());
                         if (inv != null) {
-                            event.getWhoClicked().openInventory(View.from((Player) event.getWhoClicked(), inv));
+                            event.getWhoClicked().openInventory(inv);
                         } else {
                             event.getWhoClicked().sendMessage(ChatColor.translateAlternateColorCodes('&', "&cERROR! Contact staff now!"));
                         }
