@@ -83,7 +83,11 @@ public class Methods {
             if (moveItem.getAmount() <= 0) {
                 break;
             }
-            if (hopper.getLocation().getBlock().getType() == Material.AIR) {
+            try{
+                if (hopper.getLocation().getBlock().getType() == Material.AIR) {
+                    continue;
+                }
+            } catch(IllegalStateException ignore){
                 continue;
             }
 

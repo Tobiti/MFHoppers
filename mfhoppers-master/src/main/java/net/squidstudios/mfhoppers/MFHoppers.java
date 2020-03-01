@@ -4,6 +4,8 @@ import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
 import com.bgsoftware.wildchests.api.WildChestsAPI;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.google.common.collect.Sets;
+
+import de.tr7zw.changeme.nbtapi.NBTEntity;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import de.tr7zw.changeme.nbtapi.utils.MinecraftVersion;
 import net.milkbowl.vault.economy.Economy;
@@ -207,6 +209,10 @@ public class MFHoppers extends PluginBuilder {
 
             if (event.getEntityType() == EntityType.DROPPED_ITEM) {
                 Item item = event.getEntity();
+                if(new NBTEntity(event.getEntity()).hasKey("PROCOSMETICS_ITEM")){
+                    return;
+                }
+
                 ItemStack itemStack = Objects.requireNonNull(item.getItemStack(), "ItemStack cannot be null!");
 
                 Collection<IHopper> hoppers = Sets.newHashSet();

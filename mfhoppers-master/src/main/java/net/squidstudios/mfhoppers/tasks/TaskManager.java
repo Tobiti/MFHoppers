@@ -513,7 +513,7 @@ public class TaskManager implements Listener {
             for (IHopper hopper : chunkHoppers) {
                 Methods.addItem(
                         entityList
-                                .stream()
+                                .stream().filter(entity -> !(new NBTEntity(entity).hasKey("PROCOSMETICS_ITEM")))
                                 .filter(item -> {
                                     ItemStack itemStack = ((Item) item).getItemStack();
                                     return hopper.ContainsInFilterMaterialList(itemStack.getType(), itemStack.getDurability());
