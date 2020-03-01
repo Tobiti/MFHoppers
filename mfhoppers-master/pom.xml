@@ -75,7 +75,7 @@
         <dependency>
             <groupId>com.github.OmerBenGera</groupId>
             <artifactId>SuperiorSkyblockAPI</artifactId>
-            <version>b9</version>
+            <version>b11</version>
         </dependency>
 
         <dependency>

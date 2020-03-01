@@ -1086,12 +1086,16 @@ public class MFHoppers extends PluginBuilder {
             Lang.PLACE.send(new MapBuilder().add("%type%", nbt.getString("type")).add("%lvl%", nbt.getString("lvl")).add("%name%", nbt.getString("name0")).add("%displayName%", event.getItemInHand().getItemMeta().getDisplayName()).getMap(), event.getPlayer());
 
         } else {
-            
-            Methods.breakBlock(event.getBlock());
-            if (nbt.getString("type").equalsIgnoreCase(HopperEnum.Grind.toString())) {
-                event.getPlayer().getInventory().addItem(configHoppers.get(nbt.getString("name0")).buildItemByLevel(Integer.valueOf(nbt.getString("lvl")), EntityType.valueOf(nbt.getString("ent")), Boolean.valueOf(nbt.getString("isAuto")), Boolean.valueOf(nbt.getString("isGlobal"))));
-            } else {
-                event.getPlayer().getInventory().addItem(configHoppers.get(nbt.getString("name0")).buildItemByLevel(Integer.valueOf(nbt.getString("lvl"))));
+            if(OVersion.isOrAfter(15)){
+                event.setCancelled(true);
+            }
+            else {
+                Methods.breakBlock(event.getBlock());
+                if (nbt.getString("type").equalsIgnoreCase(HopperEnum.Grind.toString())) {
+                    event.getPlayer().getInventory().addItem(configHoppers.get(nbt.getString("name0")).buildItemByLevel(Integer.valueOf(nbt.getString("lvl")), EntityType.valueOf(nbt.getString("ent")), Boolean.valueOf(nbt.getString("isAuto")), Boolean.valueOf(nbt.getString("isGlobal"))));
+                } else {
+                    event.getPlayer().getInventory().addItem(configHoppers.get(nbt.getString("name0")).buildItemByLevel(Integer.valueOf(nbt.getString("lvl"))));
+                }
             }
         }
     }
