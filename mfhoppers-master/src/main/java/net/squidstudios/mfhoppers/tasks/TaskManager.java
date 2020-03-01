@@ -527,7 +527,7 @@ public class TaskManager implements Listener {
     }
 
     public void runSellTask() {
-        Set<IHopper> hoppers = DataManager.getInstance().getHoppersSet(hopper -> hopper != null && hopper.getConfigHopper() != null && hopper.getConfigHopper().getDataOfHopper(hopper).get("sellEvery") != null && hopper.getConfigHopper().getDataOfHopper(hopper).get("sellAmount") != null);
+        Set<IHopper> hoppers = DataManager.getInstance().getHoppersSet(hopper -> hopper != null && hopper.getConfigHopper() != null && hopper.getConfigHopper().getDataOfHopper(hopper) != null && hopper.getConfigHopper().getDataOfHopper(hopper).get("sellEvery") != null && hopper.getConfigHopper().getDataOfHopper(hopper).get("sellAmount") != null);
 
         for (IHopper hopper : hoppers) {
             if (!hopper.isChunkLoaded()) continue;

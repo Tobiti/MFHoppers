@@ -70,6 +70,6 @@ public class BreakHopper extends IHopper {
     @Override
     public boolean isActive() {
         Location upper = getLocation().clone().add(new Vector(0, 1, 0));
-        return !Methods.materialEqualsTo(upper, Material.AIR);
+        return super.isActive() && !Methods.materialEqualsTo(upper, Material.AIR);
     }
 }

@@ -10,13 +10,10 @@ import net.squidstudios.mfhoppers.util.XMaterial;
 import net.squidstudios.mfhoppers.util.plugin.Tasks;
 import org.bukkit.*;
 import org.bukkit.block.Chest;
-import org.bukkit.block.Hopper;
-import org.bukkit.entity.Player;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.permissions.ServerOperator;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.PreparedStatement;
@@ -297,6 +294,9 @@ public abstract class IHopper {
     }
 
     public boolean isActive() {
+        if(getConfigHopper().onlyActiveWhenOwnerOnline()){
+            return getOwner() != null && Bukkit.getServer().getOnlinePlayers().stream().anyMatch(player -> player.getName().equals(getOwner()));
+        }
         return true;
     }
 

@@ -279,6 +279,14 @@ public class ConfigHopper {
             return false;
         }
     }
+    
+    public boolean onlyActiveWhenOwnerOnline() {
+        if (getData().containsKey("onlyActiveWhenOwnerIsOnline")) {
+            return Boolean.valueOf(getData().get("onlyActiveWhenOwnerIsOnline").toString());
+        } else {
+            return false;
+        }
+    }
 
     public boolean isBreakAll() {
         if (getData().containsKey("breakAll")) {

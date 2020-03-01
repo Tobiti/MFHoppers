@@ -74,6 +74,6 @@ public class GrindHopper extends IHopper {
 
     @Override
     public boolean isActive() {
-        return Methods.materialEqualsTo(this.getLocation().clone().add(0, 1, 0), Material.AIR, 2);
+        return super.isActive() && Methods.materialEqualsTo(this.getLocation().clone().add(0, 1, 0), Material.AIR, 2);
     }
 }
