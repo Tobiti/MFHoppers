@@ -265,6 +265,9 @@ public class Methods {
         if(item == null){
             return false;
         }
+        if(item.getType() != XMaterial.HOPPER.parseMaterial()){
+            return false;
+        }
         NBTItem nbt = new NBTItem(item);
 
         if (nbt.hasKey("lvl") && nbt.hasKey("type")) {

@@ -99,7 +99,7 @@ public enum MContainer {
     public static MContainer getFromHolder(InventoryHolder holder) {
 
         try {
-            if (MinecraftVersion.getVersion().getVersionId() >= MinecraftVersion.MC1_9_R1.getVersionId()) {
+            if (OVersion.isOrAfter(12)) {
                 if (!(holder instanceof Container)) return null;
                 return getOfLocation(((Container) holder).getLocation());
             } else {
