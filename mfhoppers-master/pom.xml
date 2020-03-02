@@ -186,6 +186,14 @@
         </dependency>
 
         <dependency>
+            <groupId>local.libaries</groupId>
+            <artifactId>BlockGenerator</artifactId>
+            <version>0.9</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../Libraries/BlockGenerator-0.9.jar</systemPath>
+        </dependency>
+
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.6</version>

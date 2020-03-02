@@ -3,6 +3,8 @@ package net.squidstudios.mfhoppers.tasks;
 import com.bgsoftware.wildstacker.api.WildStackerAPI;
 import com.bgsoftware.wildstacker.api.objects.StackedEntity;
 import com.google.common.collect.Sets;
+import com.manateaentertainment.blockgenerator.BlockGenerator;
+import com.manateaentertainment.blockgenerator.data.Generator;
 
 import de.Linus122.DropEdit.DropContainer;
 import de.Linus122.DropEdit.Main;
@@ -376,8 +378,24 @@ public class TaskManager implements Listener {
                 if(dropElement == null && upper.getBlock().getType() == Material.BEDROCK){
                     continue;
                 }
+                if(Bukkit.getPluginManager().isPluginEnabled("BlockGenerator")){
+                    if(BlockGenerator.getInstance().GeneratorManager.IsGenerator(upper.getBlock())){
+                        Generator gen = BlockGenerator.getInstance().GeneratorManager.GetGenerator(upper.getBlock().getLocation());
+                        if(gen != null && gen.GetAmount() > 0){
+                            gen.AddAmount(-1);
+                        }else {
+                            continue;
+                        }
+                    }
+                    else {
+                        Methods.breakBlock(upper.getBlock());
+                    }
+                }
+                else {
+                    Methods.breakBlock(upper.getBlock());
+                }
+                
 
-                Methods.breakBlock(upper.getBlock());
                 upper.add(new Vector(0.5, 0, 0.5));
 
                 final List<ItemStack> dropItems = new LinkedList<>();
@@ -508,19 +526,24 @@ public class TaskManager implements Listener {
             final Set<Entity> entityList = EntitiesGatherer.from(chunk).accepts(Item.class).gather();
             final List<IHopper> chunkHoppers = hoppers.get(chunk);
 
-            for (IHopper hopper : chunkHoppers) {
-                Methods.addItem(
-                        entityList
-                                .stream().filter(entity -> !(new NBTEntity(entity).hasKey("PROCOSMETICS_ITEM")))
-                                .filter(item -> {
-                                    ItemStack itemStack = ((Item) item).getItemStack();
-                                    return hopper.ContainsInFilterMaterialList(itemStack.getType(), itemStack.getDurability());
-                                })
-                                .map(item -> MoveItem.getFrom((Item) item))
-                                .collect(Collectors.toSet()),
-                        hopper
-                );
-            }
+            Methods.forceSync(new Runnable(){
+                @Override
+                public void run() {
+                    for (IHopper hopper : chunkHoppers) {
+                        Methods.addItem(
+                                entityList
+                                        .stream().filter(entity -> !(new NBTEntity(entity).hasKey("PROCOSMETICS_ITEM")))
+                                        .filter(item -> {
+                                            ItemStack itemStack = ((Item) item).getItemStack();
+                                            return hopper.ContainsInFilterMaterialList(itemStack.getType(), itemStack.getDurability());
+                                        })
+                                        .map(item -> MoveItem.getFrom((Item) item))
+                                        .collect(Collectors.toSet()),
+                                hopper
+                        );
+                    }
+                }
+            });
         }
     }
 
