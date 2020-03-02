@@ -397,11 +397,9 @@ public class TaskManager implements Listener {
                 }
 
                 if (DATA.containsKey("collectDrops") && Boolean.valueOf(DATA.get("collectDrops").toString())) {
-                    for (ItemStack item : dropItems) {
-                        int amount = item.getAmount();
-                        int added = Methods.addItem2(Arrays.asList(item), hopper);
-                        item.setAmount(amount - added);
-                    }
+                    List<ItemStack> tempDropItems = Methods.addItem2(dropItems, hopper);
+                    dropItems.clear();
+                    dropItems.addAll(tempDropItems);
                 }
 
                 if (dropItems.stream().filter(it -> it.getAmount() > 0).collect(Collectors.toList()).size() > 0) {

@@ -1,6 +1,7 @@
 package net.squidstudios.mfhoppers.util;
 
 import com.bgsoftware.superiorskyblock.api.SuperiorSkyblockAPI;
+import com.bgsoftware.superiorskyblock.api.island.Island;
 import com.bgsoftware.wildchests.api.WildChestsAPI;
 import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildstacker.api.WildStackerAPI;
@@ -37,6 +38,8 @@ import java.io.StringReader;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class Methods {
 
@@ -99,10 +102,13 @@ public class Methods {
                     && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName())
                 continue;
 
-            int amount = moveItem.getAmount();
-            int added = addItem2(moveItem.getItems(), hopper);
-
-            moveItem.setAmount(amount - added);
+            List<ItemStack> leftItems = addItem2(moveItem.getItems(), hopper);
+            if(leftItems.size() == 0){
+                moveItem.setAmount(0);
+            }
+            else {
+                moveItem.setAmount(leftItems.stream().mapToInt(item -> item.getAmount()).sum());
+            }
         }
 
         return items;
@@ -123,10 +129,13 @@ public class Methods {
                         && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName())
                     continue;
 
-                int amount = moveItem.getAmount();
-                int added = addItem2(moveItem.getItems(), hopper);
-
-                moveItem.setAmount(amount - added);
+                List<ItemStack> leftItems = addItem2(moveItem.getItems(), hopper);
+                if(leftItems.size() == 0){
+                    moveItem.setAmount(0);
+                }
+                else {
+                    moveItem.setAmount(leftItems.stream().mapToInt(item -> item.getAmount()).sum());
+                }
             }
         }
 
@@ -153,96 +162,57 @@ public class Methods {
         return inventories;
     }
 
-    public static int addItem2(List<ItemStack> items, IHopper hopper) {
-        int added = 0;
+    public static List<ItemStack> addItem2(List<ItemStack> items, IHopper hopper) {
+        List<ItemStack> tempItems = items.stream().collect(Collectors.toList());
         Inventory inv = null;
         try {
             inv = hopper.getInventory().get();
         } catch (InterruptedException | ExecutionException e) {
             e.printStackTrace();
         }
-        if (inv == null) return added;
+        if (inv == null) return tempItems;
 
-        for (ItemStack item : items) {
-            if (inv == null) return added;
+        ItemStack[] itemArray = new ItemStack[0];
 
-            if (hopper.isLinked()) {
-                boolean itemWasAdded = false;
-                for (Inventory destination : Methods.GetLinkedInventorys(hopper)) {
-                    if(Bukkit.getPluginManager().isPluginEnabled("WildChests")){
-                        int startAmount = item.getAmount();
-                        Chest chest = WildChestsAPI.getChest(MContainer.getLocation(destination.getHolder()));
-                        if(chest != null){
-                            Map<Integer, ItemStack> integerItemStackMap = chest.addItems(item);
-                            //Debug
-                            /*MFHoppers.getInstance().getLogger().info(String.format("Add to WildChest: (%s, %f, %f, %f)", chest.getLocation().getWorld().getName(), chest.getLocation().getX(), chest.getLocation().getY(), chest.getLocation().getZ()));
-                            MFHoppers.getInstance().getLogger().info("\tSended Items:");
-                            for (ItemStack itemStack : items) {
-                                MFHoppers.getInstance().getLogger().info(String.format("\t\t -%s %d", itemStack.getType().toString(), itemStack.getAmount()));
-                            }
-                            MFHoppers.getInstance().getLogger().info("\tNot added Items:");
-                            for (ItemStack itemStack : integerItemStackMap.values()) {
-                                MFHoppers.getInstance().getLogger().info(String.format("\t\t -%s %d", itemStack.getType().toString(), itemStack.getAmount()));
-                            }*/
-                            
-                            if (integerItemStackMap.isEmpty()) {
-                                added += item.getAmount();
-                                itemWasAdded = true;
-                                break;
-                            } else {
-                                ItemStack itemStack = integerItemStackMap.values().stream().findFirst().orElse(null);
-                                int minus = itemStack != null ? itemStack.getAmount() : 0;
-                                added += startAmount - minus;                                
-                                item.setAmount(minus);
-                            }
-                        }
-                        else {
-                            if (Methods.canFit(item, item.getAmount(), destination)) {
-                                added += item.getAmount();
-                                destination.addItem(item);
-                                itemWasAdded = true;
-                                break;
-                            }
+        if (hopper.isLinked()) {
+            for (Inventory destination : Methods.GetLinkedInventorys(hopper)) {
+                if(Bukkit.getPluginManager().isPluginEnabled("WildChests")){
+                    Chest chest = WildChestsAPI.getChest(MContainer.getLocation(destination.getHolder()));
+                    if(chest != null){
+                        Map<Integer, ItemStack> integerItemStackMap = chest.addItems(tempItems.toArray(itemArray));
+                        if (integerItemStackMap.isEmpty()) {
+                            return new ArrayList<>();
+                        } else {
+                            tempItems = integerItemStackMap.values().stream().collect(Collectors.toList());
                         }
                     }
                     else {
-                        if (Methods.canFit(item, item.getAmount(), destination)) {
-                            added += item.getAmount();
-                            destination.addItem(item);
-                            itemWasAdded = true;
-                            break;
+                        Map<Integer, ItemStack> integerItemStackMap = destination.addItem(tempItems.toArray(itemArray));
+                        if (integerItemStackMap.isEmpty()) {
+                            return new ArrayList<>();
+                        } else {
+                            tempItems = integerItemStackMap.values().stream().collect(Collectors.toList());
                         }
                     }
                 }
-                if (itemWasAdded) {
-                    continue;
+                else {
+                    Map<Integer, ItemStack> integerItemStackMap = destination.addItem(tempItems.toArray(itemArray));
+                    if (integerItemStackMap.isEmpty()) {
+                        return new ArrayList<>();
+                    } else {
+                        tempItems = integerItemStackMap.values().stream().collect(Collectors.toList());
+                    }
                 }
             }
-
-            final Inventory finalHopperInventory = inv;
-            if (finalHopperInventory.firstEmpty() != -1) {
-                added += item.getAmount();
-                finalHopperInventory.addItem(item);
-                continue;
-            }
-
-            if (!canFit(item, item.getAmount(), inv)) return added;
-            HashMap left = inv.addItem(item);
-            if (!left.isEmpty()) {
-
-                int a = item.getAmount() - (Integer) left.keySet().toArray()[0];
-
-                if (item.getAmount() != (Integer) left.keySet().toArray()[0]) {
-                    added += a;
-                }
-
-                item.setAmount(a);
-            } else {
-                added += item.getAmount();
-            }
-
         }
-        return added;
+        Map<Integer, ItemStack> integerItemStackMap = inv.addItem(tempItems.toArray(itemArray));
+        if (integerItemStackMap.isEmpty()) {
+            return new ArrayList<>();
+        } else {
+            tempItems = integerItemStackMap.values().stream().collect(Collectors.toList());
+        }
+
+        return tempItems;
     }
 
 
@@ -553,7 +523,10 @@ public class Methods {
                 block.setType(Material.AIR, true);
                 
                 if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")) {
-                    SuperiorSkyblockAPI.getIslandAt(block.getLocation()).handleBlockBreak(block);
+                    Island island = SuperiorSkyblockAPI.getIslandAt(block.getLocation());
+                    if(island != null){
+                        island.handleBlockBreak(block);
+                    }
                 }
             }
         }.runTask(plugin);
