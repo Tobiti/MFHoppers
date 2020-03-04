@@ -100,6 +100,10 @@ public abstract class IHopper {
         return (int) data.get("lvl");
     }
 
+    public void setLevel(int level){
+        data.replace("lvl", level);
+    }
+
     public CompletableFuture<Inventory> getInventory() {
         if (cached_inventory != null) {
             OFuture<Inventory> future = new OFuture<>();

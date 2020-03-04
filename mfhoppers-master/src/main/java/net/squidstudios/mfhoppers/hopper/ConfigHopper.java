@@ -191,7 +191,7 @@ public class ConfigHopper {
     }
 
     public Map<String, Object> getDataOfHopper(IHopper hopper) {
-        int upgradeLevel = (int) hopper.getData().get("lvl");
+        int upgradeLevel = hopper.getLevel();
         return upgrades.get(upgradeLevel).getToUpgrade();
     }
 
