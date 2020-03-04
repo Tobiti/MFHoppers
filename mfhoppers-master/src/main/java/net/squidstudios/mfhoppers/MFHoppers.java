@@ -588,9 +588,9 @@ public class MFHoppers extends PluginBuilder {
                         while(!hopper.getConfigHopper().getUpgrades().containsKey(hopper.getLevel())){
                             hopper.setLevel(hopper.getLevel() - 1);
                         }
-
                     }
                     cmd.getSender().sendMessage("&b&l(!)&7 The command removes or sets the level down of all hoppers without data!");
+                    return;
 
                 } else if (cmd.args()[0].equalsIgnoreCase("dump")) {
                     if (sender.isPlayer()) {
