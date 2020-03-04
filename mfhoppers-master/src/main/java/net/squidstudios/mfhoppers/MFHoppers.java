@@ -209,8 +209,11 @@ public class MFHoppers extends PluginBuilder {
 
             if (event.getEntityType() == EntityType.DROPPED_ITEM) {
                 Item item = event.getEntity();
-                if(new NBTEntity(event.getEntity()).hasKey("PROCOSMETICS_ITEM")){
-                    return;
+                if(Bukkit.getPluginManager().isPluginEnabled("ProCosmetics")){
+                    NBTEntity nbtEntity = new NBTEntity(event.getEntity());
+                    if(nbtEntity.hasKey("PROCOSMETICS_ITEM")){
+                        return;
+                    }
                 }
 
                 ItemStack itemStack = Objects.requireNonNull(item.getItemStack(), "ItemStack cannot be null!");

@@ -633,7 +633,13 @@ public class TaskManager implements Listener {
                     while(y >= 0 && stillChests){
                         y--;
 
-                        Material material = snapshot.getBlockType(x, y, z);
+
+                        Material material;
+                        if(OVersion.isBefore(9)){
+                            material = hopper.getChunk().getBlock(x, y, z).getType();
+                        }else {
+                            material = snapshot.getBlockType(x, y, z);
+                        }
                         if (material.equals(Material.CHEST) || (OVersion.isOrAfter(14) && material.equals(XMaterial.matchXMaterial("BARREL").get().parseMaterial()))){
                             Location loc = hopper.getLocation().clone().add(0, y-hopper.getLocation().getY(), 0);
                             new BukkitRunnable(){
