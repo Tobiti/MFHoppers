@@ -6,6 +6,8 @@ import net.squidstudios.mfhoppers.hopper.HopperEnum;
 import net.squidstudios.mfhoppers.util.Drop;
 import net.squidstudios.mfhoppers.util.plugin.PluginBuilder;
 import org.bukkit.Material;
+import org.bukkit.Particle;
+
 import net.squidstudios.mfhoppers.util.MMaterial;
 import net.squidstudios.mfhoppers.util.particles.ParticleEffect;
 
@@ -13,6 +15,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.manateaentertainment.blockgenerator.util.OVersion;
 
 public class Upgrade {
     private Map<String, Object> toUpgrade = new HashMap<>();
@@ -31,7 +35,7 @@ public class Upgrade {
             }
         }
         if(data.containsKey("particle")){
-            if(ParticleEffect.fromName(data.get("particle").toString()) == null){
+            if(ParticleEffect.fromName(data.get("particle").toString()) == null && !ContainsParticle(data.get("particle").toString())){
                 pl.out(" !-> Failed to init hopper upgrade &c{lvl=" + level + ",hopper=" + hopper.getData().get("name") + "}&4 cannot find particle named by: &c" + data.get("particle").toString(), PluginBuilder.OutType.ERROR_NOPREFIX);
                 return;
             }
@@ -96,6 +100,17 @@ public class Upgrade {
         this.hopper = hopper;
         hopper.getUpgrades().put(level, this);
 
+    }
+
+    private boolean ContainsParticle(String particleName) {
+        if(OVersion.isAfter(9)){
+            try{
+                if(Particle.valueOf(particleName) != null){
+                    return true;
+                }
+            } catch(IllegalArgumentException e){}
+        }
+        return false;
     }
 
     public Map<String, Object> getToUpgrade() {

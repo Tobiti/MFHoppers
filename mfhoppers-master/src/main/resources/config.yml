@@ -66,6 +66,7 @@ Hoppers:
     lore:
       - "Auto breaks blocks above it"
     breakEvery: 10
+    supportSSBMissions: false
     collectDrops: true #Allowes the breakHopper to instant pickup the dropped items
     breakAll: true
     drops:
@@ -79,6 +80,7 @@ Hoppers:
     lore:
     - "Auto breaks blocks above it"
     breakEvery: 10
+    supportSSBMissions: false
     drops:
       - "DIAMOND_ORE:1-4"
     upgrades:

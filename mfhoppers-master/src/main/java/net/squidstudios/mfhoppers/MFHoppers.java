@@ -636,6 +636,13 @@ public class MFHoppers extends PluginBuilder {
                                             MFHoppers.getInstance().getLogger().info(String.format("\t \t \t \t - %s", element.Material + (element.HasDamageValue ? ":" + String.valueOf(element.DamageValue) : "")));
                                         }
                                     }
+                                    if(hopper.isLinked()){
+                                        MFHoppers.getInstance().getLogger().info("\t \t \t Linked Chests:");
+                                        for (Location loc : hopper.getLinked()) {
+                                            boolean isWildChest = Bukkit.getPluginManager().isPluginEnabled("WildChests") && WildChestsAPI.getChest(loc) != null;
+                                            MFHoppers.getInstance().getLogger().info(String.format("\t \t \t \t Wildchest: %s Loc: (%s, %f, %f, %f)", String.valueOf(isWildChest), loc.getWorld().getName(), loc.getX(), loc.getY(), loc.getZ()));
+                                        }
+                                    }
                                 }
                             }
                             MFHoppers.getInstance().getLogger().info("--------");

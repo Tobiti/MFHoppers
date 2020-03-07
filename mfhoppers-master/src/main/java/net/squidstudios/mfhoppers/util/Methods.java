@@ -25,6 +25,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -515,19 +516,28 @@ public class Methods {
         }.runTask(plugin);
 
     }
-
+    
     public static void breakBlock(Block block) {
+        breakBlock(block, null);
+    }
+
+    public static void breakBlock(Block block, Player player) {
         new BukkitRunnable() {
             @Override
             public void run() {
-                block.setType(Material.AIR, true);
                 
                 if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")) {
                     Island island = SuperiorSkyblockAPI.getIslandAt(block.getLocation());
                     if(island != null){
-                        island.handleBlockBreak(block);
+                        if(player != null){
+                            BlockBreakEvent event = new BlockBreakEvent(block, player);
+                            Bukkit.getPluginManager().callEvent(event);                         
+                        }else {
+                            island.handleBlockBreak(block);
+                        }
                     }
                 }
+                block.setType(Material.AIR, true);
             }
         }.runTask(plugin);
     }

@@ -7,9 +7,11 @@ import net.squidstudios.mfhoppers.util.Methods;
 import net.squidstudios.mfhoppers.util.item.ItemBuilder;
 import net.squidstudios.mfhoppers.util.plugin.PluginBuilder;
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
@@ -431,5 +433,9 @@ public class ConfigHopper {
             }
         }
 		return false;
+	}
+
+	public boolean isSupportingSSBMissions() {
+		return Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2") && getData().containsKey("supportSSBMissions") && Boolean.valueOf(getData().get("supportSSBMissions").toString());
 	}
 }

@@ -388,13 +388,12 @@ public class TaskManager implements Listener {
                         }
                     }
                     else {
-                        Methods.breakBlock(upper.getBlock());
+                        Methods.breakBlock(upper.getBlock(), CONFIG_HOPPER.isSupportingSSBMissions() ? Bukkit.getPlayer(hopper.getOwner()) : null);
                     }
                 }
                 else {
-                    Methods.breakBlock(upper.getBlock());
+                    Methods.breakBlock(upper.getBlock(), CONFIG_HOPPER.isSupportingSSBMissions() ? Bukkit.getPlayer(hopper.getOwner()) : null);
                 }
-                
 
                 upper.add(new Vector(0.5, 0, 0.5));
 
@@ -432,6 +431,10 @@ public class TaskManager implements Listener {
                                 player.spawnParticle(particle, upper.getBlock().getLocation().add(0.5, 0, 0.5), 1);
                             } catch (IllegalArgumentException e){
                                 MFHoppers.getInstance().getLogger().warning(String.format("%s is no valid particle for your version.", DATA.get("particle").toString()));
+                                MFHoppers.getInstance().getLogger().warning("All Particles:");
+                                for (Particle particle : Particle.values()) {
+                                    MFHoppers.getInstance().getLogger().warning("\t" + particle.toString());                                    
+                                }
                             }
                         }
                     } else {
