@@ -191,10 +191,10 @@ public final class ReflectionUtil {
 			final Object entityPlayer = player.getClass().getMethod("getHandle").invoke(player);
 
 			final Object activeContainer = entityPlayer.getClass().getField("activeContainer").get(entityPlayer);
-			final Constructor<?> chatMessageConst = getNMSClass("ChatMessage").getConstructor(String.class, Object[].class);
-
+			final Constructor<?> chatMessageConst = getNMSClass("ChatComponentText").getConstructor(String.class);
+		
 			final Object windowId = activeContainer.getClass().getField("windowId").get(activeContainer);
-			final Object chatMessage = chatMessageConst.newInstance(ChatColor.translateAlternateColorCodes('&', title), new Object[0]);
+			final Object chatMessage = chatMessageConst.newInstance(ChatColor.translateAlternateColorCodes('&', title));
 
 			final Object packet;
 

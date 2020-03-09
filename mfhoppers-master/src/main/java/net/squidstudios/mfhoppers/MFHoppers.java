@@ -218,6 +218,13 @@ public class MFHoppers extends PluginBuilder {
 
                 ItemStack itemStack = Objects.requireNonNull(item.getItemStack(), "ItemStack cannot be null!");
 
+                if(Bukkit.getPluginManager().isPluginEnabled("WildChests")){
+                    NBTItem nbtItem = new NBTItem(itemStack);
+                    if(nbtItem.hasKey("WildChests")){
+                        return;
+                    }
+                }
+
                 Collection<IHopper> hoppers = Sets.newHashSet();
                 DataManager.getInstance().worldHolder(event.getLocation()).ifPresent(holder -> hoppers.addAll(holder.hoppersAt(
                         Objects.requireNonNull(event.getLocation().getChunk(), "Chunk cannot be null!"),
