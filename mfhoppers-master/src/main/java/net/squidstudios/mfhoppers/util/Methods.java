@@ -254,7 +254,7 @@ public class Methods {
 
     public static Set<IHopper> getActiveHopperByType(HopperEnum... e) {
         List<HopperEnum> enums = Arrays.asList(e);
-        Set<IHopper> hoppersSet = DataManager.getInstance().getHoppersSet(hopper -> enums.contains(hopper.getType()) && hopper.isChunkLoaded());
+        Set<IHopper> hoppersSet = DataManager.getInstance().getHoppersSet(hopper -> enums.contains(hopper.getType()) && hopper.isActive());
         return hoppersSet;
     }
 
@@ -337,11 +337,6 @@ public class Methods {
         return hoppers;
     }
 
-    
-    public static Set<LivingEntity> getSortedEntities(Set<Entity> entityList, List<EntityType> blacklist) {
-        return getSortedEntities(entityList, blacklist, false);
-    }
-
     public static Set<LivingEntity> getSortedEntities(Set<Entity> entityList, List<EntityType> blacklist, boolean allowCustomName) {
         Set<LivingEntity> entities = Sets.newHashSet();
 
@@ -351,7 +346,8 @@ public class Methods {
             }
 
             if (entity.getType() != EntityType.PLAYER && entity.getType() != EntityType.ARMOR_STAND && entity.getType() != EntityType.DROPPED_ITEM && entity.getType().isAlive() && (blacklist == null || !blacklist.contains(entity.getType()))) {
-            
+                
+                //MFHoppers.getInstance().getLogger().info(String.format("AllowCustomName: %s MobName: %s MobType: %s", String.valueOf(allowCustomName), entity.getCustomName(), entity.getType().toString()));
                 if(!allowCustomName && entity.getCustomName() != null){
                     if (Bukkit.getPluginManager().isPluginEnabled("WildStacker")){
                         StackedEntity stackedEntity = WildStackerAPI.getStackedEntity((LivingEntity) entity);

@@ -298,6 +298,9 @@ public abstract class IHopper {
     }
 
     public boolean isActive() {
+        if(!isChunkLoaded()){
+            return false;
+        }
         if(getConfigHopper().onlyActiveWhenOwnerOnline()){
             return getOwner() != null && Bukkit.getServer().getOnlinePlayers().stream().anyMatch(player -> player.getName().equals(getOwner()));
         }

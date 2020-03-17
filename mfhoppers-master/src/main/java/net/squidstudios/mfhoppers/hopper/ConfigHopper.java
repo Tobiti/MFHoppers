@@ -428,9 +428,9 @@ public class ConfigHopper {
 
 	public boolean allowNamedMobs() {
         if(getData().containsKey("allowNamedMobs")){
-            if(Boolean.getBoolean(getData().get("allowNamedMobs").toString())){
-                return true;
-            }
+            try{
+            return (boolean) getData().get("allowNamedMobs");
+            } catch (Exception ignore) {}
         }
 		return false;
 	}
