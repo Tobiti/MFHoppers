@@ -13,6 +13,7 @@ import de.Linus122.EntityInfo.KeyGetter;
 import de.tr7zw.changeme.nbtapi.NBTEntity;
 import net.aminecraftdev.customdrops.CustomDropsAPI;
 import net.squidstudios.mfhoppers.MFHoppers;
+import net.squidstudios.mfhoppers.hopper.AutoLinkMode;
 import net.squidstudios.mfhoppers.hopper.ConfigHopper;
 import net.squidstudios.mfhoppers.hopper.HopperEnum;
 import net.squidstudios.mfhoppers.hopper.IHopper;
@@ -615,51 +616,69 @@ public class TaskManager implements Listener {
 
     public void runAutoLinkTask(){
         Set<IHopper> hoppers = DataManager.getInstance().getHoppersSet(hopper -> hopper != null && hopper.getConfigHopper() != null && hopper.getConfigHopper().getDataOfHopper(hopper).get("autoLinkToChest") != null && ((boolean)hopper.getConfigHopper().getDataOfHopper(hopper).get("autoLinkToChest")));
-
-        final HashMap<IHopper, ChunkSnapshot> map = new HashMap<>();
-        for (IHopper hopper : hoppers) {
-            if (!hopper.isChunkLoaded()) continue;
-
-            map.put(hopper, hopper.getChunk().getChunkSnapshot());
-        }
-
-        new BukkitRunnable(){
         
-            @Override
-            public void run() {
-                for (IHopper hopper : map.keySet()) {
-                    int x = (int)Math.abs(hopper.getLocation().getX()) % 16;
-                    int y = (int)hopper.getLocation().getY();
-                    int z = (int)Math.abs(hopper.getLocation().getZ()) % 16;
-                    ChunkSnapshot snapshot = map.get(hopper);
-                    boolean stillChests = true;
-                    while(y >= 0 && stillChests){
-                        y--;
+        AutoLinkMode autoLinkMode = AutoLinkMode.AllDown;
+        if(MFHoppers.getInstance().getConfig().contains("AutoLinkMode")){
+            autoLinkMode = AutoLinkMode.valueOf(MFHoppers.getInstance().getConfig().getString("AutoLinkMode"));
+        }
+        if(autoLinkMode == AutoLinkMode.AllDown){
+            final HashMap<IHopper, ChunkSnapshot> map = new HashMap<>();
+            for (IHopper hopper : hoppers) {
+                if (!hopper.isChunkLoaded()) continue;
+
+                map.put(hopper, hopper.getChunk().getChunkSnapshot());
+            }
+
+            new BukkitRunnable(){
+            
+                @Override
+                public void run() {
+                    for (IHopper hopper : map.keySet()) {
+                        int x = (int)Math.abs(hopper.getLocation().getX()) % 16;
+                        int y = (int)hopper.getLocation().getY();
+                        int z = (int)Math.abs(hopper.getLocation().getZ()) % 16;
+                        ChunkSnapshot snapshot = map.get(hopper);
+                        boolean stillChests = true;
+                        while(y >= 0 && stillChests){
+                            y--;
 
 
-                        Material material;
-                        if(OVersion.isBefore(9)){
-                            material = hopper.getChunk().getBlock(x, y, z).getType();
-                        }else {
-                            material = snapshot.getBlockType(x, y, z);
-                        }
-                        if (material.equals(Material.CHEST) || (OVersion.isOrAfter(14) && material.equals(XMaterial.matchXMaterial("BARREL").get().parseMaterial()))){
-                            Location loc = hopper.getLocation().clone().add(0, y-hopper.getLocation().getY(), 0);
-                            new BukkitRunnable(){
-                                @Override
-                                public void run() {
-                                    if(!hopper.isLinkedTo(loc)){
-                                        hopper.link(loc);
+                            Material material;
+                            if(OVersion.isBefore(9)){
+                                material = hopper.getChunk().getBlock(x, y, z).getType();
+                            }else {
+                                material = snapshot.getBlockType(x, y, z);
+                            }
+                            if (material.equals(Material.CHEST) || (OVersion.isOrAfter(14) && material.equals(XMaterial.matchXMaterial("BARREL").get().parseMaterial()))){
+                                Location loc = hopper.getLocation().clone().add(0, y-hopper.getLocation().getY(), 0);
+                                new BukkitRunnable(){
+                                    @Override
+                                    public void run() {
+                                        if(!hopper.isLinkedTo(loc)){
+                                            hopper.link(loc);
+                                        }
                                     }
-                                }
-                            }.runTask(MFHoppers.getInstance());
-                        }
-                        else {
-                            stillChests = false;
+                                }.runTask(MFHoppers.getInstance());
+                            }
+                            else {
+                                stillChests = false;
+                            }
                         }
                     }
                 }
+            }.runTaskAsynchronously(MFHoppers.getInstance());
+        }
+
+        if(autoLinkMode == AutoLinkMode.OnlyFacing){
+            for (IHopper hopper : hoppers) {
+                Vector dir = hopper.getDirection();
+                Location chestLoc = hopper.getLocation().clone().add(dir);
+                if(!hopper.isLinkedTo(chestLoc)){
+                    if (MContainer.isContainer(chestLoc)) {
+                        hopper.link(chestLoc);
+                    }
+                }
             }
-        }.runTaskAsynchronously(MFHoppers.getInstance());
+        }
     }
 }

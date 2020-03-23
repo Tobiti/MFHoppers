@@ -438,4 +438,13 @@ public class ConfigHopper {
 	public boolean isSupportingSSBMissions() {
 		return Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2") && getData().containsKey("supportSSBMissions") && Boolean.valueOf(getData().get("supportSSBMissions").toString());
 	}
+
+	public boolean isLinkedInstantMove() {
+        if(getData().containsKey("linkedInstantMove")){
+            try{
+                return (boolean) getData().get("linkedInstantMove");
+            } catch (Exception ignore) {}
+        }
+        return true;
+	}
 }
