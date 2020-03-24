@@ -228,7 +228,7 @@ public class ConfigHopper {
                     .addNbt("isGlobal", isGlobal)
                     .addNbt("isAuto", isAuto)
                     .addNbt("ent", EntityType.valueOf(data.get("mob").toString().toUpperCase()))
-                    .setLore((List<String>) data.get("lore"), true)
+                    .setLore(data.containsKey("lore") ? new ArrayList<>() : (List<String>) data.get("lore"), true)
                     .replaceInLore("%type%", StringUtils.capitalize(EntityType.valueOf(data.get("mob").toString()).name().replace("_", " ").toLowerCase()))
                     .buildItem();
         } else {
@@ -237,7 +237,7 @@ public class ConfigHopper {
                     .addNbt("type", type.name())
                     .addNbt("name0", data.get("name0").toString())
                     .addNbt("lvl", 1)
-                    .setLore((List<String>) data.get("lore"), true)
+                    .setLore(data.containsKey("lore") ? new ArrayList<>() : (List<String>) data.get("lore"), true)
                     .buildItem();
         }
 
@@ -255,7 +255,7 @@ public class ConfigHopper {
                     .addNbt("isGlobal", isGlobal)
                     .addNbt("isAuto", isAuto)
                     .addNbt("ent", EntityType.valueOf(data.get("mob").toString().toUpperCase()))
-                    .setLore((List<String>) data.get("lore"), true)
+                    .setLore(data.containsKey("lore") ? new ArrayList<>() : (List<String>) data.get("lore"), true)
                     .replaceInLore("%type%", StringUtils.capitalize(EntityType.valueOf(data.get("mob").toString()).name().replace("_", " ").toLowerCase()))
                     .buildItem();
         }
