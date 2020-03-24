@@ -20,6 +20,7 @@ import net.squidstudios.mfhoppers.hopper.upgrades.UpgradeEnum;
 import net.squidstudios.mfhoppers.hopper.upgrades.UpgradeInventory;
 import net.squidstudios.mfhoppers.manager.DataManager;
 import net.squidstudios.mfhoppers.manager.HookManager;
+import net.squidstudios.mfhoppers.manager.SellHistoryManager;
 import net.squidstudios.mfhoppers.manager.SellManager;
 import net.squidstudios.mfhoppers.tasks.Listeners.BeastCoreListener;
 import net.squidstudios.mfhoppers.tasks.TaskManager;
@@ -81,6 +82,7 @@ public class MFHoppers extends PluginBuilder {
     public Map<String, HopperConvert> convertHoppers = new ConcurrentHashMap<>();
 
     public TaskManager taskManager;
+    public SellHistoryManager SellHistoryManager;
 
     @Override
     public void init() {
@@ -132,6 +134,7 @@ public class MFHoppers extends PluginBuilder {
         new Methods(this);
         new DataManager(this);
         taskManager = new TaskManager(this);
+        SellHistoryManager = new SellHistoryManager();
         new InvManager(this);
         new SellManager();
         new HookManager(this);
@@ -850,7 +853,7 @@ public class MFHoppers extends PluginBuilder {
                         Lang.HOPPER_CONVERT_CANT_CONVERT_UPGRADED_HOPPERS.send(player);
                         return;
                     }
-                    for (EntityType type : Arrays.stream(EntityType.values()).filter(e -> e.isAlive() && !BLACKLIST1.contains(e) && !BLACKLIST2.contains(e) && e != currentType).collect(toList())) {
+                    for (EntityType type : Arrays.stream(EntityType.values()).filter(e -> e.isAlive() && !BLACKLIST1.contains(e) && !BLACKLIST2.contains(e) && e != currentType).sorted(new EntityTypeComparator()).collect(toList())) {
                         if (OVersion.isOrAfter(13)) {
                             if (Textures13.matchEntity(type.name()) != null) {
 

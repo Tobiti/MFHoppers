@@ -52,7 +52,10 @@ public enum Lang {
         Center.getCenteredMessage("&b&l* &7/mfhoppers reload"),
         Center.getCenteredMessage("&b&l* &7/mfhoppers replacefilter"),
         "", 
-        Center.getCenteredMessage("&b&l---&3&l---&b&l---&3&l---&b&l---&3&l---&b&l---&3&l---"));
+        Center.getCenteredMessage("&b&l---&3&l---&b&l---&3&l---&b&l---&3&l---&b&l---&3&l---")),
+    SELLHISTORY_HEADER("&7&lYour hoppers sold:"),
+    SELLHISTORY_LINE("{amount}x &6{itemtype} &rfor &4&l${price}"),
+    SELLHISTORY_FOOTER("Total sold for: &6&l{totalprice}");
 
 
     protected static String NOT_SEND = "99999999999999999";

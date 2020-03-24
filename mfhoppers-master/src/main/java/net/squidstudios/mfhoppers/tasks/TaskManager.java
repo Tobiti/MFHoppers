@@ -116,6 +116,7 @@ public class TaskManager implements Listener {
             final Set<Entity> entityList = EntitiesGatherer.from(MIDDLE.getChunk()).accepts(LivingEntity.class)
                     .gather();
             final Set<LivingEntity> LIVING_ENTITIES = Methods.getSortedEntities(entityList, BLACKLIST, CONFIG_HOPPER.allowNamedMobs());
+
             Set<LivingEntity> toAddSlowness = Sets.newHashSet();
 
             if (IS_GLOBAL) {
@@ -583,6 +584,9 @@ public class TaskManager implements Listener {
                         boolean removed = Methods.removeItem(item.getFirst(), amount, inventory);
 
                         if (removed) {
+                            if(player != null){
+                                MFHoppers.getInstance().SellHistoryManager.AddEntry(player, item.getFirst().getType(), amount);
+                            }
                             finalPrice += item.getSecond() * amount;
                             sellAmount -= amount;
                         }
@@ -633,9 +637,8 @@ public class TaskManager implements Listener {
                     int z = (int)Math.abs(hopper.getLocation().getZ()) % 16;
                     ChunkSnapshot snapshot = map.get(hopper);
                     boolean stillChests = true;
-                    while(y >= 0 && stillChests){
+                    while(y > 0 && stillChests){
                         y--;
-
 
                         Material material;
                         if(OVersion.isBefore(9)){

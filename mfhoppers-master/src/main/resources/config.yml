@@ -171,4 +171,7 @@ sellOptions:
   #There's two sellTypes by default: BuiltIn, ShopGUIPlus
   system: BuiltIn
 
+SellHistory: true
+SellHistoryNotifierInterval: 600 # in seconds
+
 

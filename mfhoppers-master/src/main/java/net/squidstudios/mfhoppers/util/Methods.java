@@ -8,6 +8,7 @@ import com.bgsoftware.wildstacker.api.WildStackerAPI;
 import com.bgsoftware.wildstacker.api.objects.StackedEntity;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
 import de.tr7zw.changeme.nbtapi.NBTEntity;
 import de.tr7zw.changeme.nbtapi.NBTItem;
 import lombok.NonNull;
@@ -343,6 +344,11 @@ public class Methods {
         for (Entity entity : entityList) {
             if (entity == null) {
                 continue;
+            }
+            if(OVersion.isAfter(8)){
+                if(entity.isInvulnerable()){
+                    continue;
+                }
             }
 
             if (entity.getType() != EntityType.PLAYER && entity.getType() != EntityType.ARMOR_STAND && entity.getType() != EntityType.DROPPED_ITEM && entity.getType().isAlive() && (blacklist == null || !blacklist.contains(entity.getType()))) {
