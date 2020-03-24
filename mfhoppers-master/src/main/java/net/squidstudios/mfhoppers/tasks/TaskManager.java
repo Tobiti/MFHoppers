@@ -473,6 +473,26 @@ public class TaskManager implements Listener {
                 time--;
 
                 if (time == 0) {
+                    if(configData.containsKey("linkUpperContainer") && ((boolean) configData.get("linkUpperContainer"))){
+                        Location upperBlock = hopper.getLocation().clone().add(0, 1, 0);
+                        if (upperBlock.getBlock().getType() != Material.AIR && MContainer.isContainer(upperBlock)) {
+                            if(!DataManager.getInstance().isHopper(upperBlock)){
+                                
+                                Inventory source = null;
+                                Inventory hopperInv = null;
+                                try {
+                                    source = MContainer.getInventory(upperBlock).get().getInventory();
+                                    hopperInv = MContainer.getInventory(hopper.getLocation()).get().getInventory();
+                                } catch (InterruptedException | ExecutionException e) {
+                                    e.printStackTrace();
+                                }
+                                if (source == null || hopperInv == null) continue;
+
+                                int moveAmount = (int) configData.get("linkedMoveAmount");
+                                moveFromSourceTODestinationInventorys(moveAmount, source, hopperInv);
+                            }
+                        }
+                    }
                     if (hopper.isLinked()) {
                         hopper.getData().remove("linkedTime");
                         hopper.getData().put("linkedTime", hopper.getData().containsKey("linkedTime") ? (int) hopper.getData().get("linkedTime") : (int) configData.get("linkedMoveEvery"));
@@ -486,33 +506,9 @@ public class TaskManager implements Listener {
                             e.printStackTrace();
                         }
                         if (source == null) continue;
-
-                        List<ItemStack> items = Arrays.asList(source.getContents());
-                        if (items.isEmpty()) continue;
-
-                        items = items.stream().filter(item -> item != null && item.getType() != Material.AIR).collect(Collectors.toList());
-
-                        if (items.size() <= 0) continue;
+                        
                         int moveAmount = (int) configData.get("linkedMoveAmount");
-
-                        List<ItemStack> tempList = new ArrayList<>();
-                        int index = 0;
-                        while (moveAmount > 0 && index < items.size()) {
-                            ItemStack item = items.get(index);
-                            tempList.add(new ItemStack(item.getType(), item.getAmount() < moveAmount ? item.getAmount() : moveAmount));
-
-                            moveAmount -= item.getAmount();
-                            index++;
-                        }
-
-                        final List<ItemStack> sendedItems = tempList;
-                        for (ItemStack item : sendedItems) {
-                            for (Inventory destination : inventories) {
-                                if (Methods.removeItem(item, item.getAmount(), source)) {
-                                    destination.addItem(item);
-                                }
-                            }
-                        }
+                        moveFromSourceTODestinationInventorys(moveAmount, source, inventories);
                     }
                 } else {
                     hopper.getData().remove("linkedTime");
@@ -521,6 +517,44 @@ public class TaskManager implements Listener {
 
             }
 
+        }
+    }
+    private void moveFromSourceTODestinationInventorys(int moveAmount, Inventory source, Inventory... inventories) {
+        if(inventories.length <= 0){
+            return;
+        }
+        moveFromSourceTODestinationInventorys(moveAmount, source, Arrays.asList(inventories));
+    }
+
+    private void moveFromSourceTODestinationInventorys(int moveAmount, Inventory source, List<Inventory> inventories) {
+        if(inventories.size() <= 0){
+            return;
+        }
+
+        List<ItemStack> items = Arrays.asList(source.getContents());
+        if (items.isEmpty()) return;
+
+        items = items.stream().filter(item -> item != null && item.getType() != Material.AIR).collect(Collectors.toList());
+
+        if (items.size() <= 0) return;
+
+        List<ItemStack> tempList = new ArrayList<>();
+        int index = 0;
+        while (moveAmount > 0 && index < items.size()) {
+            ItemStack item = items.get(index);
+            tempList.add(new ItemStack(item.getType(), item.getAmount() < moveAmount ? item.getAmount() : moveAmount));
+
+            moveAmount -= item.getAmount();
+            index++;
+        }
+
+        final List<ItemStack> sendedItems = tempList;
+        for (ItemStack item : sendedItems) {
+            for (Inventory destination : inventories) {
+                if (Methods.removeItem(item, item.getAmount(), source)) {
+                    destination.addItem(item);
+                }
+            }
         }
     }
 
