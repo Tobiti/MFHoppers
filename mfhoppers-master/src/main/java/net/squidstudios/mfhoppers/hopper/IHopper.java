@@ -6,15 +6,19 @@ import net.squidstudios.mfhoppers.manager.DataManager;
 import net.squidstudios.mfhoppers.util.MContainer;
 import net.squidstudios.mfhoppers.util.Methods;
 import net.squidstudios.mfhoppers.util.OFuture;
+import net.squidstudios.mfhoppers.util.OVersion;
 import net.squidstudios.mfhoppers.util.XMaterial;
 import net.squidstudios.mfhoppers.util.plugin.Tasks;
 import org.bukkit.*;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.Chest;
+import org.bukkit.block.Hopper;
 import org.bukkit.inventory.DoubleChestInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.sql.PreparedStatement;
 import java.util.ArrayList;
@@ -134,6 +138,10 @@ public abstract class IHopper {
             return future;
         }
     }
+
+	public boolean isLinkedInstantMove() {
+		return getConfigHopper().isLinkedInstantMove();
+	}
 
     public Boolean isLinked() {
         return data.containsKey("linked");
@@ -311,5 +319,39 @@ public abstract class IHopper {
         this.cached_inventory = null;
         getInventory();
     }
+
+	public Vector getDirection() {
+        
+        if(OVersion.isBefore(9)){
+            byte data = ((Hopper)getLocation().getBlock().getState()).getRawData();
+            Vector direction = null;
+            switch(data){
+                case 0:
+                    direction = new Vector(0, -1, 0);
+                    break;
+                case 2:
+                    direction = new Vector(0, 0, -1);
+                    break;
+                case 3:
+                    direction = new Vector(0, 0, 1);
+                    break;
+                case 4:
+                    direction = new Vector(-1, 0, 0);
+                    break;
+                case 5:
+                    direction = new Vector(1, 0, 0);
+                    break;
+            }
+            return direction;
+        }
+        else {
+            org.bukkit.material.Hopper hopperData = ((org.bukkit.material.Hopper)getLocation().getBlock().getState().getData());
+            if(hopperData.isPowered()){
+                return null;
+            }
+            BlockFace face = hopperData.getFacing();
+            return face.getDirection();
+        }
+	}
 
 }

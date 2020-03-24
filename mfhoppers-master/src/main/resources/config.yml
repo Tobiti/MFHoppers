@@ -29,6 +29,7 @@ Hoppers:
     DropToInventory: true
 
     #This will move every 4 seconds 10 amount of item out of hopper to if linked chest!
+    linkedInstantMove: true
     linkedMoveEvery: 4
     linkedMoveAmount: 10
     linkedLimit: 1
@@ -164,6 +165,7 @@ DeactivateSaveMessage: false
 CollectAlreadyDropedItems: true 
 CollectItemsEvery: 3 # in seconds
 
+AutoLinkMode: AllDown
 AutoLinkEvery: 3 # in seconds
 
 sellOptions:

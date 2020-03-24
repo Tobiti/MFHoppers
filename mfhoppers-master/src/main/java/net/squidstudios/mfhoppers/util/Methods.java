@@ -176,7 +176,7 @@ public class Methods {
 
         ItemStack[] itemArray = new ItemStack[0];
 
-        if (hopper.isLinked()) {
+        if (hopper.isLinked() && hopper.isLinkedInstantMove()) {
             for (Inventory destination : Methods.GetLinkedInventorys(hopper)) {
                 if(Bukkit.getPluginManager().isPluginEnabled("WildChests")){
                     Chest chest = WildChestsAPI.getChest(MContainer.getLocation(destination.getHolder()));
