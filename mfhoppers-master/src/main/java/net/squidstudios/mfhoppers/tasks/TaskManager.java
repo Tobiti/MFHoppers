@@ -243,9 +243,8 @@ public class TaskManager implements Listener {
                                         .getDataOfHopper(hopper).get("stack_kill").toString()), stackKill);
 
                                 int finalStackKill = stackKill;
-                                final List<DropElement> dropList = new ArrayList<>();
+                                List<ItemStack> entDrops = new ArrayList<>();
                                 if (finalStackKill > 1) {
-                                    List<ItemStack> entDrops = new ArrayList<>();
 
                                     boolean isSingleItem = false;
                                     boolean isAllItems = false;
@@ -277,27 +276,24 @@ public class TaskManager implements Listener {
                                         }
                                     }
 
-                                    boolean finalIsDropEdit = isSingleItem;
-                                    boolean finalIsAllItems = isAllItems;
-                                    entDrops.forEach(itemStack ->
-                                    {
-                                        if (itemStack != null) {
-                                            if (finalIsDropEdit) {
-                                                    dropList.add(new DropElement(ent.getWorld(), ent.getLocation(), new ItemStack(itemStack.getType(), finalStackKill * itemStack.getAmount())));
-                                            } else {
-                                                if (finalIsAllItems) {
-                                                    dropList.add(new DropElement(ent.getWorld(), ent.getLocation(), itemStack));
-                                                }
-                                            }
-                                        }
-                                    });
+                                    if(isSingleItem){
+                                        entDrops.forEach(item -> item.setAmount(finalStackKill * item.getAmount()));
+                                    }
                                 }
+                                
+                                final List<ItemStack> dropList = entDrops;
                                 new BukkitRunnable() {
 
                                     @Override
                                     public void run() {
+                                        Map<String, Object> DATA = pl.configHoppers.get(hopper.getName()).getDataOfHopper(hopper);
+                                        if (DATA.containsKey("collectDrops") && Boolean.valueOf(DATA.get("collectDrops").toString())) {
+                                            List<ItemStack> tempDropItems = Methods.addItem2(dropList, hopper);
+                                            dropList.clear();
+                                            dropList.addAll(tempDropItems);
+                                        }
                                         dropList.forEach(drop -> {
-                                            drop.World.dropItemNaturally(drop.Loc, drop.Item);
+                                            ent.getWorld().dropItem(ent.getLocation(), drop);
                                         });
                                         if (Bukkit.getPluginManager().isPluginEnabled("WildStacker")) {
                                             try {
