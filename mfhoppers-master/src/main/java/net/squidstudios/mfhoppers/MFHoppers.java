@@ -1037,10 +1037,10 @@ public class MFHoppers extends PluginBuilder {
         out("");
         out("Reloading the plugin...");
         configHoppers.clear();
-        SellManager.getInstance().restart();
         cnf = initConfig("config.yml", getDataFolder());
         initConfig();
         Lang.init();
+        SellManager.getInstance().restart();
         out("");
         out("&8=-------------------------------------------=");
         out("");

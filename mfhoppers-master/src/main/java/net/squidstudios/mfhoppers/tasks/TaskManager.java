@@ -11,6 +11,11 @@ import de.Linus122.DropEdit.Main;
 import de.Linus122.EntityInfo.EntityKeyInfo;
 import de.Linus122.EntityInfo.KeyGetter;
 import de.tr7zw.changeme.nbtapi.NBTEntity;
+import me.ByteMagic.HeadHunter.managers.HeadHunter.HeadHunterMap;
+import me.ByteMagic.HeadHunter.managers.HeadHunter.skulls.MobSkull;
+import me.ByteMagic.Helix.utils.mobs.MinecraftEntity;
+import me.ByteMagic.HeadHunter.engine.EngineSkulls;
+import me.ByteMagic.HeadHunter.entity.HConf;
 import net.aminecraftdev.customdrops.CustomDropsAPI;
 import net.squidstudios.mfhoppers.MFHoppers;
 import net.squidstudios.mfhoppers.hopper.AutoLinkMode;
@@ -32,7 +37,9 @@ import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -233,7 +240,7 @@ public class TaskManager implements Listener {
                                 || Bukkit.getPluginManager().isPluginEnabled("BeastCore")) {
                             if (pl.configHoppers.get(hopper.getName()).getDataOfHopper(hopper).containsKey("stack_kill")
                                     && Integer.valueOf(pl.configHoppers.get(hopper.getName()).getDataOfHopper(hopper)
-                                            .get("stack_kill").toString()) > 1) {
+                                            .get("stack_kill").toString()) > 0) {
 
                                 int stackKill = 1;
                                 if (Bukkit.getPluginManager().isPluginEnabled("WildStacker")) {
@@ -244,32 +251,27 @@ public class TaskManager implements Listener {
 
                                 int finalStackKill = stackKill;
                                 List<ItemStack> entDrops = new ArrayList<>();
-                                if (finalStackKill > 1) {
+                                if (finalStackKill > 0) {
 
                                     boolean isSingleItem = false;
-                                    boolean isAllItems = false;
 
                                     if (Bukkit.getPluginManager().isPluginEnabled("BeastCore")) {
                                         BeastCoreListener.getInstance().beastCoreStackedKill.put(ent, finalStackKill);
-                                        isAllItems = true;
                                     }
 
                                     if (Bukkit.getPluginManager().isPluginEnabled("WildStacker")) {
                                         StackedEntity stackedEnt = WildStackerAPI.getStackedEntity(ent);
                                         entDrops = stackedEnt.getDrops(0, finalStackKill);
-                                        isAllItems = true;
                                     }
                                     if (Bukkit.getPluginManager().isPluginEnabled("DropEdit2")) {
                                         DropContainer container = ((Main) Main.pl)
                                                 .getDrops(KeyGetter.getKey(ent.getType()), ent);
                                         if (container != null) {
                                             isSingleItem = true;
-                                            isAllItems = false;
                                             entDrops = container.getItemDrops();
                                         }
                                     }
                                     if (Bukkit.getPluginManager().isPluginEnabled("CustomDrops")) {
-                                        isAllItems = true;
                                         entDrops = new ArrayList<>();
                                         for (int i = 0; i < finalStackKill; i++) {
                                             entDrops.addAll(CustomDropsAPI.getCustomDrops(ent.getType()).stream().filter(itemStack -> itemStack.getType() != Material.AIR).collect(Collectors.toList()));
@@ -279,9 +281,39 @@ public class TaskManager implements Listener {
                                     if(isSingleItem){
                                         entDrops.forEach(item -> item.setAmount(finalStackKill * item.getAmount()));
                                     }
+                                    if (Bukkit.getPluginManager().isPluginEnabled("HeadHunter") 
+                                        && MFHoppers.getInstance().getConfig().contains("headHunterSupport") && MFHoppers.getInstance().getConfig().getBoolean("headHunterSupport")) {
+                                        MinecraftEntity minecraftEntity = MinecraftEntity.getByEntity((Entity)ent);
+                                        if (minecraftEntity == null) {
+                                            return;
+                                        }
+                                        if (HConf.get().BLOCKED_WORLDS.contains(ent.getWorld().getName())) {
+                                            return;
+                                        }
+                                        if (!HeadHunterMap.get().isValidType(minecraftEntity)) {
+                                            return;
+                                        }
+                                        MobSkull mobSkull = HeadHunterMap.get().getEntityMap().get((Object)minecraftEntity);
+                                        if (mobSkull == null) {
+                                            return;
+                                        }
+                                        Random random = new Random();
+                                        Double d = random.nextDouble();
+                                        ItemStack skull = mobSkull.getSkull().clone();
+                                        skull.setAmount((int)( mobSkull.getSkull().getAmount() * finalStackKill * Math.max(mobSkull.getChance(), d)));
+                                        if(HConf.get().SKULL_ALWAYS_DROPS || (MFHoppers.getInstance().getConfig().contains("headHunterOfflineSupport") && MFHoppers.getInstance().getConfig().getBoolean("headHunterOfflineSupport"))){
+                                            entDrops.add(skull);
+                                        }
+                                        else {
+                                            Player owner = Bukkit.getPlayer(hopper.getOwner());
+                                            if(owner != null){
+                                                EngineSkulls.get().tryToDropMobHead(owner, mobSkull, finalStackKill, ent.getLocation());
+                                            }
+                                        }
+                                    }
                                 }
                                 
-                                final List<ItemStack> dropList = entDrops;
+                                final List<ItemStack> dropList = entDrops.stream().filter(drop -> drop.getType() != Material.AIR).collect(Collectors.toList());
                                 new BukkitRunnable() {
 
                                     @Override
@@ -290,7 +322,7 @@ public class TaskManager implements Listener {
                                         if (DATA.containsKey("collectDrops") && Boolean.valueOf(DATA.get("collectDrops").toString())) {
                                             List<ItemStack> tempDropItems = Methods.addItem2(dropList, hopper);
                                             dropList.clear();
-                                            dropList.addAll(tempDropItems);
+                                            dropList.addAll(tempDropItems.stream().filter(drop -> drop.getType() != Material.AIR).collect(Collectors.toList()));
                                         }
                                         dropList.forEach(drop -> {
                                             ent.getWorld().dropItem(ent.getLocation(), drop);

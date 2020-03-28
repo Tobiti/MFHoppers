@@ -227,7 +227,7 @@ public class ConfigHopper {
                     .addNbt("isGlobal", isGlobal)
                     .addNbt("isAuto", isAuto)
                     .addNbt("ent", EntityType.valueOf(data.get("mob").toString().toUpperCase()))
-                    .setLore(data.containsKey("lore") ? new ArrayList<>() : (List<String>) data.get("lore"), true)
+                    .setLore(data.containsKey("lore") ? (List<String>) data.get("lore") : new ArrayList<>(), true)
                     .replaceInLore("%type%", StringUtils.capitalize(EntityType.valueOf(data.get("mob").toString()).name().replace("_", " ").toLowerCase()))
                     .buildItem();
         } else {
@@ -236,7 +236,7 @@ public class ConfigHopper {
                     .addNbt("type", type.name())
                     .addNbt("name0", data.get("name0").toString())
                     .addNbt("lvl", 1)
-                    .setLore(data.containsKey("lore") ? new ArrayList<>() : (List<String>) data.get("lore"), true)
+                    .setLore(data.containsKey("lore") ? (List<String>) data.get("lore") : new ArrayList<>(), true)
                     .buildItem();
         }
 
@@ -254,7 +254,7 @@ public class ConfigHopper {
                     .addNbt("isGlobal", isGlobal)
                     .addNbt("isAuto", isAuto)
                     .addNbt("ent", EntityType.valueOf(data.get("mob").toString().toUpperCase()))
-                    .setLore(data.containsKey("lore") ? new ArrayList<>() : (List<String>) data.get("lore"), true)
+                    .setLore(data.containsKey("lore") ? (List<String>) data.get("lore") : new ArrayList<>(), true)
                     .replaceInLore("%type%", StringUtils.capitalize(EntityType.valueOf(data.get("mob").toString()).name().replace("_", " ").toLowerCase()))
                     .buildItem();
         }
