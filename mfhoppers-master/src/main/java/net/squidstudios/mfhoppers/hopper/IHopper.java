@@ -53,16 +53,16 @@ public abstract class IHopper {
     public abstract void save(PreparedStatement stat);
 
     public HashMap<String, Object> getData() {
-        return data;
+        return data == null ? new HashMap<>() : data;
     }
 
     public Location getLocation() {
         if (getData().containsKey("cachedLocation")) {
-            return ((Location) data.get("cachedLocation"));
+            return ((Location) getData().get("cachedLocation"));
 
         } else {
-            Location location = Methods.toLocation(data.get("loc").toString());
-            data.put("cachedLocation", location);
+            Location location = Methods.toLocation(getData().get("loc").toString());
+            getData().put("cachedLocation", location);
             return location;
         }
     }
@@ -95,17 +95,21 @@ public abstract class IHopper {
     public abstract ItemStack getItem();
 
     public String getName() {
-        return data.get("name").toString();
+        return getData().get("name").toString();
     }
 
     public abstract HopperEnum getType();
 
     public int getLevel() {
-        return (int) data.get("lvl");
+        if(getData().containsKey("lvl")){
+            return (int) getData().get("lvl");
+        } else {
+            return 1;
+        }
     }
 
     public void setLevel(int level){
-        data.replace("lvl", level);
+        getData().replace("lvl", level);
     }
 
     public CompletableFuture<Inventory> getInventory() {
@@ -144,7 +148,7 @@ public abstract class IHopper {
 	}
 
     public Boolean isLinked() {
-        return data.containsKey("linked");
+        return getData().containsKey("linked");
     }
 
     public List<Location> getLinked() {

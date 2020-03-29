@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.manateaentertainment.blockgenerator.util.OVersion;
+import net.squidstudios.mfhoppers.util.OVersion;
 
 public class Upgrade {
     private Map<String, Object> toUpgrade = new HashMap<>();

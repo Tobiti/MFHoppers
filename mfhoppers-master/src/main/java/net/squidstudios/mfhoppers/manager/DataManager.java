@@ -11,6 +11,7 @@ import net.squidstudios.mfhoppers.hopper.types.BreakHopper;
 import net.squidstudios.mfhoppers.hopper.types.CropHopper;
 import net.squidstudios.mfhoppers.hopper.types.GrindHopper;
 import net.squidstudios.mfhoppers.hopper.types.MobHopper;
+import net.squidstudios.mfhoppers.hopper.types.NormalHopper;
 import net.squidstudios.mfhoppers.util.MChunk;
 import net.squidstudios.mfhoppers.util.Methods;
 import net.squidstudios.mfhoppers.util.hopperMap.HopperDataHandler;
@@ -83,6 +84,7 @@ public class DataManager {
             connectionManager.run("CREATE TABLE IF NOT EXISTS Break (id INTEGER PRIMARY KEY AUTOINCREMENT, name varchar(255), loc varchar(255), lvl INTEGER, data varchar(255))");
             connectionManager.run("CREATE TABLE IF NOT EXISTS Crop (id INTEGER PRIMARY KEY AUTOINCREMENT, name varchar(255), loc varchar(255), lvl INTEGER, data varchar(255))");
             connectionManager.run("CREATE TABLE IF NOT EXISTS Mob (id INTEGER PRIMARY KEY AUTOINCREMENT, name varchar(255), loc varchar(255), lvl INTEGER, data varchar(255))");
+            connectionManager.run("CREATE TABLE IF NOT EXISTS Normal (id INTEGER PRIMARY KEY AUTOINCREMENT, name varchar(255), loc varchar(255), lvl INTEGER, data varchar(255))");
             plugin.out("&cDatabase wasn't found, creating...");
         } else {
             this.connectionManager = new ConnectionManager(this);
@@ -90,6 +92,7 @@ public class DataManager {
             connectionManager.run("CREATE TABLE IF NOT EXISTS Break (id INTEGER PRIMARY KEY AUTOINCREMENT, name varchar(255), loc varchar(255), lvl INTEGER, data varchar(255))");
             connectionManager.run("CREATE TABLE IF NOT EXISTS Crop (id INTEGER PRIMARY KEY AUTOINCREMENT, name varchar(255), loc varchar(255), lvl INTEGER, data varchar(255))");
             connectionManager.run("CREATE TABLE IF NOT EXISTS Mob (id INTEGER PRIMARY KEY AUTOINCREMENT, name varchar(255), loc varchar(255), lvl INTEGER, data varchar(255))");
+            connectionManager.run("CREATE TABLE IF NOT EXISTS Normal (id INTEGER PRIMARY KEY AUTOINCREMENT, name varchar(255), loc varchar(255), lvl INTEGER, data varchar(255))");
             checkForMigration(true);
             load();
             MFHoppers.getInstance().getLogger().info("Database was loaded!!!");
@@ -360,12 +363,14 @@ public class DataManager {
                 connectionManager.run("DELETE FROM Crop");
                 connectionManager.run("DELETE FROM Break");
                 connectionManager.run("DELETE FROM Mob");
+                connectionManager.run("DELETE FROM Normal");
                 connectionManager.run("VACUUM");
             } else {
                 PreparedStatement grindDeleteStat = connection.prepareStatement("DELETE FROM Grind WHERE name = ? AND loc = ?");
                 PreparedStatement breakDeleteStat = connection.prepareStatement("DELETE FROM Break WHERE name = ? AND loc = ?");
                 PreparedStatement cropDeleteStat = connection.prepareStatement("DELETE FROM Crop WHERE name = ? AND loc = ?");
                 PreparedStatement mobDeleteStat = connection.prepareStatement("DELETE FROM Mob WHERE name = ? AND loc = ?");
+                PreparedStatement normalDeleteStat = connection.prepareStatement("DELETE FROM Normal WHERE name = ? AND loc = ?");
 
                 while (!removedHopperQueue.isEmpty()) {
                     IHopper hopper = removedHopperQueue.poll();
@@ -386,6 +391,10 @@ public class DataManager {
                             cropDeleteStat.setString(1, hopper.getData().get("name").toString());
                             cropDeleteStat.setString(2, hopper.getData().get("loc").toString());
                             cropDeleteStat.addBatch();
+                        } else if (hopper.getType() == HopperEnum.Normal) {
+                            normalDeleteStat.setString(1, hopper.getData().get("name").toString());
+                            normalDeleteStat.setString(2, hopper.getData().get("loc").toString());
+                            normalDeleteStat.addBatch();
                         }
                     }
                 }
@@ -394,22 +403,26 @@ public class DataManager {
                 breakDeleteStat.executeBatch();
                 cropDeleteStat.executeBatch();
                 mobDeleteStat.executeBatch();
+                normalDeleteStat.executeBatch();
                 grindDeleteStat.close();
                 breakDeleteStat.close();
                 cropDeleteStat.close();
                 mobDeleteStat.close();
+                normalDeleteStat.close();
             }
 
             PreparedStatement grindInsertStat;
             PreparedStatement breakInsertStat;
             PreparedStatement cropInsertStat;
             PreparedStatement mobInsertStat;
+            PreparedStatement normalInsertStat;
 
             if (cleanSave) {
                 grindInsertStat = connection.prepareStatement("INSERT INTO Grind (name,loc,lvl,ent,isAuto,isGlobal,data) VALUES(?,?,?,?,?,?,?)");
                 breakInsertStat = connection.prepareStatement("INSERT INTO Break (name,loc,lvl,data) VALUES(?,?,?,?)");
                 cropInsertStat = connection.prepareStatement("INSERT INTO Crop (name,loc,lvl,data) VALUES(?,?,?,?)");
                 mobInsertStat = connection.prepareStatement("INSERT INTO Mob (name,loc,lvl,data) VALUES(?,?,?,?)");
+                normalInsertStat = connection.prepareStatement("INSERT INTO Normal (name,loc,lvl,data) VALUES(?,?,?,?)");
 
                 getHoppersSet().forEach(hopper -> {
                     if (hopper != null) {
@@ -421,6 +434,8 @@ public class DataManager {
                             hopper.save(mobInsertStat);
                         } else if (hopper.getType() == HopperEnum.Crop) {
                             hopper.save(cropInsertStat);
+                        } else if (hopper.getType() == HopperEnum.Normal) {
+                            hopper.save(normalInsertStat);
                         }
                     }
                 });
@@ -429,6 +444,7 @@ public class DataManager {
                 breakInsertStat = connection.prepareStatement("INSERT INTO Break (name,loc,lvl,data) VALUES(?,?,?,?)");
                 cropInsertStat = connection.prepareStatement("INSERT INTO Crop (name,loc,lvl,data) VALUES(?,?,?,?)");
                 mobInsertStat = connection.prepareStatement("INSERT INTO Mob (name,loc,lvl,data) VALUES(?,?,?,?)");
+                normalInsertStat = connection.prepareStatement("INSERT INTO Normal (name,loc,lvl,data) VALUES(?,?,?,?)");
 
                 while (!addedHopperQueue.isEmpty()) {
                     IHopper hopper = addedHopperQueue.poll();
@@ -441,6 +457,8 @@ public class DataManager {
                             hopper.save(mobInsertStat);
                         } else if (hopper.getType() == HopperEnum.Crop) {
                             hopper.save(cropInsertStat);
+                        } else if (hopper.getType() == HopperEnum.Normal) {
+                            hopper.save(normalInsertStat);
                         }
                     }
                 }
@@ -450,16 +468,19 @@ public class DataManager {
             breakInsertStat.executeBatch();
             mobInsertStat.executeBatch();
             cropInsertStat.executeBatch();
+            normalInsertStat.executeBatch();
             grindInsertStat.close();
             breakInsertStat.close();
             mobInsertStat.close();
             cropInsertStat.close();
+            normalInsertStat.close();
 
             if (!cleanSave) {
                 PreparedStatement grindUpdateStat = connection.prepareStatement("UPDATE Grind SET name = ?,loc = ?,lvl = ?,ent = ?,isAuto = ?,isGlobal = ?,data = ? WHERE name = ? AND loc = ?");
                 PreparedStatement breakUpdateStat = connection.prepareStatement("UPDATE Break SET name = ?,loc = ?,lvl = ?,data = ? WHERE name = ? AND loc = ?");
                 PreparedStatement cropUpdateStat = connection.prepareStatement("UPDATE Crop SET name = ?,loc = ?,lvl = ?,data = ? WHERE name = ? AND loc = ?");
                 PreparedStatement mobUpdateStat = connection.prepareStatement("UPDATE Mob SET name = ?,loc = ?,lvl = ?,data = ? WHERE name = ? AND loc = ?");
+                PreparedStatement normalUpdateStat = connection.prepareStatement("UPDATE Normal SET name = ?,loc = ?,lvl = ?,data = ? WHERE name = ? AND loc = ?");
 
                 while (!updatedHopperQueue.isEmpty()) {
                     IHopper hopper = updatedHopperQueue.poll();
@@ -496,6 +517,14 @@ public class DataManager {
                             } catch (SQLException e) {
                                 e.printStackTrace();
                             }
+                        } else if (hopper.getType() == HopperEnum.Normal) {
+                            try {
+                                normalUpdateStat.setString(5, hopper.getData().get("name").toString());
+                                normalUpdateStat.setString(6, hopper.getData().get("loc").toString());
+                                hopper.save(normalUpdateStat);
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
@@ -504,10 +533,12 @@ public class DataManager {
                 breakUpdateStat.executeBatch();
                 cropUpdateStat.executeBatch();
                 mobUpdateStat.executeBatch();
+                normalUpdateStat.executeBatch();
                 grindUpdateStat.close();
                 breakUpdateStat.close();
                 cropUpdateStat.close();
                 mobUpdateStat.close();
+                normalUpdateStat.close();
             }
 
         } catch (Exception ex) {
@@ -549,6 +580,8 @@ public class DataManager {
             hopper = new GrindHopper(loc, name, lvl, ent, Boolean.valueOf(nbt.getString("isAuto")), Boolean.valueOf(nbt.getString("isGlobal")));
         } else if (type == HopperEnum.Break) {
             hopper = new BreakHopper(loc, name, lvl);
+        } else if (type == HopperEnum.Normal) {
+            hopper = new NormalHopper(loc, name, lvl);
         }
         hopper.getData().put("owner", p.getName());
         add(hopper, true);
@@ -589,6 +622,9 @@ public class DataManager {
                                 break;
                             case Mob:
                                 deleteStat = connection.prepareStatement("DELETE FROM Mob WHERE name = ? AND loc = ?");
+                                break;
+                            case Normal:
+                                deleteStat = connection.prepareStatement("DELETE FROM Normal WHERE name = ? AND loc = ?");
                                 break;
                         }
 
@@ -640,6 +676,8 @@ public class DataManager {
                     add(new CropHopper(loc, name, level, data2), false);
                 } else if (en == HopperEnum.Mob) {
                     add(new MobHopper(loc, name, level, data2), false);
+                } else if(en == HopperEnum.Normal){
+                    add(new NormalHopper(loc, name, level, data2), false);
                 }
 
             }
