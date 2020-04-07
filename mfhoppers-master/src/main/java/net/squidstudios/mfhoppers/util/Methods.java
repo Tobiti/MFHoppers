@@ -787,7 +787,9 @@ public class Methods {
     }
 
     public static boolean canFit(ItemStack itemStack, int amount, Inventory inv) {
-        boolean toReturn = false;
+        if(inv.firstEmpty() != -1){
+            return true;
+        }
 
         for (ItemStack item : inv.getContents()) {
             if (item == null || item.getType() == Material.AIR) return true;
@@ -797,7 +799,7 @@ public class Methods {
                     return true;
         }
 
-        return toReturn;
+        return false;
     }
 
     public static boolean containsPlayersAroundHopper(@NonNull Location location) {

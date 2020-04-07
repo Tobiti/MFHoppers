@@ -47,11 +47,11 @@ public class SellHistoryManager {
     protected void SendSellHistoryMessage(Player player, SellHistory history) {
         Lang.SELLHISTORY_HEADER.send(player);
         double totalPrice = 0;
-        for (Entry<Material, Integer> entry : history.getSoldItems().entrySet()) {
+        for (Entry<ItemStack, Integer> entry : history.getSoldItems().entrySet()) {
             Map<String, Object> data = new HashMap<>();
             data.put("{amount}", entry.getValue());
-            data.put("{itemtype}", entry.getKey().toString());
-            double price = SellManager.getInstance().getPrice(new ItemStack(entry.getKey(), 1), player) * entry.getValue();
+            data.put("{itemtype}", entry.getKey().getType().toString());
+            double price = SellManager.getInstance().getPrice(entry.getKey(), player) * entry.getValue();
             totalPrice += Math.round(price * 100)/100;
             data.put("{price}", price);
             Lang.SELLHISTORY_LINE.send(data, player);
@@ -65,14 +65,14 @@ public class SellHistoryManager {
         return MFHoppers.getInstance().getConfig().getBoolean("SellHistory", false);
     }
 
-    public void AddEntry(Player player, Material mat, int amount){
+    public void AddEntry(Player player, ItemStack item, int amount){
         if(!isEnabled()){
             return;
         }
         if(!historyList.containsKey(player.getUniqueId())){
             historyList.put(player.getUniqueId(), new SellHistory());
         }
-        historyList.get(player.getUniqueId()).AddSoldItem(mat, amount);
+        historyList.get(player.getUniqueId()).AddSoldItem(item, amount);
     }
 
 }

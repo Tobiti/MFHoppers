@@ -579,7 +579,7 @@ public class TaskManager implements Listener {
         final List<ItemStack> sendedItems = tempList;
         for (ItemStack item : sendedItems) {
             for (Inventory destination : inventories) {
-                if(Methods.canFit(item, item.getAmount(), source)){
+                if(Methods.canFit(item, item.getAmount(), destination)){
                     if (Methods.removeItem(item, item.getAmount(), source)) {
                         destination.addItem(item);
                     }
@@ -650,7 +650,7 @@ public class TaskManager implements Listener {
 
                         if (removed) {
                             if(player != null){
-                                MFHoppers.getInstance().SellHistoryManager.AddEntry(player, item.getFirst().getType(), amount);
+                                MFHoppers.getInstance().SellHistoryManager.AddEntry(player, item.getFirst(), amount);
                             }
                             finalPrice += item.getSecond() * amount;
                             sellAmount -= amount;
