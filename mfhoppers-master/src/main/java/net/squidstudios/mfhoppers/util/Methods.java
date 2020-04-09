@@ -357,7 +357,7 @@ public class Methods {
                 if(!allowCustomName && entity.getCustomName() != null){
                     if (Bukkit.getPluginManager().isPluginEnabled("WildStacker")){
                         StackedEntity stackedEntity = WildStackerAPI.getStackedEntity((LivingEntity) entity);
-                        if(stackedEntity == null || stackedEntity.hasNameTag()){
+                        if(stackedEntity != null && stackedEntity.hasNameTag()){
                                 continue;
                         }
                     }
