@@ -8,6 +8,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -53,11 +56,11 @@ public class SellHistoryManager {
             data.put("{itemtype}", entry.getKey().getType().toString());
             double price = SellManager.getInstance().getPrice(entry.getKey(), player) * entry.getValue();
             totalPrice += Math.round(price * 100)/100;
-            data.put("{price}", price);
+            data.put("{price}", FormatMoney(price));
             Lang.SELLHISTORY_LINE.send(data, player);
         }
         Map<String, Object> data = new HashMap<>();
-        data.put("{totalprice}", totalPrice);
+        data.put("{totalprice}", FormatMoney(totalPrice));
         Lang.SELLHISTORY_FOOTER.send(data, player);
     }
 
@@ -73,6 +76,10 @@ public class SellHistoryManager {
             historyList.put(player.getUniqueId(), new SellHistory());
         }
         historyList.get(player.getUniqueId()).AddSoldItem(item, amount);
+    }
+
+    public String FormatMoney(double money){
+        return MFHoppers.getInstance().getEconomy().format(money);
     }
 
 }

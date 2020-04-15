@@ -37,9 +37,7 @@ import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -601,7 +599,7 @@ public class TaskManager implements Listener {
                     for (IHopper hopper : chunkHoppers) {
                         Methods.addItem(
                                 entityList
-                                        .stream().filter(entity -> !(new NBTEntity(entity).hasKey("PROCOSMETICS_ITEM")))
+                                        .stream().filter(entity -> entity != null && !entity.isDead() && !(new NBTEntity(entity).hasKey("PROCOSMETICS_ITEM")))
                                         .filter(item -> {
                                             ItemStack itemStack = ((Item) item).getItemStack();
                                             return hopper.ContainsInFilterMaterialList(itemStack.getType(), itemStack.getDurability());
@@ -739,7 +737,11 @@ public class TaskManager implements Listener {
 
         if(autoLinkMode == AutoLinkMode.OnlyFacing){
             for (IHopper hopper : hoppers) {
+                
                 Vector dir = hopper.getDirection();
+                if(dir == null){
+                    continue;
+                }
                 Location chestLoc = hopper.getLocation().clone().add(dir);
                 if(!hopper.isLinkedTo(chestLoc)){
                     if (MContainer.isContainer(chestLoc)) {

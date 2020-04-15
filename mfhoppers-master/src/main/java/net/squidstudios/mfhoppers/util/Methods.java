@@ -103,13 +103,28 @@ public class Methods {
             if (hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("pickupNamedItems") && !(boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("pickupNamedItems")
                     && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName())
                 continue;
+            
+            int startAmount = 0;
 
+            if(moveItem.GetMaxReached()){
+                startAmount = moveItem.getItems().stream().mapToInt(item -> item.getAmount()).sum();
+            }
             List<ItemStack> leftItems = addItem2(moveItem.getItems(), hopper);
-            if(leftItems.size() == 0){
-                moveItem.setAmount(0);
+            if(!moveItem.GetMaxReached()){
+                if(leftItems.size() == 0){
+                    moveItem.setAmount(0);
+                }
+                else {
+                    moveItem.setAmount(leftItems.stream().mapToInt(item -> item.getAmount()).sum());
+                }
             }
             else {
-                moveItem.setAmount(leftItems.stream().mapToInt(item -> item.getAmount()).sum());
+                if(leftItems.size() == 0){
+                    moveItem.setAmount(moveItem.getAmount() - startAmount);
+                }
+                else {
+                    moveItem.setAmount((moveItem.getAmount() - startAmount) + leftItems.stream().mapToInt(item -> item.getAmount()).sum());
+                }
             }
         }
 
@@ -378,6 +393,9 @@ public class Methods {
             @Override
             public void run() {
                 for (LivingEntity ent : ents) {
+                    if(ent == null ||ent.isDead()){
+                        continue;
+                    }
                     NBTEntity nbt = new NBTEntity(ent);
                     if (nbt.getByte("NoAI") == 1 && ent.getType() != EntityType.ENDERMAN) {
                         if(loc.distance(ent.getLocation()) >= 3){

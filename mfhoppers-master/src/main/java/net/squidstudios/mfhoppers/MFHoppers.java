@@ -544,9 +544,11 @@ public class MFHoppers extends PluginBuilder {
             Sender sender = cmd.getSender();
 
             if (cmd.args().length == 0) {
-                if (!(sender.getPlayer().hasPermission("mfh.adminhelp") || sender.getPlayer().hasPermission("mfh.help"))) {
-                    Lang.NO_PERMISSION.send(sender);
-                    return;
+                if(sender instanceof Player){
+                    if (!(sender.getPlayer().hasPermission("mfh.adminhelp") || sender.getPlayer().hasPermission("mfh.help"))) {
+                        Lang.NO_PERMISSION.send(sender);
+                        return;
+                    }
                 }
                 Lang.HELP.send(sender);
 

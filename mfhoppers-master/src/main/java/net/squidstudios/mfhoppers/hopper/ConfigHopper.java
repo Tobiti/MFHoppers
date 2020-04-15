@@ -361,9 +361,9 @@ public class ConfigHopper {
                     .addNbt("type", type.name())
                     .addNbt("name0", hopperName)
                     .addNbt("lvl", level)
-                    .addNbt("isAuto", isAuto).
-                            addNbt("isGlobal", isGlobal).
-                            addNbt("ent", EntityType.valueOf(upgradeData.get("mob").toString()))
+                    .addNbt("isAuto", isAuto)
+                    .addNbt("isGlobal", isGlobal)
+                    .addNbt("ent", EntityType.valueOf(upgradeData.get("mob").toString()))
                     .setLore(lore, true)
                     .replaceInLore("%type%", StringUtils.capitalize(EntityType.valueOf(upgradeData.get("mob").toString()).name().replace("_", " ").toLowerCase()))
                     .buildItem();
@@ -395,9 +395,9 @@ public class ConfigHopper {
                     .addNbt("type", type.name())
                     .addNbt("name0", hopperName)
                     .addNbt("lvl", level)
-                    .addNbt("isAuto", isAuto).
-                            addNbt("isGlobal", isGlobal).
-                            addNbt("ent", ent.name())
+                    .addNbt("isAuto", isAuto)
+                    .addNbt("isGlobal", isGlobal)
+                    .addNbt("ent", ent.name())
                     .setLore(lore, true)
                     .replaceInLore("%type%", StringUtils.capitalize(ent.name().replace("_", " ").toLowerCase()))
                     .buildItem();

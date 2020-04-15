@@ -11,6 +11,7 @@ import java.util.List;
 
 public class MoveItem {
 
+    private boolean reachedMaxCount = false;
     private boolean isStacked = false;
 
     public List<ItemStack> getItems() {
@@ -45,6 +46,19 @@ public class MoveItem {
         this.amount = amount;
     }
 
+    public MoveItem(Item parent, List<ItemStack> itemStackList, int amount, boolean max) {
+        if (amount > 64) setStacked(true);
+        setEntity(parent);
+
+        items = itemStackList;
+        this.amount = amount;
+        this.reachedMaxCount = max;
+    }
+
+    public boolean GetMaxReached(){
+        return reachedMaxCount;
+    }
+
     public static MoveItem getFrom(Item item) {
         if (HookManager.getInstance().isWildStackerHooked()) {
 
@@ -52,8 +66,8 @@ public class MoveItem {
             int amount = WildStackerAPI.getStackedItem(item).getStackAmount();
 
             //MFHoppers.getInstance().getLogger().info(String.format("Add Wildstacker Item %s Amount: %d", item.getItemStack().getType().toString(), amount));
-            add(items, amount, item.getItemStack());
-            return new MoveItem(item, items, amount);
+            boolean max = add(items, amount, item.getItemStack());
+            return new MoveItem(item, items, amount, max);
 
         } else {
             List<ItemStack> items = new ArrayList<>();
@@ -62,24 +76,31 @@ public class MoveItem {
         }
     }
 
-    static void add(List<ItemStack> items, int amount, ItemStack parent) {
-        add(items, amount, parent, 0);
+    static boolean add(List<ItemStack> items, int amount, ItemStack parent) {
+        boolean max = add(items, amount, parent, amount/64);
+
+        int modulo = amount % 64;
+        if(modulo > 0){
+            ItemStack clone = parent.clone();
+            clone.setAmount(amount % 64);
+            items.add(clone);
+        }
+
+        return max;
     }
 
-    static void add(List<ItemStack> items, int amount, ItemStack parent, int count) {
-        if (count > 20)
-            return;
-
-        int currentNumber = amount <= 64 ? amount : 64;
-
-        ItemStack clone = parent.clone();
-        clone.setAmount(currentNumber);
-
-        items.add(clone);
-
-        amount -= currentNumber;
-        if (amount > 0)
-            add(items, amount, parent, count + 1);
+    static boolean add(List<ItemStack> items, int amount, ItemStack parent, int count) {
+        boolean maxReached = false;
+        if(count > 20){
+            maxReached = true;
+            count = 20;
+        }
+        for(int i = 0; i < count; i++){
+            ItemStack clone = parent.clone();
+            clone.setAmount(64);
+            items.add(clone);
+        }
+        return maxReached;
     }
 
     public void setAmount(int amount) {

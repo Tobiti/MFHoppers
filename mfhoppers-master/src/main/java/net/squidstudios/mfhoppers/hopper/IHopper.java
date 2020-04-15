@@ -349,12 +349,17 @@ public abstract class IHopper {
             return direction;
         }
         else {
-            org.bukkit.material.Hopper hopperData = ((org.bukkit.material.Hopper)getLocation().getBlock().getState().getData());
-            if(hopperData.isPowered()){
+            if(getLocation().getBlock().getState().getData() instanceof org.bukkit.material.Hopper){
+                org.bukkit.material.Hopper hopperData = ((org.bukkit.material.Hopper)getLocation().getBlock().getState().getData());
+                if(hopperData.isPowered()){
+                    return null;
+                }
+                BlockFace face = hopperData.getFacing();
+                return face.getDirection();
+            }
+            else {
                 return null;
             }
-            BlockFace face = hopperData.getFacing();
-            return face.getDirection();
         }
 	}
 
