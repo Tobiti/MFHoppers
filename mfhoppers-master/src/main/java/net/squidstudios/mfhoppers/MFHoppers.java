@@ -360,6 +360,9 @@ public class MFHoppers extends PluginBuilder {
                     new BukkitRunnable() {
                         @Override
                         public void run() {
+                            if(item == null || item.getType() == Material.AIR){
+                                return;
+                            }
                             PlaceHopper(event, item);
                         }
                     }.runTaskAsynchronously(this);
