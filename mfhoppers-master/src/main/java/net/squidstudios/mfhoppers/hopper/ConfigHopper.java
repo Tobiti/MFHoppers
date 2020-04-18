@@ -268,33 +268,35 @@ public class ConfigHopper {
     public boolean isUpgradable() {
         if (upgrades.size() <= 1) {
             return false;
-        } else {
-            return true;
         }
+        return false;
     }
 
     public boolean isEditableFilter() {
         if (getData().containsKey("Editable_Filter")) {
-            return Boolean.valueOf(getData().get("Editable_Filter").toString());
-        } else {
-            return false;
+            try{
+                return (boolean) getData().get("Editable_Filter");
+            } catch (Exception ignore) {}
         }
+        return false;
     }
     
     public boolean onlyActiveWhenOwnerOnline() {
         if (getData().containsKey("onlyActiveWhenOwnerIsOnline")) {
-            return Boolean.valueOf(getData().get("onlyActiveWhenOwnerIsOnline").toString());
-        } else {
-            return false;
+            try{
+                return (boolean) getData().get("onlyActiveWhenOwnerIsOnline");
+            } catch (Exception ignore) {}
         }
+        return false;
     }
 
     public boolean isBreakAll() {
         if (getData().containsKey("breakAll")) {
-            return Boolean.valueOf(getData().get("breakAll").toString());
-        } else {
-            return false;
+            try{
+                return (boolean) getData().get("breakAll");
+            } catch (Exception ignore) {}
         }
+        return false;
     }
 
     public ItemStack getItemOfData(IHopper hopper) {
