@@ -11,6 +11,7 @@ import de.Linus122.DropEdit.Main;
 import de.Linus122.EntityInfo.EntityKeyInfo;
 import de.Linus122.EntityInfo.KeyGetter;
 import de.tr7zw.changeme.nbtapi.NBTEntity;
+import lombok.var;
 import me.ByteMagic.HeadHunter.managers.HeadHunter.HeadHunterMap;
 import me.ByteMagic.HeadHunter.managers.HeadHunter.skulls.MobSkull;
 import me.ByteMagic.Helix.utils.mobs.MinecraftEntity;
@@ -527,7 +528,10 @@ public class TaskManager implements Listener {
 
                         Inventory source = null;
                         try {
-                            source = MContainer.getInventory(hopper.getLocation()).get().getInventory();
+                            var inventoryHolder = MContainer.getInventory(hopper.getLocation()).get();
+                            if(inventoryHolder != null){
+                                source = inventoryHolder.getInventory();
+                            }
                         } catch (InterruptedException | ExecutionException e) {
                             e.printStackTrace();
                         }

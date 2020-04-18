@@ -10,6 +10,7 @@ import net.squidstudios.mfhoppers.util.inv.InventoryBuilder;
 import net.squidstudios.mfhoppers.util.item.ItemBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFlag;
@@ -72,7 +73,9 @@ public class UpgradeInventory {
                 setItem(5, infoItem).
                 setClickListener(event -> {
                     if (event.getCurrentItem() != null) {
-
+                        if(event.getCurrentItem().getType() == Material.AIR){
+                            return;
+                        }
                         NBTItem nbt = new NBTItem(event.getCurrentItem());
                         if (nbt.hasKey("upgrade")) {
 
