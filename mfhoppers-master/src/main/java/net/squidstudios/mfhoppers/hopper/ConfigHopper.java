@@ -445,5 +445,14 @@ public class ConfigHopper {
             } catch (Exception ignore) {}
         }
         return true;
+    }
+    
+	public boolean filterIsBlacklist() {
+        if(getData().containsKey("filterIsBlacklist")){
+            try{
+            return (boolean) getData().get("filterIsBlacklist");
+            } catch (Exception ignore) {}
+        }
+		return false;
 	}
 }

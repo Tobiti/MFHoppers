@@ -205,9 +205,11 @@ public abstract class IHopper {
     public boolean ContainsInFilterMaterialList(Material mat, short damage) {
         Set<FilterElement> filter = this.getFilterMaterialList();
 
-        return filter.stream().anyMatch(filterElement -> {
+        boolean result = filter.stream().anyMatch(filterElement -> {
             return (!filterElement.HasDamageValue && filterElement.Material == mat) || (filterElement.Material == mat && filterElement.DamageValue == damage);
         });
+
+        return getConfigHopper().filterIsBlacklist() ? !result : result;
     }
 
     public void ResetFilterList() {

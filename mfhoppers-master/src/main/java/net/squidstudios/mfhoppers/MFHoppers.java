@@ -221,6 +221,10 @@ public class MFHoppers extends PluginBuilder {
 
                 ItemStack itemStack = Objects.requireNonNull(item.getItemStack(), "ItemStack cannot be null!");
 
+                if(itemStack == null || itemStack.getType() == Material.AIR){
+                    return;
+                }
+
                 if(Bukkit.getPluginManager().isPluginEnabled("WildChests")){
                     NBTItem nbtItem = new NBTItem(itemStack);
                     if(nbtItem.hasKey("WildChests")){
@@ -360,6 +364,9 @@ public class MFHoppers extends PluginBuilder {
                     new BukkitRunnable() {
                         @Override
                         public void run() {
+                            if(item == null || item.getType() == Material.AIR){
+                                return;
+                            }
                             PlaceHopper(event, item);
                         }
                     }.runTaskAsynchronously(this);
