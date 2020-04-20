@@ -193,6 +193,10 @@ public class Methods {
 
         if (hopper.isLinked() && hopper.isLinkedInstantMove()) {
             for (Inventory destination : Methods.GetLinkedInventorys(hopper)) {
+                if(!isChunkLoaded(destination.getLocation())){
+                    continue;
+                }
+
                 if(Bukkit.getPluginManager().isPluginEnabled("WildChests")){
                     Chest chest = WildChestsAPI.getChest(MContainer.getLocation(destination.getHolder()));
                     if(chest != null){
@@ -232,6 +236,16 @@ public class Methods {
         return tempItems;
     }
 
+
+    private static boolean isChunkLoaded(Location location) {
+        int chunkX = location.getBlockX() >> 4;
+        int chunkZ = location.getBlockZ() >> 4;
+
+        if (location.getWorld() == null)
+            return false;
+
+        return location.getWorld().isChunkLoaded(chunkX, chunkZ);
+    }
 
     public static Location toLocation(String s) {
 
