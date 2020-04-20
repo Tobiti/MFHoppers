@@ -713,7 +713,7 @@ public class TaskManager implements Listener {
                         int x = (int)hopper.getLocation().getBlockX() % 16;
                         int y = (int)hopper.getLocation().getBlockY();
                         int z = (int)hopper.getLocation().getBlockZ() % 16;
-                        MFHoppers.getInstance().getLogger().info(String.format("Hopper (%d %d %d):", x, y, z));
+                        //MFHoppers.getInstance().getLogger().info(String.format("Hopper (%d %d %d):", x, y, z));
                         ChunkSnapshot snapshot = map.get(hopper);
                         boolean stillChests = true;
                         while(y > 0 && stillChests){
@@ -725,7 +725,7 @@ public class TaskManager implements Listener {
                             }else {
                                 material = snapshot.getBlockType(x, y, z);
                             }
-                            MFHoppers.getInstance().getLogger().info(String.format("\t Block (%d %d %d) Type: %s", x, y, z, material.toString()));
+                            //MFHoppers.getInstance().getLogger().info(String.format("\t Block (%d %d %d) Type: %s", x, y, z, material.toString()));
                             if (material.equals(Material.CHEST) || (OVersion.isOrAfter(14) && material.equals(XMaterial.matchXMaterial("BARREL").get().parseMaterial()))){
                                 Location loc = hopper.getLocation().clone().add(0, y-hopper.getLocation().getY(), 0);
                                 new BukkitRunnable(){
