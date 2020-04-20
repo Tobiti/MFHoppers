@@ -193,12 +193,13 @@ public class Methods {
 
         if (hopper.isLinked() && hopper.isLinkedInstantMove()) {
             for (Inventory destination : Methods.GetLinkedInventorys(hopper)) {
-                if(!isChunkLoaded(destination.getLocation())){
+                Location chestLocation = MContainer.getLocation(destination.getHolder());
+                if(!isChunkLoaded(chestLocation)){
                     continue;
                 }
 
                 if(Bukkit.getPluginManager().isPluginEnabled("WildChests")){
-                    Chest chest = WildChestsAPI.getChest(MContainer.getLocation(destination.getHolder()));
+                    Chest chest = WildChestsAPI.getChest(chestLocation);
                     if(chest != null){
                         Map<Integer, ItemStack> integerItemStackMap = chest.addItems(tempItems.toArray(itemArray));
                         if (integerItemStackMap.isEmpty()) {
@@ -371,7 +372,7 @@ public class Methods {
         Set<LivingEntity> entities = Sets.newHashSet();
 
         for (Entity entity : entityList) {
-            if (entity == null) {
+            if (entity == null || entity.isDead()) {
                 continue;
             }
             if(OVersion.isAfter(8)){

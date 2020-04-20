@@ -315,6 +315,18 @@ public abstract class IHopper {
         if(!isChunkLoaded()){
             return false;
         }
+        if(OVersion.isBefore(9)){
+            if((getLocation().getBlock().getData() & 0x8) != 0){
+                return false;
+            }
+        } else {
+            if(getLocation().getBlock().getState().getData() instanceof org.bukkit.material.Hopper){
+                org.bukkit.material.Hopper hopperData = ((org.bukkit.material.Hopper)getLocation().getBlock().getState().getData());
+                if(hopperData.isPowered()){
+                    return false;
+                }
+            }
+        }
         if(getConfigHopper().onlyActiveWhenOwnerOnline()){
             return getOwner() != null && Bukkit.getServer().getOnlinePlayers().stream().anyMatch(player -> player.getName().equals(getOwner()));
         }

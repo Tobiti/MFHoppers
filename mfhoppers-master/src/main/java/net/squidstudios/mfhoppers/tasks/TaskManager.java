@@ -145,6 +145,9 @@ public class TaskManager implements Listener {
                 }
 
                 for (LivingEntity entity : LIVING_ENTITIES) {
+                    if (entity == null || entity.isDead()) {
+                        continue;
+                    }
                     NBTEntity nbt = new NBTEntity(entity);
                     if ((nbt.getByte("NoAI") == 1 && entity.getType() != EntityType.ENDERMAN)
                             && hopper.getLocation().distance(entity.getLocation()) < (entity.getType().equals(EntityType.GHAST) ? 3 : 2)) {
@@ -235,6 +238,9 @@ public class TaskManager implements Listener {
                             .filter(e -> e.getType().equals(type) || isGlobal).collect(Collectors.toList());
 
                     for (LivingEntity ent : entities) {
+                        if (ent == null || ent.isDead()) {
+                            continue;
+                        }
                         if (Bukkit.getPluginManager().isPluginEnabled("WildStacker")
                                 || Bukkit.getPluginManager().isPluginEnabled("BeastCore")) {
                             if (pl.configHoppers.get(hopper.getName()).getDataOfHopper(hopper).containsKey("stack_kill")
@@ -704,14 +710,14 @@ public class TaskManager implements Listener {
                 @Override
                 public void run() {
                     for (IHopper hopper : map.keySet()) {
-                        int x = (int)Math.abs(hopper.getLocation().getX()) % 16;
-                        int y = (int)hopper.getLocation().getY();
-                        int z = (int)Math.abs(hopper.getLocation().getZ()) % 16;
+                        int x = (int)hopper.getLocation().getBlockX() % 16;
+                        int y = (int)hopper.getLocation().getBlockY();
+                        int z = (int)hopper.getLocation().getBlockZ() % 16;
+                        MFHoppers.getInstance().getLogger().info(String.format("Hopper (%d %d %d):", x, y, z));
                         ChunkSnapshot snapshot = map.get(hopper);
                         boolean stillChests = true;
                         while(y > 0 && stillChests){
                             y--;
-
 
                             Material material;
                             if(OVersion.isBefore(9)){
@@ -719,6 +725,7 @@ public class TaskManager implements Listener {
                             }else {
                                 material = snapshot.getBlockType(x, y, z);
                             }
+                            MFHoppers.getInstance().getLogger().info(String.format("\t Block (%d %d %d) Type: %s", x, y, z, material.toString()));
                             if (material.equals(Material.CHEST) || (OVersion.isOrAfter(14) && material.equals(XMaterial.matchXMaterial("BARREL").get().parseMaterial()))){
                                 Location loc = hopper.getLocation().clone().add(0, y-hopper.getLocation().getY(), 0);
                                 new BukkitRunnable(){
