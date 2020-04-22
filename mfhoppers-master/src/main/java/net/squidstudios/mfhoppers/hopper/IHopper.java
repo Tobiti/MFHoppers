@@ -203,6 +203,10 @@ public abstract class IHopper {
     }
 
     public boolean ContainsInFilterMaterialList(Material mat, short damage) {
+        if(getData().get("name") == null || MFHoppers.getInstance().getConfigHoppers().get(getData().get("name").toString()) == null){
+            return false;
+        }
+
         Set<FilterElement> filter = this.getFilterMaterialList();
 
         boolean result = filter.stream().anyMatch(filterElement -> {
@@ -320,10 +324,12 @@ public abstract class IHopper {
                 return false;
             }
         } else {
-            if(getLocation().getBlock().getState().getData() instanceof org.bukkit.material.Hopper){
-                org.bukkit.material.Hopper hopperData = ((org.bukkit.material.Hopper)getLocation().getBlock().getState().getData());
-                if(hopperData.isPowered()){
-                    return false;
+            if(OVersion.isBefore(14)){
+                if(getLocation().getBlock().getState().getData() instanceof org.bukkit.material.Hopper){
+                    org.bukkit.material.Hopper hopperData = ((org.bukkit.material.Hopper)getLocation().getBlock().getState().getData());
+                    if(hopperData.isPowered()){
+                        return false;
+                    }
                 }
             }
         }

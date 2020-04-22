@@ -627,6 +627,10 @@ public class TaskManager implements Listener {
                 @Override
                 public void run() {
                     for (IHopper hopper : chunkHoppers) {
+                        if(hopper.getData().get("name") == null || MFHoppers.getInstance().getConfigHoppers().get(hopper.getData().get("name").toString()) == null){
+                            DataManager.getInstance().remove(hopper);
+                            continue;
+                        }
                         Methods.addItem(
                                 entityList
                                         .stream().filter(entity -> entity != null && !entity.isDead() && !(new NBTEntity(entity).hasKey("PROCOSMETICS_ITEM")))
