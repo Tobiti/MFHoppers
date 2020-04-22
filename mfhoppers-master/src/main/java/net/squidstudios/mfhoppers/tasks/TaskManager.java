@@ -734,9 +734,9 @@ public class TaskManager implements Listener {
                 @Override
                 public void run() {
                     for (IHopper hopper : map.keySet()) {
-                        int x = (int)hopper.getLocation().getBlockX() % 16;
+                        int x = Math.abs((int)hopper.getLocation().getBlockX() % 16);
                         int y = (int)hopper.getLocation().getBlockY();
-                        int z = (int)hopper.getLocation().getBlockZ() % 16;
+                        int z = Math.abs((int)hopper.getLocation().getBlockZ() % 16);
                         //MFHoppers.getInstance().getLogger().info(String.format("Hopper (%d %d %d):", x, y, z));
                         ChunkSnapshot snapshot = map.get(hopper);
                         boolean stillChests = true;
