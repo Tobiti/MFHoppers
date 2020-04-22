@@ -306,7 +306,12 @@ public class TaskManager implements Listener {
                                         else {
                                             Player owner = Bukkit.getPlayer(hopper.getOwner());
                                             if(owner != null){
-                                                EngineSkulls.get().tryToDropMobHead(owner, mobSkull, finalStackKill, ent.getLocation());
+                                                new BukkitRunnable(){
+                                                    @Override
+                                                    public void run() {
+                                                        EngineSkulls.get().tryToDropMobHead(owner, mobSkull, finalStackKill, ent.getLocation());
+                                                    }
+                                                }.runTask(MFHoppers.getInstance());
                                             }
                                         }
                                     }
@@ -490,10 +495,25 @@ public class TaskManager implements Listener {
         Collection<IHopper> hoppers = DataManager.getInstance().getHoppersSet(hopper -> hopper.getData().containsKey("linked"));
 
         for (IHopper hopper : hoppers) {
+            if(hopper == null){
+                DataManager.getInstance().remove(hopper);
+                continue;
+            }
             if (!hopper.isChunkLoaded()) continue;
 
             ConfigHopper configHopper = hopper.getConfigHopper();
+            if(configHopper == null){
+                DataManager.getInstance().remove(hopper);
+                continue;
+            }
             Map<String, Object> configData = configHopper.getDataOfHopper(hopper);
+            if(configData == null){
+                continue;
+            }
+            if(hopper.getData() == null || hopper.getData().size() == 0){
+                continue;
+            }
+            
 
             if (configData.containsKey("linkedMoveEvery") && configData.containsKey("linkedMoveAmount")) {
                 int time = hopper.getData().containsKey("linkedTime") ? (int) hopper.getData().get("linkedTime") : (int) configData.get("linkedMoveEvery");

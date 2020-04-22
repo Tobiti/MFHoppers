@@ -340,7 +340,9 @@ public class MFHoppers extends PluginBuilder {
                         }.runTask(instance);
 
                         if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")) {
-                            SuperiorSkyblockAPI.getPlayer(event.getPlayer()).getIsland().handleBlockBreak(event.getBlock(), 1);
+                            if(SuperiorSkyblockAPI.getPlayer(event.getPlayer()).getIsland() != null){
+                                SuperiorSkyblockAPI.getPlayer(event.getPlayer()).getIsland().handleBlockBreak(event.getBlock(), 1);
+                            }
                         }
 
                     } else if (MContainer.isContainer(event.getBlock().getLocation())) {
@@ -355,7 +357,7 @@ public class MFHoppers extends PluginBuilder {
             if (event.isCancelled()) return;
 
             if (Methods.isHopper(event.getItemInHand())) {
-                ItemStack item = event.getItemInHand();
+                ItemStack item = event.getItemInHand().clone();
                 if(OVersion.isOrAfter(15)){
                     // Moved here because on 1.15 the hopper is placed before it can get the item. So it gets the empty item slot and breaks!
                     PlaceHopper(event, item);
