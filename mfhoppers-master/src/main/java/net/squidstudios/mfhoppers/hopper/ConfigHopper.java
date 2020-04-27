@@ -269,7 +269,7 @@ public class ConfigHopper {
         if (upgrades.size() <= 1) {
             return false;
         }
-        return false;
+        return true;
     }
 
     public boolean isEditableFilter() {
