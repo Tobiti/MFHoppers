@@ -180,9 +180,9 @@
         <dependency>
             <groupId>beast.core</groupId>
             <artifactId>beastcore</artifactId>
-            <version>4.1.2.0</version>
+            <version>4.6.0.1</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/../Libraries/BeastCore-4.1.2.0-STABLE_1.jar</systemPath>
+            <systemPath>${project.basedir}/../Libraries/BeastCore-4.6.0.1-STABLE_1.jar</systemPath>
         </dependency>
 
         <dependency>

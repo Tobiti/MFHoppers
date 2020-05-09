@@ -260,10 +260,6 @@ public class TaskManager implements Listener {
 
                                     boolean isSingleItem = false;
 
-                                    if (Bukkit.getPluginManager().isPluginEnabled("BeastCore")) {
-                                        BeastCoreListener.getInstance().beastCoreStackedKill.put(ent, finalStackKill);
-                                    }
-
                                     if (Bukkit.getPluginManager().isPluginEnabled("WildStacker")) {
                                         StackedEntity stackedEnt = WildStackerAPI.getStackedEntity(ent);
                                         entDrops = stackedEnt.getDrops(0, finalStackKill);
@@ -346,6 +342,10 @@ public class TaskManager implements Listener {
 
                                             WildStackerAPI.getStackedEntity(ent).runUnstack(finalStackKill);
                                         } else {
+                                            if (Bukkit.getPluginManager().isPluginEnabled("BeastCore")) {
+                                                BeastCoreListener.getInstance().beastCoreStackedKill.put(ent, finalStackKill);
+                                            }
+
                                             if (CONFIG_HOPPER.getDataOfHopper(hopper).containsKey("damageType")) {
                                                 Methods.damage(hopper, hopper.getLocation().getBlock(), 10000000, ent, CONFIG_HOPPER.getDataOfHopper(hopper).get("damageType").toString());
                                             } else {

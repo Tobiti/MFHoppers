@@ -180,7 +180,7 @@ public class Methods {
     }
 
     public static List<ItemStack> addItem2(List<ItemStack> items, IHopper hopper) {
-        List<ItemStack> tempItems = items.stream().collect(Collectors.toList());
+        List<ItemStack> tempItems = items.stream().filter(item -> item != null).collect(Collectors.toList());
         Inventory inv = null;
         try {
             inv = hopper.getInventory().get();

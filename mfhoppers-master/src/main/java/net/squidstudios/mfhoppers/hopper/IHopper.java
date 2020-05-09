@@ -320,8 +320,10 @@ public abstract class IHopper {
             return false;
         }
         if(OVersion.isBefore(9)){
-            if((getLocation().getBlock().getData() & 0x8) != 0){
-                return false;
+            if (Bukkit.isPrimaryThread()){
+                if((getLocation().getBlock().getData() & 0x8) != 0){
+                    return false;
+                }
             }
         } else {
             if(OVersion.isBefore(14)){
