@@ -24,10 +24,11 @@ public class BeastCoreListener implements Listener {
 
     public void Init() {
         instance = this;
-        Class serviceClass = BeastCore.getInstance().getApi().getMobsService().getClass();
+        final Class serviceClass = BeastCore.getInstance().getApi().getMobsService().getClass();
         Field managerField;
         try {
             managerField = serviceClass.getDeclaredField("mergedMobsManager");
+            managerField.setAccessible(true);
             mobsManager = (MergedMobsManager) managerField.get(BeastCore.getInstance().getApi().getMobsService());
         } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
             // TODO Auto-generated catch block
@@ -41,17 +42,17 @@ public class BeastCoreListener implements Listener {
 
 
     @EventHandler(priority = EventPriority.NORMAL)
-    public void onBeastCoreDeath(EntityDeathEvent event) {
+    public void onBeastCoreDeath(final EntityDeathEvent event) {
         if (beastCoreStackedKill.containsKey(event.getEntity())) {
             final int finalStackKill = beastCoreStackedKill.get(event.getEntity());
             beastCoreStackedKill.remove(event.getEntity());
 
-            StackedMob stackedMob = mobsManager.fromEntity(event.getEntity());
+            final StackedMob stackedMob = mobsManager.fromEntity(event.getEntity());
             if(stackedMob == null){
                 return;
             }
 
-            List<ItemStack> drops = event.getDrops();
+            final List<ItemStack> drops = event.getDrops();
             {
                 drops.stream().forEach(drop -> {
                     drop.setAmount(drop.getAmount() * finalStackKill);

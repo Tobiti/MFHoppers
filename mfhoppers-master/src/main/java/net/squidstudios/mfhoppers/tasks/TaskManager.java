@@ -1,5 +1,7 @@
 package net.squidstudios.mfhoppers.tasks;
 
+import com.bgsoftware.wildchests.api.WildChestsAPI;
+import com.bgsoftware.wildchests.api.objects.chests.Chest;
 import com.bgsoftware.wildstacker.api.WildStackerAPI;
 import com.bgsoftware.wildstacker.api.objects.StackedEntity;
 import com.google.common.collect.Sets;
@@ -402,6 +404,9 @@ public class TaskManager implements Listener {
 
             int time = 0;
             if (hopper.getData() == null || hopper.getData().get("time") == null) {
+                if(DATA.get("breakEvery") == null){
+                    continue;
+                }
                 time = (int) DATA.get("breakEvery");
             } else {
                 time = (int) hopper.getData().get("time");
@@ -609,7 +614,18 @@ public class TaskManager implements Listener {
             for (Inventory destination : inventories) {
                 if(Methods.canFit(item, item.getAmount(), destination)){
                     if (Methods.removeItem(item, item.getAmount(), source)) {
-                        destination.addItem(item);
+                        if(Bukkit.getPluginManager().isPluginEnabled("WildChests")){
+                            Chest chest = WildChestsAPI.getChest(destination.getLocation());
+                            if(chest != null){
+                                chest.addItems(item);
+                            }
+                            else {
+                                destination.addItem(item);
+                            }
+                        }
+                        else {
+                            destination.addItem(item);
+                        }
                     }
                 }
             }
