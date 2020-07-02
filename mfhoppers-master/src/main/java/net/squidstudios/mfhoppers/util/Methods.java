@@ -105,6 +105,25 @@ public class Methods {
             if (hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("pickupNamedItems") && !(boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("pickupNamedItems")
                     && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName())
                 continue;
+
+            if(hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("instantSell") && (boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("instantSell")) {
+                if (MFHoppers.getInstance().getEconomy() != null && hopper.getOwner() != null && !hopper.getOwner().isEmpty()){
+        
+                    Player player = Bukkit.getPlayer(hopper.getOwner());
+                    double price = SellManager.getInstance().getPrice(TaskManager.copy(moveItem.getItems().get(0), 1), player) * moveItem.getAmount();
+
+                    if(player != null){
+                        MFHoppers.getInstance().SellHistoryManager.AddEntry(player, moveItem.getItems().get(0), moveItem.getAmount());
+                        MFHoppers.getInstance().getEconomy().depositPlayer(player, price);
+                    } else {
+                        MFHoppers.getInstance().getEconomy().depositPlayer(Bukkit.getOfflinePlayer(hopper.getOwner()), price);
+                    }
+
+                    moveItem.setAmount(0);
+                    continue;
+                        
+                }
+            }
             
             int startAmount = 0;
 
@@ -144,28 +163,33 @@ public class Methods {
                     continue;
                 }
 
-                if (hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("pickupNamedItems") && !(boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("pickupNamedItems")
-                        && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName())
+                if (hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("pickupNamedItems") && !(boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("pickupNamedItems") 
+                    && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName()) {
                     continue;
+                }
 
-                    if(hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("instantSell") && (boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("instantSell")) {
-                        if (MFHoppers.getInstance().getEconomy() != null && hopper.getOwner() != null && !hopper.getOwner().isEmpty()){
-                
-                            Player player = Bukkit.getPlayer(hopper.getOwner());
-                            double price = SellManager.getInstance().getPrice(TaskManager.copy(moveItem.getItems().get(0), 1), player) * moveItem.getAmount();
-    
-                            if(player != null){
-                                MFHoppers.getInstance().SellHistoryManager.AddEntry(player, moveItem.getItems().get(0), moveItem.getAmount());
-                                MFHoppers.getInstance().getEconomy().depositPlayer(player, price);
-                            } else {
-                                MFHoppers.getInstance().getEconomy().depositPlayer(Bukkit.getOfflinePlayer(hopper.getOwner()), price);
-                            }
-    
-                            moveItem.setAmount(0);
-                            continue;
-                                
+                MFHoppers.getInstance().getLogger().info(String.format("InstantSell:  Hopper Owner: %s",
+                    String.valueOf(hopper.getConfigHopper().isInstantSell()),
+                    hopper.getOwner()));
+
+                if(hopper.getConfigHopper().isInstantSell()) {
+                    if (MFHoppers.getInstance().getEconomy() != null && hopper.getOwner() != null && !hopper.getOwner().isEmpty()){
+            
+                        Player player = Bukkit.getPlayer(hopper.getOwner());
+                        double price = SellManager.getInstance().getPrice(TaskManager.copy(moveItem.getItems().get(0), 1), player) * moveItem.getAmount();
+
+                        if(player != null){
+                            MFHoppers.getInstance().SellHistoryManager.AddEntry(player, moveItem.getItems().get(0), moveItem.getAmount());
+                            MFHoppers.getInstance().getEconomy().depositPlayer(player, price);
+                        } else {
+                            MFHoppers.getInstance().getEconomy().depositPlayer(Bukkit.getOfflinePlayer(hopper.getOwner()), price);
                         }
+
+                        moveItem.setAmount(0);
+                        continue;
+                            
                     }
+                }
 
                 List<ItemStack> leftItems = addItem2(moveItem.getItems(), hopper);
                 if(leftItems.size() == 0){
@@ -403,7 +427,7 @@ public class Methods {
             }
 
             if (entity.getType() != EntityType.PLAYER && entity.getType() != EntityType.ARMOR_STAND && entity.getType() != EntityType.DROPPED_ITEM && entity.getType().isAlive() && (blacklist == null || !blacklist.contains(entity.getType()))) {
-                
+
                 //MFHoppers.getInstance().getLogger().info(String.format("AllowCustomName: %s MobName: %s MobType: %s", String.valueOf(allowCustomName), entity.getCustomName(), entity.getType().toString()));
                 if(!allowCustomName && entity.getCustomName() != null){
                     if (Bukkit.getPluginManager().isPluginEnabled("WildStacker")){

@@ -167,8 +167,6 @@ public class ConfigHopper {
 
                 }
             }
-
-
         }
         this.hopperName = hopperName;
         pl.configHoppers.put(hopperName, this);
@@ -294,6 +292,15 @@ public class ConfigHopper {
         if (getData().containsKey("breakAll")) {
             try{
                 return (boolean) getData().get("breakAll");
+            } catch (Exception ignore) {}
+        }
+        return false;
+    }
+
+    public boolean isInstantSell() {
+        if (getData().containsKey("instantSell")) {
+            try{
+                return (boolean) getData().get("instantSell");
             } catch (Exception ignore) {}
         }
         return false;
