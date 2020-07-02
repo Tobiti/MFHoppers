@@ -47,6 +47,7 @@ Hoppers:
     should_drop_from_explosions: true
     filterIsBlacklist: false
     autoLinkToChest: true
+    instantSell: false
     drops:
       - "ROTTEN_FLESH"
 

@@ -17,6 +17,8 @@ import net.squidstudios.mfhoppers.hopper.ConfigHopper;
 import net.squidstudios.mfhoppers.hopper.HopperEnum;
 import net.squidstudios.mfhoppers.hopper.IHopper;
 import net.squidstudios.mfhoppers.manager.DataManager;
+import net.squidstudios.mfhoppers.manager.SellManager;
+import net.squidstudios.mfhoppers.tasks.TaskManager;
 import net.squidstudios.mfhoppers.util.moveableItem.MoveItem;
 import net.squidstudios.mfhoppers.util.plugin.PluginBuilder;
 import org.apache.commons.lang.StringUtils;
@@ -146,6 +148,25 @@ public class Methods {
                         && moveItem.getEntity().getItemStack().hasItemMeta() && moveItem.getEntity().getItemStack().getItemMeta().hasDisplayName())
                     continue;
 
+                    if(hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("instantSell") && (boolean) hopper.getConfigHopper().getDataOfHopper(hopper).get("instantSell")) {
+                        if (MFHoppers.getInstance().getEconomy() != null && hopper.getOwner() != null && !hopper.getOwner().isEmpty()){
+                
+                            Player player = Bukkit.getPlayer(hopper.getOwner());
+                            double price = SellManager.getInstance().getPrice(TaskManager.copy(moveItem.getItems().get(0), 1), player) * moveItem.getAmount();
+    
+                            if(player != null){
+                                MFHoppers.getInstance().SellHistoryManager.AddEntry(player, moveItem.getItems().get(0), moveItem.getAmount());
+                                MFHoppers.getInstance().getEconomy().depositPlayer(player, price);
+                            } else {
+                                MFHoppers.getInstance().getEconomy().depositPlayer(Bukkit.getOfflinePlayer(hopper.getOwner()), price);
+                            }
+    
+                            moveItem.setAmount(0);
+                            continue;
+                                
+                        }
+                    }
+
                 List<ItemStack> leftItems = addItem2(moveItem.getItems(), hopper);
                 if(leftItems.size() == 0){
                     moveItem.setAmount(0);
@@ -227,7 +248,7 @@ public class Methods {
                 }
             }
         }
-        Map<Integer, ItemStack> integerItemStackMap = inv.addItem(tempItems.toArray(itemArray));
+        Map<Integer, ItemStack> integerItemStackMap = inv.addItem(tempItems.stream().filter(item -> item != null && item.getType() != Material.AIR).collect(Collectors.toList()).toArray(itemArray));
         if (integerItemStackMap.isEmpty()) {
             return new ArrayList<>();
         } else {

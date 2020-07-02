@@ -141,6 +141,11 @@ public enum Textures13 {
     ZOMBIE_HORSE("http://textures.minecraft.net/texture/d22950f2d3efddb18de86f8f55ac518dce73f12a6e0f8636d551d8eb480ceec"),  
     SKELETON_HORSE("http://textures.minecraft.net/texture/47effce35132c86ff72bcae77dfbb1d22587e94df3cbc2570ed17cf8973a"),  
     WITHER_SKELETON("http://textures.minecraft.net/texture/7953b6c68448e7e6b6bf8fb273d7203acd8e1be19e81481ead51f45de59a8"),  
+    PIGLIN("http://textures.minecraft.net/texture/9f18107d275f1cb3a9f973e5928d5879fa40328ff3258054db6dd3e7c0ca6330"), 
+    ZOMBIFIED_PIGLIN("http://textures.minecraft.net/texture/e935842af769380f78e8b8a88d1ea6ca2807c1e5693c2cf797456620833e936f"), 
+    HOGLIN("http://textures.minecraft.net/texture/9bb9bc0f01dbd762a08d9e77c08069ed7c95364aa30ca1072208561b730e8d75"), 
+    STRIDER("http://textures.minecraft.net/texture/18a9adf780ec7dd4625c9c0779052e6a15a451866623511e4c82e9655714b3c1"), 
+    ZOGLIN("http://textures.minecraft.net/texture/3c8c7c5d0556cd6629716e39188b21e7c0477479f242587bf19e0bc76b322551"), 
     ZOMBIE_VILLAGER("http://textures.minecraft.net/texture/e5e08a8776c1764c3fe6a6ddd412dfcb87f41331dad479ac96c21df4bf3ac89c");
 
     private String texture;

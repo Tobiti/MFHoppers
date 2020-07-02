@@ -14,6 +14,7 @@ import net.squidstudios.mfhoppers.hopper.types.MobHopper;
 import net.squidstudios.mfhoppers.hopper.types.NormalHopper;
 import net.squidstudios.mfhoppers.util.MChunk;
 import net.squidstudios.mfhoppers.util.Methods;
+import net.squidstudios.mfhoppers.util.OVersion;
 import net.squidstudios.mfhoppers.util.hopperMap.HopperDataHandler;
 import net.squidstudios.mfhoppers.util.hopperMap.HopperMap;
 import net.squidstudios.mfhoppers.util.plugin.PluginBuilder;
@@ -70,7 +71,9 @@ public class DataManager {
     private ConnectionManager connectionManager;
     private static DataManager instance;
 
-    private ConcurrentLinkedQueue<IHopper> addedHopperQueue = new ConcurrentLinkedQueue<>(), removedHopperQueue = new ConcurrentLinkedQueue<>(), updatedHopperQueue = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<IHopper> addedHopperQueue = new ConcurrentLinkedQueue<>(), 
+        removedHopperQueue = new ConcurrentLinkedQueue<>(), 
+        updatedHopperQueue = new ConcurrentLinkedQueue<>();
 
     public DataManager(PluginBuilder builder) {
 
@@ -365,6 +368,10 @@ public class DataManager {
                 connectionManager.run("DELETE FROM Mob");
                 connectionManager.run("DELETE FROM Normal");
                 connectionManager.run("VACUUM");
+
+                removedHopperQueue.clear();
+                addedHopperQueue.clear();
+                updatedHopperQueue.clear();
             } else {
                 PreparedStatement grindDeleteStat = connection.prepareStatement("DELETE FROM Grind WHERE name = ? AND loc = ?");
                 PreparedStatement breakDeleteStat = connection.prepareStatement("DELETE FROM Break WHERE name = ? AND loc = ?");
@@ -666,7 +673,12 @@ public class DataManager {
 
                     boolean isAuto = (int) data.get("isAuto") == 1;
                     boolean isGlobal = (int) data.get("isGlobal") == 1;
-                    EntityType type = EntityType.valueOf(data.get("ent").toString());
+                    EntityType type = EntityType.PIG;
+                    try {
+                        type = EntityType.valueOf(data.get("ent").toString());
+                    } catch (Exception e) {
+                        type = EntityType.PIG;
+                    }
 
                     add(new GrindHopper(loc, name, level, type, isAuto, isGlobal, data2), false);
 

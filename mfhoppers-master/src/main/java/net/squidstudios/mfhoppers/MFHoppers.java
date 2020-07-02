@@ -88,8 +88,8 @@ public class MFHoppers extends PluginBuilder {
     public void init() {
         MinecraftVersion.logger.setLevel(Level.OFF);
 
-        if (ReflectionUtil.SERVER_VERSION_NUM < 8 || ReflectionUtil.SERVER_VERSION_NUM > 15) {
-            out("This Jar is for server versions between 1.8-1.15.X", OutType.ERROR);
+        if (ReflectionUtil.SERVER_VERSION_NUM < 8 || ReflectionUtil.SERVER_VERSION_NUM > 16) {
+            out("This Jar is for server versions between 1.8-1.16.X", OutType.ERROR);
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }

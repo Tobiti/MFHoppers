@@ -724,7 +724,7 @@ public class TaskManager implements Listener {
 
     }
 
-    public ItemStack copy(ItemStack item, int setAmount) {
+    public static ItemStack copy(ItemStack item, int setAmount) {
         ItemStack clone = item.clone();
         clone.setAmount(setAmount);
         return clone;
