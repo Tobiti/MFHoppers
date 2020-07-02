@@ -300,7 +300,12 @@ public class ConfigHopper {
     public boolean isInstantSell() {
         if (getData().containsKey("instantSell")) {
             try{
-                return (boolean) getData().get("instantSell");
+                if(getData().get("instantSell") instanceof Boolean){
+                    return (Boolean) getData().get("instantSell");
+                }
+                if(getData().get("instantSell") instanceof String){
+                    return ((String) getData().get("instantSell")).contains("true");
+                }
             } catch (Exception ignore) {}
         }
         return false;

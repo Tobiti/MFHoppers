@@ -7,14 +7,11 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import history.SellHistory;
+import history.SellHistory.SellHistoryEntry;
 import net.squidstudios.mfhoppers.MFHoppers;
 import net.squidstudios.mfhoppers.util.Lang;
 
@@ -50,11 +47,11 @@ public class SellHistoryManager {
     protected void SendSellHistoryMessage(Player player, SellHistory history) {
         Lang.SELLHISTORY_HEADER.send(player);
         double totalPrice = 0;
-        for (Entry<ItemStack, Integer> entry : history.getSoldItems().entrySet()) {
+        for (Entry<ItemStack, SellHistoryEntry> entry : history.getSoldItems().entrySet()) {
             Map<String, Object> data = new HashMap<>();
-            data.put("{amount}", entry.getValue());
+            data.put("{amount}", entry.getValue().Amount);
             data.put("{itemtype}", entry.getKey().getType().toString());
-            double price = SellManager.getInstance().getPrice(entry.getKey(), player) * entry.getValue();
+            double price = entry.getValue().Price;
             totalPrice += Math.round(price * 100)/100;
             data.put("{price}", FormatMoney(price));
             Lang.SELLHISTORY_LINE.send(data, player);
@@ -68,14 +65,14 @@ public class SellHistoryManager {
         return MFHoppers.getInstance().getConfig().getBoolean("SellHistory", false);
     }
 
-    public void AddEntry(Player player, ItemStack item, int amount){
+    public void AddEntry(Player player, ItemStack item, int amount, double price){
         if(!isEnabled()){
             return;
         }
         if(!historyList.containsKey(player.getUniqueId())){
             historyList.put(player.getUniqueId(), new SellHistory());
         }
-        historyList.get(player.getUniqueId()).AddSoldItem(item, amount);
+        historyList.get(player.getUniqueId()).AddSoldItem(item, amount, price);
     }
 
     public String FormatMoney(double money){

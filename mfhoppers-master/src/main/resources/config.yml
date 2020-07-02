@@ -48,6 +48,7 @@ Hoppers:
     filterIsBlacklist: false
     autoLinkToChest: true
     instantSell: false
+    sellMultiplier: 1.0
     drops:
       - "ROTTEN_FLESH"
 

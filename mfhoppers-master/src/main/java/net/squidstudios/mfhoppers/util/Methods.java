@@ -110,10 +110,11 @@ public class Methods {
                 if (MFHoppers.getInstance().getEconomy() != null && hopper.getOwner() != null && !hopper.getOwner().isEmpty()){
         
                     Player player = Bukkit.getPlayer(hopper.getOwner());
-                    double price = SellManager.getInstance().getPrice(TaskManager.copy(moveItem.getItems().get(0), 1), player) * moveItem.getAmount();
+                    double sellMultiplier = hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("sellMultiplier") ? (double) hopper.getConfigHopper().getDataOfHopper(hopper).get("sellMultiplier") : 1;
+                    double price = SellManager.getInstance().getPrice(TaskManager.copy(moveItem.getItems().get(0), 1), player, sellMultiplier) * moveItem.getAmount();
 
                     if(player != null){
-                        MFHoppers.getInstance().SellHistoryManager.AddEntry(player, moveItem.getItems().get(0), moveItem.getAmount());
+                        MFHoppers.getInstance().SellHistoryManager.AddEntry(player, moveItem.getItems().get(0), moveItem.getAmount(), price);
                         MFHoppers.getInstance().getEconomy().depositPlayer(player, price);
                     } else {
                         MFHoppers.getInstance().getEconomy().depositPlayer(Bukkit.getOfflinePlayer(hopper.getOwner()), price);
@@ -168,18 +169,15 @@ public class Methods {
                     continue;
                 }
 
-                MFHoppers.getInstance().getLogger().info(String.format("InstantSell:  Hopper Owner: %s",
-                    String.valueOf(hopper.getConfigHopper().isInstantSell()),
-                    hopper.getOwner()));
-
                 if(hopper.getConfigHopper().isInstantSell()) {
                     if (MFHoppers.getInstance().getEconomy() != null && hopper.getOwner() != null && !hopper.getOwner().isEmpty()){
             
                         Player player = Bukkit.getPlayer(hopper.getOwner());
-                        double price = SellManager.getInstance().getPrice(TaskManager.copy(moveItem.getItems().get(0), 1), player) * moveItem.getAmount();
+                        double sellMultiplier = hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("sellMultiplier") ? (double) hopper.getConfigHopper().getDataOfHopper(hopper).get("sellMultiplier") : 1;
+                        double price = SellManager.getInstance().getPrice(TaskManager.copy(moveItem.getItems().get(0), 1), player, sellMultiplier) * moveItem.getAmount();
 
                         if(player != null){
-                            MFHoppers.getInstance().SellHistoryManager.AddEntry(player, moveItem.getItems().get(0), moveItem.getAmount());
+                            MFHoppers.getInstance().SellHistoryManager.AddEntry(player, moveItem.getItems().get(0), moveItem.getAmount(), price);
                             MFHoppers.getInstance().getEconomy().depositPlayer(player, price);
                         } else {
                             MFHoppers.getInstance().getEconomy().depositPlayer(Bukkit.getOfflinePlayer(hopper.getOwner()), price);

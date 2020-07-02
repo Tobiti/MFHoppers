@@ -678,11 +678,12 @@ public class TaskManager implements Listener {
             time--;
 
             if (time == 0) {
+                double sellMultiplier = hopper.getConfigHopper().getDataOfHopper(hopper).containsKey("sellMultiplier") ? (double) hopper.getConfigHopper().getDataOfHopper(hopper).get("sellMultiplier") : 1;
                 hopper.getInventory().whenComplete((inventory, thrw) -> {
                     List<OPair<ItemStack, Double>> items = Arrays
                             .stream(inventory.getContents())
                             .filter(item -> item != null && item.getType() != Material.AIR)
-                            .map(item -> new OPair<>(item, SellManager.getInstance().getPrice(copy(item, 1), player)))
+                            .map(item -> new OPair<>(item, SellManager.getInstance().getPrice(copy(item, 1), player, sellMultiplier)))
                             .filter(itemPair -> itemPair.getSecond() > 0.0)
                             .collect(Collectors.toList());
                     if (items.isEmpty()) return;
@@ -698,7 +699,7 @@ public class TaskManager implements Listener {
 
                         if (removed) {
                             if(player != null){
-                                MFHoppers.getInstance().SellHistoryManager.AddEntry(player, item.getFirst(), amount);
+                                MFHoppers.getInstance().SellHistoryManager.AddEntry(player, item.getFirst(), amount, item.getSecond() * amount);
                             }
                             finalPrice += item.getSecond() * amount;
                             sellAmount -= amount;
