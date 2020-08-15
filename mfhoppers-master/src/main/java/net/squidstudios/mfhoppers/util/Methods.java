@@ -126,10 +126,10 @@ public class Methods {
                 }
             }
             
-            int startAmount = 0;
+            int itemsStartAmount = 0;
 
             if(moveItem.GetMaxReached()){
-                startAmount = moveItem.getItems().stream().mapToInt(item -> item.getAmount()).sum();
+                itemsStartAmount = moveItem.getItems().stream().mapToInt(item -> item.getAmount()).sum();
             }
             List<ItemStack> leftItems = addItem2(moveItem.getItems(), hopper);
             if(!moveItem.GetMaxReached()){
@@ -142,10 +142,10 @@ public class Methods {
             }
             else {
                 if(leftItems.size() == 0){
-                    moveItem.setAmount(moveItem.getAmount() - startAmount);
+                    moveItem.setAmount(moveItem.getAmount() - itemsStartAmount);
                 }
                 else {
-                    moveItem.setAmount((moveItem.getAmount() - startAmount) + leftItems.stream().mapToInt(item -> item.getAmount()).sum());
+                    moveItem.setAmount((moveItem.getAmount() - itemsStartAmount) + leftItems.stream().mapToInt(item -> item.getAmount()).sum());
                 }
             }
         }
@@ -188,13 +188,27 @@ public class Methods {
                             
                     }
                 }
-
+                int itemsStartAmount = 0;
+    
+                if(moveItem.GetMaxReached()){
+                    itemsStartAmount = moveItem.getItems().stream().mapToInt(item -> item.getAmount()).sum();
+                }
                 List<ItemStack> leftItems = addItem2(moveItem.getItems(), hopper);
-                if(leftItems.size() == 0){
-                    moveItem.setAmount(0);
+                if(!moveItem.GetMaxReached()){
+                    if(leftItems.size() == 0){
+                        moveItem.setAmount(0);
+                    }
+                    else {
+                        moveItem.setAmount(leftItems.stream().mapToInt(item -> item.getAmount()).sum());
+                    }
                 }
                 else {
-                    moveItem.setAmount(leftItems.stream().mapToInt(item -> item.getAmount()).sum());
+                    if(leftItems.size() == 0){
+                        moveItem.setAmount(moveItem.getAmount() - itemsStartAmount);
+                    }
+                    else {
+                        moveItem.setAmount((moveItem.getAmount() - itemsStartAmount) + leftItems.stream().mapToInt(item -> item.getAmount()).sum());
+                    }
                 }
             }
         }
@@ -282,6 +296,9 @@ public class Methods {
 
 
     private static boolean isChunkLoaded(Location location) {
+        if(location == null){
+            return false;
+        }
         int chunkX = location.getBlockX() >> 4;
         int chunkZ = location.getBlockZ() >> 4;
 
@@ -425,6 +442,10 @@ public class Methods {
             }
 
             if (entity.getType() != EntityType.PLAYER && entity.getType() != EntityType.ARMOR_STAND && entity.getType() != EntityType.DROPPED_ITEM && entity.getType().isAlive() && (blacklist == null || !blacklist.contains(entity.getType()))) {
+
+                if(entity.hasMetadata("mfh_ignore")){
+                    continue;
+                }
 
                 //MFHoppers.getInstance().getLogger().info(String.format("AllowCustomName: %s MobName: %s MobType: %s", String.valueOf(allowCustomName), entity.getCustomName(), entity.getType().toString()));
                 if(!allowCustomName && entity.getCustomName() != null){

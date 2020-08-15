@@ -105,8 +105,8 @@ public class MoveItem {
 
     public void setAmount(int amount) {
         this.amount = amount;
-
-        if (amount <= 0) {
+        
+        if (this.amount <= 0) {
             Methods.forceSync(() -> getEntity().remove());
         }
 
