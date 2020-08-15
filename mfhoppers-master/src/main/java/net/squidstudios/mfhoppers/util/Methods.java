@@ -402,6 +402,11 @@ public class Methods {
             if (hopper == null) {
                 continue;
             }
+            if(hopper.getData().get("loc") == null){
+                DataManager.getInstance().remove(hopper);
+                continue;
+            }
+
             if (!hopper.isChunkLoaded()) {
                 continue;
             }

@@ -404,6 +404,8 @@ public class MFHoppers extends PluginBuilder {
                                 Lang.HOPPER_ALREADY_IS_MAX_LEVEL.send(event.getPlayer());
                                 event.setCancelled(true);
                                 return;
+                            } else {
+                                return;
                             }
                         }
 

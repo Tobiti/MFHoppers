@@ -59,7 +59,6 @@ public abstract class IHopper {
     public Location getLocation() {
         if (getData().containsKey("cachedLocation")) {
             return ((Location) getData().get("cachedLocation"));
-
         } else {
             Location location = Methods.toLocation(getData().get("loc").toString());
             getData().put("cachedLocation", location);
@@ -95,6 +94,9 @@ public abstract class IHopper {
     public abstract ItemStack getItem();
 
     public String getName() {
+        if(getData() == null || getData().get("name") == null){
+            return null;
+        }
         return getData().get("name").toString();
     }
 
@@ -182,6 +184,9 @@ public abstract class IHopper {
     }
 
     public boolean isChunkLoaded() {
+        if(getData().get("loc") == null){
+            return false;
+        }
         int chunkX = getLocation().getBlockX() >> 4;
         int chunkZ = getLocation().getBlockZ() >> 4;
 

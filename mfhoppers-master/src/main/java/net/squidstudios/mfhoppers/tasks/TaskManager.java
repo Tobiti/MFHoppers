@@ -76,11 +76,17 @@ public class TaskManager implements Listener {
             public void run() {
                 runGrind();
                 runAutoKillTask();
-                runBreakTask();
                 runLinkTask();
                 runSellTask();
             }
         }.runTaskTimerAsynchronously(MFHoppers, 0, 25));
+
+        add(new BukkitRunnable() {
+            @Override
+            public void run() {
+                runBreakTask();
+            }
+        }.runTaskTimer(MFHoppers, 0, 25));
 
         add(new BukkitRunnable() {
             @Override
@@ -284,28 +290,28 @@ public class TaskManager implements Listener {
                                     if(isSingleItem){
                                         entDrops.forEach(item -> item.setAmount(finalStackKill * item.getAmount()));
                                     }
-                                    MFHoppers.getInstance().getLogger().info("Wildstacker Mobdrop");
+                                    //MFHoppers.getInstance().getLogger().info("Wildstacker Mobdrop");
                                     if (Bukkit.getPluginManager().isPluginEnabled("HeadHunter") 
                                         && MFHoppers.getInstance().getConfig().contains("headHunterSupport") && MFHoppers.getInstance().getConfig().getBoolean("headHunterSupport")) {
-                                        MFHoppers.getInstance().getLogger().info("Headhunter Part 1");
+                                        //MFHoppers.getInstance().getLogger().info("Headhunter Part 1");
                                         MinecraftEntity minecraftEntity = MinecraftEntity.getByEntity((Entity)ent);
                                         if (minecraftEntity == null) {
                                             return;
                                         }
-                                        MFHoppers.getInstance().getLogger().info("Headhunter Part 2");
+                                        //MFHoppers.getInstance().getLogger().info("Headhunter Part 2");
                                         if (HConf.get().BLOCKED_WORLDS.contains(ent.getWorld().getName())) {
                                             return;
                                         }
-                                        MFHoppers.getInstance().getLogger().info("Headhunter Part 3");
+                                        //MFHoppers.getInstance().getLogger().info("Headhunter Part 3");
                                         if (!HeadHunterMap.get().isValidType(minecraftEntity)) {
                                             return;
                                         }
-                                        MFHoppers.getInstance().getLogger().info("Headhunter Part 4");
+                                        //MFHoppers.getInstance().getLogger().info("Headhunter Part 4");
                                         MobSkull mobSkull = HeadHunterMap.get().getEntityMap().get((Object)minecraftEntity);
                                         if (mobSkull == null) {
                                             return;
                                         }
-                                        MFHoppers.getInstance().getLogger().info("Headhunter Part 5");
+                                        //MFHoppers.getInstance().getLogger().info("Headhunter Part 5");
                                         Random random = new Random();
                                         Double d = random.nextDouble();
                                         ItemStack skull = mobSkull.getSkull().clone();
@@ -679,6 +685,10 @@ public class TaskManager implements Listener {
 
             Player player = Bukkit.getPlayer(hopper.getOwner());
             Map<String, Object> configData = hopper.getConfigHopper().getDataOfHopper(hopper);
+
+            if(configData == null){
+                continue;
+            }
 
             int time = hopper.getData().containsKey("sellEvery") ? (int) hopper.getData().get("sellEvery") : (int) configData.get("sellEvery");
             time--;
