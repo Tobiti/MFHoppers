@@ -157,6 +157,7 @@ HopperConvert:
 #There's Chest, Shulker Box
 EnableLinkedContainerRenaming: true
 LinkedContainer: "&7Linked &b%name%"
+AllowLinkingOfMultipleContainers: true
 
 allowMultipleHoppersToLinkOneContainer: false
 headHunterSupport: false

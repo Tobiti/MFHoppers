@@ -250,6 +250,9 @@ public class Methods {
 
         if (hopper.isLinked() && hopper.isLinkedInstantMove()) {
             for (Inventory destination : Methods.GetLinkedInventorys(hopper)) {
+                if(destination == null){
+                    continue;
+                }
                 Location chestLocation = MContainer.getLocation(destination.getHolder());
                 if(!isChunkLoaded(chestLocation)){
                     continue;
@@ -283,6 +286,9 @@ public class Methods {
                     }
                 }
             }
+        }
+        if(tempItems == null){
+            return new ArrayList<>();
         }
         Map<Integer, ItemStack> integerItemStackMap = inv.addItem(tempItems.stream().filter(item -> item != null && item.getType() != Material.AIR).collect(Collectors.toList()).toArray(itemArray));
         if (integerItemStackMap.isEmpty()) {

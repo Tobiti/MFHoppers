@@ -357,6 +357,9 @@ public class MFHoppers extends PluginBuilder {
 
             if (Methods.isHopper(event.getItemInHand())) {
                 ItemStack item = event.getItemInHand().clone();
+                if(item == null || item.getType() == Material.AIR){
+                    return;
+                }
                 if(OVersion.isOrAfter(15)){
                     // Moved here because on 1.15 the hopper is placed before it can get the item. So it gets the empty item slot and breaks!
                     PlaceHopper(event, item);
@@ -365,12 +368,9 @@ public class MFHoppers extends PluginBuilder {
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            if(item == null || item.getType() == Material.AIR){
-                                return;
-                            }
                             PlaceHopper(event, item);
                         }
-                    }.runTaskAsynchronously(this);
+                    }.runTask(this);
                 }
             }
         });
@@ -438,7 +438,9 @@ public class MFHoppers extends PluginBuilder {
                         if (limit > -1) {
                             if (limit == currentlyHas) {
                                 Lang.LINKING_CONTAINER_REACHED_LIMIT.send(new MapBuilder().add("%limit%", limit).getMap(), event.getPlayer());
-                                event.getPlayer().removeMetadata("link", this);
+                                if(!cnf.getBoolean("AllowLinkingOfMultipleContainers")){
+                                    event.getPlayer().removeMetadata("link", this);
+                                }
                                 return;
                             }
 
@@ -448,7 +450,9 @@ public class MFHoppers extends PluginBuilder {
 
                             if (!cnf.getBoolean("allowMultipleHoppersToLinkOneContainer")) {
                                 Lang.CONTAINER_IS_ALREADY_LINKED.send(event.getPlayer());
-                                event.getPlayer().removeMetadata("link", this);
+                                if(!cnf.getBoolean("AllowLinkingOfMultipleContainers")){
+                                    event.getPlayer().removeMetadata("link", this);
+                                }
                                 return;
                             }
 
@@ -456,7 +460,9 @@ public class MFHoppers extends PluginBuilder {
 
                         Lang.HOPPER_LINK_SUCCESSFULLY_LINKED.send(event.getPlayer());
                         DataManager.getInstance().link(hopperLocation, event.getClickedBlock().getLocation());
-                        event.getPlayer().removeMetadata("link", this);
+                        if(!cnf.getBoolean("AllowLinkingOfMultipleContainers")){
+                            event.getPlayer().removeMetadata("link", this);
+                        }
 
                     } else {
                         Lang.HOPPER_LINK_CLICKED_BLOCK_IS_NOT_CONTAINER.send(event.getPlayer());
@@ -788,7 +794,11 @@ public class MFHoppers extends PluginBuilder {
                     String owner = DataManager.getInstance().getHopper(b.getLocation()).getOwner();
 
                     if ((owner != null && owner.contentEquals(player.getName())) || command.getSender().getPlayer().hasPermission("mfh.adminlinkhopper")) {
-                        player.setMetadata("link", new FixedMetadataValue(this, Methods.toString(b.getLocation())));
+                        if (player.hasMetadata("link")) {
+                            player.removeMetadata("link", this);
+                        } else {
+                            player.setMetadata("link", new FixedMetadataValue(this, Methods.toString(b.getLocation())));
+                        }
                         Lang.HOPPER_LINK_NOW_SELECT_CONTAINER.send(player);
                     } else {
                         Lang.HOPPER_LINK_NOT_OWNER.send(player);
@@ -1114,6 +1124,11 @@ public class MFHoppers extends PluginBuilder {
     }
 
     private void PlaceHopper(BlockPlaceEvent event, ItemStack item) {
+        // Check if event is canceled one tick later
+        if(event.isCancelled()){
+            return;
+        }
+
         NBTItem nbt = new NBTItem(item);
         Map<String, Object> data = new HashMap<>();
         data.put("type", nbt.getString("type"));
