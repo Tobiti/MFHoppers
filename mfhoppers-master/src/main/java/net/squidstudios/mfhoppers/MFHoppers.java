@@ -55,7 +55,6 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
-import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
@@ -86,7 +85,7 @@ public class MFHoppers extends PluginBuilder {
 
     @Override
     public void init() {
-        MinecraftVersion.logger.setLevel(Level.OFF);
+        MinecraftVersion.getLogger().setLevel(Level.OFF);
 
         if (ReflectionUtil.SERVER_VERSION_NUM < 8 || ReflectionUtil.SERVER_VERSION_NUM > 16) {
             out("This Jar is for server versions between 1.8-1.16.X", OutType.ERROR);
@@ -247,10 +246,10 @@ public class MFHoppers extends PluginBuilder {
       
                 List<MoveItem> items2 = Methods.addItem(catchEvent.getItemList(), catchEvent.getHopperList());
                 if (items2.stream().map(MoveItem::getAmount).max(Integer::compare).get() <= 0) {
-                    Methods.forceSync(() -> event.getEntity().remove());
+                    event.getEntity().remove();
 
                 } else {
-                    Methods.forceSync(() -> item.getItemStack().setAmount(items.get(0).getAmount()));
+                    item.getItemStack().setAmount(items.get(0).getAmount());
                 }
             }
         });
@@ -285,72 +284,64 @@ public class MFHoppers extends PluginBuilder {
         });
 
         addListener(BlockBreakEvent.class, EventPriority.HIGHEST, event -> {
-            if (event.isCancelled() || !DataManager.getInstance().isHopper(event.getBlock().getLocation())) return;
+            if (event.isCancelled()) return;
             if (event.getBlock().getType() == Material.AIR) return;
+            if (event.getBlock().getType() != Material.HOPPER) return;
+            if (!DataManager.getInstance().isHopper(event.getBlock().getLocation())) return;
 
             event.setCancelled(true);
             event.getBlock().getDrops().clear();
 
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if (DataManager.getInstance().isHopper(event.getBlock().getLocation())) {
-                        IHopper hopper = DataManager.getInstance().getHopper(event.getBlock().getLocation());
-                        Lang.BROKE.send(new MapBuilder().add("%type%", hopper.getType().name()).add("%lvl%", hopper.getLevel()).add("%name%", hopper.getName()).add("%displayName%", hopper.getConfigHopper().getItemOfData(hopper).getItemMeta().getDisplayName()).getMap(), event.getPlayer());
+            if (DataManager.getInstance().isHopper(event.getBlock().getLocation())) {
+                IHopper hopper = DataManager.getInstance().getHopper(event.getBlock().getLocation());
+                Lang.BROKE.send(new MapBuilder().add("%type%", hopper.getType().name()).add("%lvl%", hopper.getLevel()).add("%name%", hopper.getName()).add("%displayName%", hopper.getConfigHopper().getItemOfData(hopper).getItemMeta().getDisplayName()).getMap(), event.getPlayer());
 
+                if (hopper.getType() == HopperEnum.Grind) {
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                for (LivingEntity entity : Methods.nearest(event.getBlock().getLocation(), 0.9)) {
+                                    Methods.removeSlow(entity);
+                                }
+                            } catch (Exception ex) {
+                                ex.printStackTrace();
+                            }
+                        }
+                    }.runTask(getInstance());
+                }
+
+                DataManager.getInstance().remove(event.getBlock().getLocation());
+                boolean alreadyDropped = false;
+                Map<String, Object> dataOfHopper = configHoppers.get(hopper.getName()).getDataOfHopper(hopper);
+                if (dataOfHopper.containsKey("DropToInventory") && (boolean) dataOfHopper.get("DropToInventory")) {
+                    if (event.getPlayer().getInventory().firstEmpty() != -1) {
                         if (hopper.getType() == HopperEnum.Grind) {
-                            new BukkitRunnable() {
-                                @Override
-                                public void run() {
-                                    try {
-                                        for (LivingEntity entity : Methods.nearest(event.getBlock().getLocation(), 0.9)) {
-                                            Methods.removeSlow(entity);
-                                        }
-                                    } catch (Exception ex) {
-                                        ex.printStackTrace();
-                                    }
-                                }
-                            }.runTask(getInstance());
+                            event.getPlayer().getInventory().addItem(configHoppers.get(hopper.getName()).buildItemByLevel(hopper.getLevel(), (EntityType) hopper.getData().get("ent"), (Boolean) hopper.getData().get("isAuto"), (Boolean) hopper.getData().get("isGlobal")));
+                        } else {
+                            event.getPlayer().getInventory().addItem(configHoppers.get(hopper.getName()).buildItemByLevel(hopper.getLevel()));
                         }
-
-                        DataManager.getInstance().remove(event.getBlock().getLocation());
-                        boolean alreadyDropped = false;
-                        Map<String, Object> dataOfHopper = configHoppers.get(hopper.getName()).getDataOfHopper(hopper);
-                        if (dataOfHopper.containsKey("DropToInventory") && (boolean) dataOfHopper.get("DropToInventory")) {
-                            if (event.getPlayer().getInventory().firstEmpty() != -1) {
-                                if (hopper.getType() == HopperEnum.Grind) {
-                                    event.getPlayer().getInventory().addItem(configHoppers.get(hopper.getName()).buildItemByLevel(hopper.getLevel(), (EntityType) hopper.getData().get("ent"), (Boolean) hopper.getData().get("isAuto"), (Boolean) hopper.getData().get("isGlobal")));
-                                } else {
-                                    event.getPlayer().getInventory().addItem(configHoppers.get(hopper.getName()).buildItemByLevel(hopper.getLevel()));
-                                }
-                                alreadyDropped = true;
-                            }
-                        }
-                        if (!alreadyDropped) {
-                            Methods.drop(configHoppers.get(hopper.getName()).getItemOfData(hopper), hopper.getLocation());
-                        }
-
-                        Methods.breakBlock(event.getBlock());
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
-                                Bukkit.getPluginManager().callEvent(new BlockBreakEvent(event.getBlock(), event.getPlayer()));
-                            }
-                        }.runTask(instance);
-
-                        if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")) {
-                            if(SuperiorSkyblockAPI.getPlayer(event.getPlayer()).getIsland() != null){
-                                SuperiorSkyblockAPI.getPlayer(event.getPlayer()).getIsland().handleBlockBreak(event.getBlock(), 1);
-                            }
-                        }
-
-                    } else if (MContainer.isContainer(event.getBlock().getLocation())) {
-                        if (Methods.getLinkedHopper(event.getBlock().getLocation()) != null) {
-                            Methods.getLinkedHopper(event.getBlock().getLocation()).unlink(event.getBlock().getLocation());
-                        }
+                        alreadyDropped = true;
                     }
                 }
-            }.runTaskAsynchronously(this);
+                if (!alreadyDropped) {
+                    Methods.drop(configHoppers.get(hopper.getName()).getItemOfData(hopper), hopper.getLocation());
+                }
+
+                Methods.breakBlock(event.getBlock());
+                Bukkit.getPluginManager().callEvent(new BlockBreakEvent(event.getBlock(), event.getPlayer()));
+
+                if (Bukkit.getPluginManager().isPluginEnabled("SuperiorSkyblock2")) {
+                    if(SuperiorSkyblockAPI.getPlayer(event.getPlayer()).getIsland() != null){
+                        SuperiorSkyblockAPI.getPlayer(event.getPlayer()).getIsland().handleBlockBreak(event.getBlock(), 1);
+                    }
+                }
+
+            } else if (MContainer.isContainer(event.getBlock().getLocation())) {
+                if (Methods.getLinkedHopper(event.getBlock().getLocation()) != null) {
+                    Methods.getLinkedHopper(event.getBlock().getLocation()).unlink(event.getBlock().getLocation());
+                }
+            }
         });
         addListener(BlockPlaceEvent.class, EventPriority.HIGHEST, event -> {
             if (event.isCancelled()) return;
