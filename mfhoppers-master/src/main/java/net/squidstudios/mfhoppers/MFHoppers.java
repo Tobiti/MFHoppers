@@ -264,8 +264,10 @@ public class MFHoppers extends PluginBuilder {
                         if (DataManager.getInstance().isHopper(b.getLocation())) {
                             if(event.getEntityType().equals(EntityType.CREEPER)){
                                 removedBlocks.add(b);
+                              
                             }
 
+                            b.getLocation().getBlock().setType(Material.AIR);
                             b.getLocation().getWorld().dropItem(b.getLocation(), configHoppers.get(DataManager.getInstance().getHopper(b.getLocation()).getName()).getItemOfData(DataManager.getInstance().getHopper(b.getLocation())));
                             DataManager.getInstance().remove(b.getLocation());
                         }
